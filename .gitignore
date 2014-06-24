@@ -1,0 +1,5 @@
+# Ignores the images folder
+boutique/img
+
+#ignore the settings file
+boutique/config/settings.inc.php

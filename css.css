@@ -1,0 +1,29 @@
+@charset "utf-8";
+/* CSS Document */
+body{ background-image:url(images/peruk.jpg);
+	background-repeat:no-repeat;
+	width:298px;
+	heigth:196px;
+	margin-left: 420px;
+}
+
+#texte{
+	top:320px;
+	width:500px;
+	heigth:50px;
+	text-align:center;
+	margin-top:200px;
+}
+
+h1, p{color:#806c3a;
+	
+	
+} 
+
+h1 {
+	font-size:50px;
+}
+
+p{
+	font-size:20px;
+}
