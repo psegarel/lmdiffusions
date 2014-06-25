@@ -96,7 +96,7 @@ var fieldRequired = '{l s='Please fill all required fields' js=1}';
 				{foreach from=$images item=image name=thumbnails}
 				<li>
 					<a href="{$img_prod_dir}{$product->id}-{$image.id_image}-thickbox.jpg" rel="other-views" class="thickbox {if $smarty.foreach.thumbnails.first}shown{/if}">
-						<img id="thumb_{$image.id_image}" src="{$img_prod_dir}{$product->id}-{$image.id_image}-small.jpg" alt="{$image.legend|htmlspecialchars}" title="{$image.legend|htmlspecialchars}" />
+						<img id="thumb_{$image.id_image}" src="{$img_prod_dir}{$product->id}-{$image.id_image}-medium.jpg" alt="{$image.legend|htmlspecialchars}" title="{$image.legend|htmlspecialchars}" />
 					</a>
 				</li>
 				{/foreach}
@@ -231,24 +231,7 @@ var fieldRequired = '{l s='Please fill all required fields' js=1}';
 	</div>
 </div>
 <br class="clear" />
-<!-- PDF and SWF-->
-<div style="display:block; overflow:hidden;">
-	{if (($pdf)||($swf))}<h2 class="product">{l s='Look SWF and/or Upload PDF'}</h2> {/if}
-	{if $swf}	
-	<div style="text-align:center; display:block; float:left; width:50%; margin-top:15px;">
-	{foreach from=$swf item=flash}
-	<p><a href="img/flash/{$flash.id_flash}.swf?keepThis=true&TB_iframe=true" title="{$flash.legend|htmlspecialchars}" class="thickbox {if $smarty.foreach.thumbnails.first}shown{/if}">
-	<img src="img/swf.gif" border="0"><p style="text-align: center;">{$flash.legend}</p></a>
-	{/foreach}
-	</div>{/if}	
-	{if $pdf}
-	<div style="text-align:center; display:block; float:left; width:50%; margin-top:15px;">
-		{foreach from=$pdf item=document}
-		<p><a href="img/documents/{$document.id_document}.pdf" target="_blank"><img src="img/pdf.gif" border="0"><p style="text-align: center;">{$document.legend}</p></a><br>
-		{/foreach}
-	</div>{/if}
-	</div>
-<!-- end PDF and SWF-->
+
 {if $quantity_discounts}
 <!-- quantity discount -->
 <ul class="idTabs">
@@ -317,7 +300,7 @@ var fieldRequired = '{l s='Please fill all required fields' js=1}';
 						<li class="ajax_block_product {if $smarty.foreach.accessories_list.first}first_item{elseif $smarty.foreach.accessories_list.last}last_item{else}item{/if} product_accessories_description">
 							<h5 class="align_center"><a href="{$accessoryLink|escape:'htmlall':'UTF-8'}">{$accessory.name|truncate:22|escape:'htmlall':'UTF-8'}</a></h5>
 							<p class="product_desc">
-								<a href="{$accessoryLink|escape:'htmlall':'UTF-8'}" title="{$accessory.legend|escape:'htmlall':'UTF-8'}" class="product_image"><img src="{$img_prod_dir}{$accessory.id_image}-small.jpg" alt="{$accessory.legend|escape:'htmlall':'UTF-8'}" /></a>
+								<a href="{$accessoryLink|escape:'htmlall':'UTF-8'}" title="{$accessory.legend|escape:'htmlall':'UTF-8'}" class="product_image"><img src="{$img_prod_dir}{$accessory.id_image}-medium.jpg" alt="{$accessory.legend|escape:'htmlall':'UTF-8'}" /></a>
 								<a href="{$accessoryLink|escape:'htmlall':'UTF-8'}" title="{l s='More'}" class="product_description">{$accessory.description_short|strip_tags|truncate:100}</a>
 							</p>
 							<p class="product_accessories_price">

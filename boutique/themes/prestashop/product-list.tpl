@@ -4,11 +4,9 @@
 	{foreach from=$products item=product name=products}
 		<li class="ajax_block_product {if $smarty.foreach.products.first}first_item{elseif $smarty.foreach.products.last}last_item{/if} {if $smarty.foreach.products.index % 2}alternate_item{else}item{/if}">
 			<div class="center_block">
-            <h3><a href="{$product.link|escape:'htmlall':'UTF-8'}" title="{$product.legend|escape:'htmlall':'UTF-8'}">{$product.name|truncate:35|escape:'htmlall':'UTF-8'}</a></h3>
-            
-				<a href="{$product.link|escape:'htmlall':'UTF-8'}" class="product_img_link" title="{$product.name|escape:'htmlall':'UTF-8'}"><img src="{$img_prod_dir}{$product.id_image}-medium.jpg" alt="{$product.legend|escape:'htmlall':'UTF-8'}" /></a>
-				
-	
+				<a href="{$product.link|escape:'htmlall':'UTF-8'}" class="product_img_link" title="{$product.name|escape:'htmlall':'UTF-8'}"><img src="{$img_prod_dir}{$product.id_image}-home.jpg" alt="{$product.legend|escape:'htmlall':'UTF-8'}" /></a>
+				<h3>{if $product.new == 1}<span class="new">{l s='new'}</span>{/if}<a href="{$product.link|escape:'htmlall':'UTF-8'}" title="{$product.legend|escape:'htmlall':'UTF-8'}">{$product.name|truncate:35|escape:'htmlall':'UTF-8'}</a></h3>
+				<p class="product_desc"><a href="{$product.link|escape:'htmlall':'UTF-8'}">{$product.description_short|strip_tags:'UTF-8'|truncate:360}</a></p>
 			</div>
 			<div class="right_block">
 				{if $product.on_sale}
