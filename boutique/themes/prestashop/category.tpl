@@ -15,7 +15,7 @@
 {else}
 	<!-- Category image -->
 	{if $category->id_image}
-		
+		<img src="{$img_cat_dir}{$category->id_image}-category.jpg" alt="{$category->name|escape:'htmlall':'UTF-8'}" title="{$category->name|escape:'htmlall':'UTF-8'}" id="categoryImage" />
 	{/if}
 {/if}	
 
@@ -24,11 +24,9 @@
   {/if}
   
 	{if isset($subcategories)}
-    
-    
 	<!-- Subcategories -->
 	<div id="subcategories">
-		
+		<h3>{l s='Subcategories'}</h3>
 		<ul class="inline_list">
 		{foreach from=$subcategories item=subcategory}
 			<li>

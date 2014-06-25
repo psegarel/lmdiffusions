@@ -1,14 +1,4 @@
 {if $cms}
-	{if $cms->id == 11}
-	<a style="background-color: #DE0390; color: #FFFFFF;" href="{$base_dir}cms.php?id_cms=14">Autres partenaires - Page 2</a>
-	{/if}
-	{if $cms->id == 14}
-	<a style="background-color: #DE0390; color: #FFFFFF;" href="{$base_dir}cms.php?id_cms=11">Autres partenaires - Page 1</a>
-	<a style="background-color: #DE0390; color: #FFFFFF;" href="{$base_dir}cms.php?id_cms=15">Autres partenaires - Page 3</a>
-	{/if}
-	{if $cms->id == 15}
-	<a style="background-color: #DE0390; color: #FFFFFF;" href="{$base_dir}cms.php?id_cms=14">Autres partenaires - Page 2</a>
-	{/if}
 	{if $content_only}
 	<div style="text-align:left; padding:10px;">
 		{$cms->content}

@@ -7,28 +7,28 @@
 		<title_2>Bienvenue sur peruk.fr</title_2>
 		<subheading_1>Your specialist</subheading_1>
 		<subheading_2>Votre spécialiste</subheading_2>
-		<paragraph_2>&lt;div id=\&quot;banner\&quot;&gt;&lt;!-- start Basic Jquery Slider --&gt; 
-&lt;ul class=\&quot;bjqs\&quot;&gt;
-&lt;li&gt;&lt;a href=\&quot;category.php?id_category=143\&quot; target=\&quot;_self\&quot;&gt;&lt;img src=\&quot;themes/peruk/img/banners/banner01.jpg\&quot; border=\&quot;0\&quot; /&gt;&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=\&quot;category.php?id_category=240\&quot; target=\&quot;_self\&quot;&gt;&lt;img src=\&quot;themes/peruk/img/banners/banner02.jpg\&quot; border=\&quot;0\&quot; /&gt;&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=\&quot;category.php?id_category=386\&quot; target=\&quot;_self\&quot;&gt;&lt;img src=\&quot;themes/peruk/img/banners/banner03.jpg\&quot; border=\&quot;0\&quot; /&gt;&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=\&quot;category.php?id_category=487\&quot; target=\&quot;_self\&quot;&gt;&lt;img src=\&quot;themes/peruk/img/banners/banner04.jpg\&quot; border=\&quot;0\&quot; /&gt;&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=\&quot;category.php?id_category=142\&quot; target=\&quot;_self\&quot;&gt;&lt;img src=\&quot;themes/peruk/img/banners/banner05.jpg\&quot; border=\&quot;0\&quot; /&gt;&lt;/a&gt;&lt;/li&gt;
+		<paragraph_2>&lt;div id=&quot;banner&quot;&gt;&lt;!-- start Basic Jquery Slider --&gt; 
+&lt;ul class=&quot;bjqs&quot;&gt;
+&lt;li&gt;&lt;a href=&quot;category.php?id_category=143&quot; target=&quot;_self&quot;&gt;&lt;img src=&quot;themes/peruk/img/banners/banner01.jpg&quot; border=&quot;0&quot; /&gt;&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;category.php?id_category=240&quot; target=&quot;_self&quot;&gt;&lt;img src=&quot;themes/peruk/img/banners/banner02.jpg&quot; border=&quot;0&quot; /&gt;&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;category.php?id_category=386&quot; target=&quot;_self&quot;&gt;&lt;img src=&quot;themes/peruk/img/banners/banner03.jpg&quot; border=&quot;0&quot; /&gt;&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;category.php?id_category=487&quot; target=&quot;_self&quot;&gt;&lt;img src=&quot;themes/peruk/img/banners/banner04.jpg&quot; border=&quot;0&quot; /&gt;&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;category.php?id_category=142&quot; target=&quot;_self&quot;&gt;&lt;img src=&quot;themes/peruk/img/banners/banner05.jpg&quot; border=&quot;0&quot; /&gt;&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;!-- end Basic jQuery Slider --&gt;&lt;/div&gt;
 &lt;p&gt;&amp;nbsp;&lt;/p&gt;
-&lt;div class=\&quot;homeredac1\&quot;&gt;&lt;img src=\&quot;themes/peruk/img/banners/banbas.jpg\&quot; border=\&quot;0\&quot; /&gt;&lt;/div&gt;
-&lt;div class=\&quot;homeredac1b\&quot;&gt;
-&lt;table border=\&quot;0\&quot; cellspacing=\&quot;0\&quot; cellpadding=\&quot;3\&quot;&gt;
+&lt;div class=&quot;homeredac1&quot;&gt;&lt;img src=&quot;themes/peruk/img/banners/banbas.jpg&quot; border=&quot;0&quot; /&gt;&lt;/div&gt;
+&lt;div class=&quot;homeredac1b&quot;&gt;
+&lt;table border=&quot;0&quot; cellspacing=&quot;0&quot; cellpadding=&quot;3&quot;&gt;
 &lt;tbody&gt;
 &lt;tr&gt;
 &lt;td&gt;
-&lt;div class=\&quot;homeredac2\&quot;&gt;Sur www.peruk.fr, vous d&amp;eacute;couvrirez un large choix de perruques femmes et hommes ainsi que des accessoires de qualit&amp;eacute;s.&lt;/div&gt;
-&lt;div class=\&quot;homeredac3\&quot;&gt;N\'hesitez pas &amp;agrave; nous contacter pour des &lt;a href=\&quot;http://peruk.fr/boutique/cms.php?id_cms=7\&quot; title=\&quot;conseils\&quot;&gt;conseils&lt;/a&gt; et renseignements, par t&amp;eacute;l&amp;eacute;phone au &lt;strong&gt;06 24 75 14 71 &lt;/strong&gt;ou bien dans la rubrique &lt;a href=\&quot;http://peruk.fr/boutique/contact-form.php\&quot;&gt;contactez nous&lt;/a&gt;. Laissez nous votre numero de t&amp;eacute;l&amp;eacute;phone, nous vous contacterons afin de pouvoir r&amp;eacute;pondre &amp;agrave; toutes vos questions.&lt;/div&gt;
-&lt;div class=\&quot;homeredac3\&quot;&gt;&lt;span style=\&quot;font-size: small;\&quot;&gt;Adresse postale :&lt;strong&gt;&lt;br /&gt;LM DIFFUSIONS &lt;br /&gt;52 ROUTE DE RIBERAC&amp;nbsp;&lt;br /&gt;24400 ST FRONT DE PRADOUX&lt;/strong&gt;&lt;/span&gt;&lt;/div&gt;
+&lt;div class=&quot;homeredac2&quot;&gt;Sur www.peruk.fr, vous d&amp;eacute;couvrirez un large choix de perruques femmes et hommes ainsi que des accessoires de qualit&amp;eacute;s.&lt;/div&gt;
+&lt;div class=&quot;homeredac3&quot;&gt;N'hesitez pas &amp;agrave; nous contacter pour des &lt;a href=&quot;http://peruk.fr/boutique/cms.php?id_cms=7&quot; title=&quot;conseils&quot;&gt;conseils&lt;/a&gt; et renseignements, par t&amp;eacute;l&amp;eacute;phone au &lt;strong&gt;06 24 75 14 71 &lt;/strong&gt;ou bien dans la rubrique &lt;a href=&quot;http://peruk.fr/boutique/contact-form.php&quot;&gt;contactez nous&lt;/a&gt;. Laissez nous votre numero de t&amp;eacute;l&amp;eacute;phone, nous vous contacterons afin de pouvoir r&amp;eacute;pondre &amp;agrave; toutes vos questions.&lt;/div&gt;
+&lt;div class=&quot;homeredac3&quot;&gt;&lt;span style=&quot;font-size: small;&quot;&gt;Adresse postale :&lt;strong&gt;&lt;br /&gt;LM DIFFUSIONS &lt;br /&gt;52 ROUTE DE RIBERAC&amp;nbsp;&lt;br /&gt;24400 ST FRONT DE PRADOUX&lt;/strong&gt;&lt;/span&gt;&lt;/div&gt;
 &lt;/td&gt;
-&lt;td width=\&quot;20\&quot;&gt;&amp;nbsp;&lt;/td&gt;
-&lt;td&gt;&lt;a href=\&quot;http://www.facebook.com/pages/perukfr/158319064269643\&quot; target=\&quot;_blank\&quot; title=\&quot;Suivez-nous sur Facebook\&quot;&gt;&lt;img src=\&quot;themes/peruk/img/banners/follow.jpg\&quot; border=\&quot;0\&quot; /&gt;&lt;/a&gt;&lt;/td&gt;
+&lt;td width=&quot;20&quot;&gt;&amp;nbsp;&lt;/td&gt;
+&lt;td&gt;&lt;a href=&quot;http://www.facebook.com/pages/perukfr/158319064269643&quot; target=&quot;_blank&quot; title=&quot;Suivez-nous sur Facebook&quot;&gt;&lt;img src=&quot;themes/peruk/img/banners/follow.jpg&quot; border=&quot;0&quot; /&gt;&lt;/a&gt;&lt;/td&gt;
 &lt;/tr&gt;
 &lt;/tbody&gt;
 &lt;/table&gt;
