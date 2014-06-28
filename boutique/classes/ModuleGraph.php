@@ -1,27 +1,41 @@
 <?php
+/*
+* 2007-2013 PrestaShop
+*
+* NOTICE OF LICENSE
+*
+* This source file is subject to the Open Software License (OSL 3.0)
+* that is bundled with this package in the file LICENSE.txt.
+* It is also available through the world-wide-web at this URL:
+* http://opensource.org/licenses/osl-3.0.php
+* If you did not receive a copy of the license and are unable to
+* obtain it through the world-wide-web, please send an email
+* to license@prestashop.com so we can send you a copy immediately.
+*
+* DISCLAIMER
+*
+* Do not edit or add to this file if you wish to upgrade PrestaShop to newer
+* versions in the future. If you wish to customize PrestaShop for your
+* needs please refer to http://www.prestashop.com for more information.
+*
+*  @author PrestaShop SA <contact@prestashop.com>
+*  @copyright  2007-2013 PrestaShop SA
+*  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+*  International Registered Trademark & Property of PrestaShop SA
+*/
 
-/**
-  * Statistics
-  * @category stats
-  *
-  * @author Damien Metzger / Epitech
-  * @copyright Epitech / PrestaShop
-  * @license http://www.opensource.org/licenses/osl-3.0.php Open-source licence 3.0
-  * @version 1.2
-  */
-  
-abstract class ModuleGraph extends Module
+abstract class ModuleGraphCore extends Module
 {
 	protected $_employee;
 	
 	/** @var integer array graph data */
-	protected	$_values = array();
+	protected $_values = array();
 	
 	/** @var string array graph legends (X axis) */
-	protected	$_legend = array();
+	protected $_legend = array();
 	
 	/**@var string graph titles */
-	protected	$_titles = array('main' => NULL, 'x' => NULL, 'y' => NULL);
+	protected $_titles = array('main' => null, 'x' => null, 'y' => null);
 		
 	/** @var ModuleGraphEngine graph engine */
 	protected $_render;
@@ -30,7 +44,7 @@ abstract class ModuleGraph extends Module
 	
 	public function setEmployee($id_employee)
 	{
-		$this->_employee = new Employee(intval($id_employee));
+		$this->_employee = new Employee((int)$id_employee);
 	}
 	public function setLang($id_lang)
 	{
@@ -89,8 +103,8 @@ abstract class ModuleGraph extends Module
 			if (is_callable(array($this, 'setMonthValues')))
 				$this->setMonthValues($layers);
 		}
-		// If the granularity is superior to 1 month
-		else
+		// If the granularity is less than 1 year
+		elseif (strtotime('-1 year', strtotime($this->_employee->stats_date_to)) < strtotime($this->_employee->stats_date_from))
 		{
 			if ($legend)
 			{
@@ -118,11 +132,115 @@ abstract class ModuleGraph extends Module
 			if (is_callable(array($this, 'setYearValues')))
 				$this->setYearValues($layers);
 		}
+		// If the granularity is greater than 1 year
+		else
+		{
+			if ($legend)
+			{
+				$years = array();
+				for ($i = $fromArray['year']; $i <= $toArray['year']; ++$i)
+					$years[] = $i;
+				foreach ($years as $i)
+				{
+					if ($layers == 1)
+						$this->_values[$i] = 0;
+					else
+						for ($j = 0; $j < $layers; $j++)
+							$this->_values[$j][$i] = 0;
+					$this->_legend[$i] = sprintf('%04d', $i);
+				}
+			}
+			if (is_callable(array($this, 'setAllTimeValues')))
+				$this->setAllTimeValues($layers);
+		}
+	}
+	
+	protected function csvExport($datas)
+	{
+		global $cookie;
+		$this->setEmployee(intval($cookie->id_employee));
+		$this->setLang(intval($cookie->id_lang));
+
+		$layers = isset($datas['layers']) ?  $datas['layers'] : 1;
+		if (isset($datas['option']))
+			$this->setOption($datas['option'], $layers);
+		$this->getData($layers);
+		
+		// Generate first line (column titles)
+		if (is_array($this->_titles['main']))
+		{
+			$count_main = count($this->_titles['main']);
+			for ($i = 0; $i <= $count_main; $i++)
+			{
+				if ($i > 0)
+					$this->_csv .= ';';
+				if (isset($this->_titles['main'][$i]))
+					$this->_csv .= $this->_titles['main'][$i];
+			}
+		}
+		else // If there is only one column title, there is in fast two column (the first without title)
+			$this->_csv .= ';'.$this->_titles['main'];
+		$this->_csv .= "\n";
+		if (count($this->_legend))
+		{
+			$total = 0;
+			if ($datas['type'] == 'pie')
+				foreach ($this->_legend as $key => $legend)
+				{
+					$count_values = count($this->_values);
+					for ($i = 0; $i < (is_array($this->_titles['main']) ? $count_values : 1); ++$i)
+						$total += (is_array($this->_values[$i])  ? $this->_values[$i][$key] : $this->_values[$key]);
+				}
+			foreach ($this->_legend as $key => $legend)
+			{
+				$this->_csv .= $legend.';';
+				$count_values2 = count($this->_values);
+				for ($i = 0; $i < (is_array($this->_titles['main']) ? $count_values2 : 1); ++$i)
+				{
+					if (!isset($this->_values[$i]) || !is_array($this->_values[$i]))
+						if (isset($this->_values[$key]))
+						{
+						    // We don't want strings to be divided. Example: product name
+							if (is_numeric($this->_values[$key]))
+					            $this->_csv .= $this->_values[$key] / (($datas['type'] == 'pie') ? $total : 1);
+					        else
+					            $this->_csv .= $this->_values[$key];
+					    }else
+							$this->_csv .= '0';
+					else
+					{
+					    // We don't want strings to be divided. Example: product name
+					    if (is_numeric($this->_values[$i][$key]))
+						    $this->_csv .= $this->_values[$i][$key] / (($datas['type'] == 'pie') ? $total : 1);
+				        else
+				            $this->_csv .= $this->_values[$i][$key];
+					}
+					$this->_csv .= ';';
+				}
+				$this->_csv .= "\n";
+			}
+		}
+		$this->_displayCsv();
+	}
+	
+	protected function _displayCsv()
+	{
+		ob_end_clean();
+		header('Content-Type: application/octet-stream');
+		header('Content-Disposition: attachment; filename="'.$this->displayName.' - '.time().'.csv"');
+		echo $this->_csv;
+		exit;
 	}
 	
 	public function create($render, $type, $width, $height, $layers)
 	{
-		require_once(dirname(__FILE__).'/../modules/'.$render.'/'.$render.'.php');
+		if (!Validate::isModuleName($render))
+    		die(Tools::displayError());
+    		
+		if (!file_exists($file = _PS_ROOT_DIR_.'/modules/'.$render.'/'.$render.'.php'))
+			die(Tools::displayError());
+			
+		require_once($file);
 		$this->_render = new $render($type);
 		
 		$this->getData($layers);
@@ -141,12 +259,16 @@ abstract class ModuleGraph extends Module
 	{		
 		if (!($render = Configuration::get('PS_STATS_RENDER')))
 			return Tools::displayError('No graph engine selected');
-		if (!file_exists(dirname(__FILE__).'/../modules/'.$render.'/'.$render.'.php'))
-			return Tools::displayError('Graph engine selected unavailable');
+
+		if (!Validate::isModuleName($render))
+    		die(Tools::displayError());
+    		
+		if (!file_exists(_PS_ROOT_DIR_.'/modules/'.$render.'/'.$render.'.php'))
+			return Tools::displayError('Graph engine selected is unavailable.');
 			
 		global $cookie;
-		$id_employee = intval($cookie->id_employee);
-		$id_lang = intval($cookie->id_lang);
+		$id_employee = (int)($cookie->id_employee);
+		$id_lang = (int)($cookie->id_lang);
 
 		if (!isset($params['layers']))
 			$params['layers'] = 1;
@@ -158,28 +280,28 @@ abstract class ModuleGraph extends Module
 			$params['height'] = 270;
 		
 		global $cookie;
-		$id_employee = intval($cookie->id_employee);
-		$drawer = 'drawer.php?render='.$render.'&module='.Tools::getValue('module').'&type='.$params['type'].'&layers='.$params['layers'].'&id_employee='.$id_employee.'&id_lang='.$id_lang;
+		$id_employee = (int)($cookie->id_employee);
+		$drawer = 'drawer.php?render='.$render.'&module='.Tools::safeOutput(Tools::getValue('module')).'&type='.Tools::safeOutput($params['type']).'&layers='.Tools::safeOutput($params['layers']).'&id_employee='.$id_employee.'&id_lang='.$id_lang;
 		if (isset($params['option']))
 			$drawer .= '&option='.$params['option'];
 			
-		require_once(dirname(__FILE__).'/../modules/'.$render.'/'.$render.'.php');
+		require_once(_PS_ROOT_DIR_.'/modules/'.$render.'/'.$render.'.php');
 		return call_user_func(array($render, 'hookGraphEngine'), $params, $drawer);
 	}
 	
-	private static function getEmployee($employee = null)
+	protected static function getEmployee($employee = null)
 	{
 		if (!$employee)
 		{
 			global $cookie;
-			$employee = new Employee(intval($cookie->id_employee));
+			$employee = new Employee((int)($cookie->id_employee));
 		}
 		
-		if (empty($employee->stats_date_from) OR empty($employee->stats_date_to))
+		if (empty($employee->stats_date_from) OR empty($employee->stats_date_to) OR $employee->stats_date_from == '0000-00-00' OR $employee->stats_date_to == '0000-00-00')
 		{
-			if (empty($employee->stats_date_from))
+			if (empty($employee->stats_date_from) OR $employee->stats_date_from == '0000-00-00')
 				$employee->stats_date_from = date('Y').'-01-01';
-			if (empty($employee->stats_date_to))
+			if (empty($employee->stats_date_to)  OR $employee->stats_date_to == '0000-00-00')
 				$employee->stats_date_to = date('Y').'-12-31';
 			$employee->update();
 		}
@@ -202,5 +324,3 @@ abstract class ModuleGraph extends Module
 		return $this->_id_lang;
 	}
 }
-
-?>

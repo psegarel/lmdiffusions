@@ -1,8 +1,37 @@
+/*
+* 2007-2013 PrestaShop
+*
+* NOTICE OF LICENSE
+*
+* This source file is subject to the Open Software License (OSL 3.0)
+* that is bundled with this package in the file LICENSE.txt.
+* It is also available through the world-wide-web at this URL:
+* http://opensource.org/licenses/osl-3.0.php
+* If you did not receive a copy of the license and are unable to
+* obtain it through the world-wide-web, please send an email
+* to license@prestashop.com so we can send you a copy immediately.
+*
+* DISCLAIMER
+*
+* Do not edit or add to this file if you wish to upgrade PrestaShop to newer
+* versions in the future. If you wish to customize PrestaShop for your
+* needs please refer to http://www.prestashop.com for more information.
+*
+*  @author PrestaShop SA <contact@prestashop.com>
+*  @copyright  2007-2013 PrestaShop SA
+*  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+*  International Registered Trademark & Property of PrestaShop SA
+*/
+
 /* global variables */
 
 zoneCurrent = 0;
 selectionCurrent = null;
 valueOfZoneEdited = null;
+
+// Last item is used to save the current zone and 
+// allow to replace it if user cancel the editing
+lastEditedItem = null;
 
 /* functions called by cropping events */
 
@@ -11,7 +40,9 @@ function showZone(){
 }
 
 function hideAutocompleteBox(){
-	$('#ajax_choose_product:visible').hide();
+	$('#ajax_choose_product')
+		.fadeOut('fast')
+		.find('#product_autocomplete_input').val('');
 }
 
 function onSelectEnd(img, selection) {
@@ -22,14 +53,28 @@ function onSelectEnd(img, selection) {
 function undoEdit(){
 	hideAutocompleteBox();
 	$('#large_scene_image').imgAreaSelect({hide:true});
-	$(document).unbind('keydown', 'esc', undoEdit);
+	$(document).unbind('keydown');
 }
 
-function showAutocompleteBox(x1, y1) {
+/*
+** Pointer function do handle event by key released
+*/
+function handlePressedKey(keyNumber, fct)
+{
+	// KeyDown isn't handled correctly in editing mode
+	$(document).keyup(function(event) 
+	{	
+	  if (event.keyCode == keyNumber)
+		 fct();
+	});
+}
+
+function showAutocompleteBox(x1, y1) 
+{	
 	$('#ajax_choose_product:hidden')
 	.slideDown('fast');
 	$('#product_autocomplete_input').focus();
-	$(document).bind('keydown', 'esc', undoEdit);
+	handlePressedKey('27', undoEdit);
 }
 
 function editThisZone(aInFixedZoneElement) {
@@ -46,7 +91,7 @@ function editThisZone(aInFixedZoneElement) {
 	var height = $fixedZoneElement.css('height');	
 	height = height.substring(0,height.indexOf('px'));
 	var y2 = y1 + parseInt(height);
-	
+
 	valueOfZoneEdited = $fixedZoneElement.find('a').attr('rel');
 	
 	selectionCurrent = new Array();
@@ -55,8 +100,9 @@ function editThisZone(aInFixedZoneElement) {
 	selectionCurrent['width'] = width;
 	selectionCurrent['height'] = height;
 	
+	// Save the last zone
+	lastEditedItem = $fixedZoneElement;
 	
-	$fixedZoneElement.remove();
 	$('#product_autocomplete_input').val( $fixedZoneElement.find('p').text() );
 	showAutocompleteBox(x1, y1+parseInt(height));
 	
@@ -73,9 +119,15 @@ function deleteProduct(index_zone){
 }
 
 function afterTextInserted (event, data, formatted) {	
-	if (data == null){
+	if (data == null)
 		return false;
-	}
+	
+	// If the element exist, then the user confirm the editing
+	// The variable need to be reinitialized to null for the next
+	if (lastEditedItem != null)
+		lastEditedItem.remove();
+	lastEditedItem = null;
+	
 	zoneCurrent++;
 	var idProduct = data[1];
 	var nameProduct = data[0];
@@ -84,6 +136,7 @@ function afterTextInserted (event, data, formatted) {
 	var width = selectionCurrent.width;
 	var height = selectionCurrent.height;
 	addProduct(zoneCurrent, x1, y1, width, height, idProduct, nameProduct);
+	
 }
 
 function addProduct(zoneIndex, x1, y1, width, height, idProduct, nameProduct){

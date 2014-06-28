@@ -1,17 +1,29 @@
 <?php
+/*
+* 2007-2013 PrestaShop
+*
+* NOTICE OF LICENSE
+*
+* This source file is subject to the Open Software License (OSL 3.0)
+* that is bundled with this package in the file LICENSE.txt.
+* It is also available through the world-wide-web at this URL:
+* http://opensource.org/licenses/osl-3.0.php
+* If you did not receive a copy of the license and are unable to
+* obtain it through the world-wide-web, please send an email
+* to license@prestashop.com so we can send you a copy immediately.
+*
+* DISCLAIMER
+*
+* Do not edit or add to this file if you wish to upgrade PrestaShop to newer
+* versions in the future. If you wish to customize PrestaShop for your
+* needs please refer to http://www.prestashop.com for more information.
+*
+*  @author PrestaShop SA <contact@prestashop.com>
+*  @copyright  2007-2013 PrestaShop SA
+*  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+*  International Registered Trademark & Property of PrestaShop SA
+*/
 
-/**
-  * PDF tab for admin panel, AdminPDF.php
-  * @category admin
-  *
-  * @author PrestaShop <support@prestashop.com>
-  * @copyright PrestaShop
-  * @license http://www.opensource.org/licenses/osl-3.0.php Open-source licence 3.0
-  * @version 1.2
-  *
-  */
-
-include_once(PS_ADMIN_DIR.'/../classes/AdminTab.php');
 include_once(PS_ADMIN_DIR.'/tabs/AdminPreferences.php');
 
 class AdminPDF extends AdminPreferences
@@ -29,8 +41,8 @@ class AdminPDF extends AdminPreferences
 		$fontList = array();
 		$arr = array();
 		
-		foreach ($fontFiles as $file)
-			if (substr($file, -4) == '.php' AND $file != 'index.php')
+		foreach ($fontFiles AS $file)
+			if (substr($file, -4) == '.php' AND $file != 'index.php' AND substr($file, -6) != 'bi.php' AND substr($file, -5) != 'b.php' AND substr($file, -5) != 'i.php')
 			{
 				$arr['mode'] = substr($file, 0, -4);
 				$arr['name'] = substr($file, 0, -4);
@@ -41,7 +53,7 @@ class AdminPDF extends AdminPreferences
 		$encodingFiles = scandir(_PS_FPDF_PATH_.'font/makefont');
 		$encodingList = array();
 		$arr = array();
-		foreach ($encodingFiles as $file)
+		foreach ($encodingFiles AS $file)
 			if (substr($file, -4) == '.map')
 			{
 				$arr['mode'] = substr($file, 0, -4);
@@ -50,17 +62,17 @@ class AdminPDF extends AdminPreferences
 			}
 
  		$this->_fieldsPDF = array(
-			'PS_PDF_ENCODING_'.$lang => array(
+			'PS_PDF_ENCODING' => array(
 				'title' => $this->l('Encoding:'),
 				'desc' => $this->l('Encoding for PDF invoice'),
-				'type' => 'select',
+				'type' => 'selectLang',
 				'cast' => 'strval',
 				'identifier' => 'mode', 
 				'list' => $encodingList),
-			'PS_PDF_FONT_'.$lang => array(
+			'PS_PDF_FONT' => array(
 				'title' => $this->l('Font:'),
 				'desc' => $this->l('Font for PDF invoice'),
-				'type' => 'select',
+				'type' => 'selectLang',
 				'cast' => 'strval',
 				'identifier' => 'mode', 
 				'list' => $fontList)
@@ -75,10 +87,17 @@ class AdminPDF extends AdminPreferences
 	{
 		if (isset($_POST['submitPDF'.$this->table]))
 		{
+			$fieldLangPDF = array();
+			$languages = Language::getLanguages(false);
+			foreach ($this->_fieldsPDF as $field => $fieldvalue)
+				foreach ($languages as $lang)
+					if (Tools::getValue($field.'_'.strtoupper($lang['iso_code'])))
+						$fieldLangPDF[$field.'_'.strtoupper($lang['iso_code'])] = array('type' => 'select', 'cast' => 'strval', 'identifier' => 'mode', 'list' => $fieldvalue['list']);
+
 		 	if ($this->tabAccess['edit'] === '1')
-				$this->_postConfig($this->_fieldsPDF);
+				$this->_postConfig($fieldLangPDF);
 			else
-				$this->_errors[] = Tools::displayError('You do not have permission to edit anything here.');
+				$this->_errors[] = Tools::displayError('You do not have permission to edit here.');
 		}
 	}	
 
@@ -86,10 +105,9 @@ class AdminPDF extends AdminPreferences
 	{
 		global $cookie;
 
-		$language = new Language(intval($cookie->id_lang));
+		$language = new Language((int)($cookie->id_lang));
 		if (!Validate::isLoadedObject($language))
 			die(Tools::displayError());
 		$this->_displayForm('PDF', $this->_fieldsPDF, $this->l('PDF settings for the current language:').' '.$language->name, 'width2', 'pdf');
 	}
 }
-?>

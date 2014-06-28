@@ -1,17 +1,28 @@
 <?php
-
-/**
-  * States tab for admin panel, AdminStates.php
-  * @category admin
-  *
-  * @author PrestaShop <support@prestashop.com>
-  * @copyright PrestaShop
-  * @license http://www.opensource.org/licenses/osl-3.0.php Open-source licence 3.0
-  * @version 1.2
-  *
-  */
-
-include_once(PS_ADMIN_DIR.'/../classes/AdminTab.php');
+/*
+* 2007-2013 PrestaShop
+*
+* NOTICE OF LICENSE
+*
+* This source file is subject to the Open Software License (OSL 3.0)
+* that is bundled with this package in the file LICENSE.txt.
+* It is also available through the world-wide-web at this URL:
+* http://opensource.org/licenses/osl-3.0.php
+* If you did not receive a copy of the license and are unable to
+* obtain it through the world-wide-web, please send an email
+* to license@prestashop.com so we can send you a copy immediately.
+*
+* DISCLAIMER
+*
+* Do not edit or add to this file if you wish to upgrade PrestaShop to newer
+* versions in the future. If you wish to customize PrestaShop for your
+* needs please refer to http://www.prestashop.com for more information.
+*
+*  @author PrestaShop SA <contact@prestashop.com>
+*  @copyright  2007-2013 PrestaShop SA
+*  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+*  International Registered Trademark & Property of PrestaShop SA
+*/
 
 class AdminStates extends AdminTab
 {
@@ -33,32 +44,86 @@ class AdminStates extends AdminTab
 		parent::__construct();
 	}
 
-	public function displayForm()
+	public function postProcess()
+	{
+		if (!isset($this->table)) return false;
+
+		/* Delete object */
+		if (isset($_GET['delete'.$this->table]))
+		{
+			global $currentIndex;
+
+			// set token
+			$token = Tools::getValue('token') ? Tools::getValue('token') : $this->token;
+
+			// Sub included tab postProcessing
+			$this->includeSubTab('postProcess', array('submitAdd1', 'submitDel', 'delete', 'submitFilter', 'submitReset'));
+
+			if ($this->tabAccess['delete'] === '1')
+			{
+
+					if (Validate::isLoadedObject($object = $this->loadObject()) AND isset($this->fieldImageSettings))
+					{
+							if (!$object->isUsed())
+							{
+								// check if request at least one object with noZeroObject
+								if (isset($object->noZeroObject) AND sizeof($taxes = call_user_func(array($this->className, $object->noZeroObject))) <= 1)
+									$this->_errors[] = Tools::displayError('You need at least one object.').' <b>'.$this->table.'</b><br />'.Tools::displayError('You cannot delete all of the items.');
+								else
+								{
+									$this->deleteImage($object->id);
+									if ($this->deleted)
+									{
+										$object->deleted = 1;
+										if ($object->update()) Tools::redirectAdmin($currentIndex.'&conf=1&token='.$token);
+									}
+									elseif ($object->delete())
+									{
+										Tools::redirectAdmin($currentIndex.'&conf=1&token='.$token);
+									}
+									$this->_errors[] = Tools::displayError('An error occurred during deletion.');
+								}
+							} else {
+								$this->_errors[] = Tools::displayError('This state is currently in use');
+							}
+					}
+					else
+						$this->_errors[] = Tools::displayError('An error occurred while deleting object.').' <b>'.$this->table.'</b> '.Tools::displayError('(cannot load object)');
+			}
+			else
+				$this->_errors[] = Tools::displayError('You do not have permission to delete here.');
+		} else {
+			parent::postProcess();
+		}
+	}
+
+	public function displayForm($isMainTab = true)
 	{
 		global $currentIndex, $cookie;
+		parent::displayForm();
 
-		$obj = $this->loadObject(true);
+		if (!($obj = $this->loadObject(true)))
+			return;
 
 		echo '
 		<form action="'.$currentIndex.'&submitAdd'.$this->table.'=1&token='.$this->token.'" method="post">
 		'.($obj->id ? '<input type="hidden" name="id_'.$this->table.'" value="'.$obj->id.'" />' : '').'
-			<fieldset class="width3"><legend><img src="../img/admin/world.gif" />'.$this->l('States').'</legend>
+			<fieldset><legend><img src="../img/admin/world.gif" />'.$this->l('States').'</legend>
 				<label>'.$this->l('Name:').' </label>
 				<div class="margin-form">
 					<input type="text" size="30" maxlength="32" name="name" value="'.htmlentities($this->getFieldValue($obj, 'name'), ENT_COMPAT, 'UTF-8').'" /> <sup>*</sup>
-					<p style="clear: both;">'.$this->l('State name to display in addresses and on invoices').'</p>
+					<p class="clear">'.$this->l('State name to display in addresses and on invoices').'</p>
 				</div>
 				<label>'.$this->l('ISO code:').' </label>
 				<div class="margin-form">
 					<input type="text" size="5" maxlength="4" name="iso_code" value="'.htmlentities($this->getFieldValue($obj, 'iso_code'), ENT_COMPAT, 'UTF-8').'" style="text-transform: uppercase;" /> <sup>*</sup>
-					<p>'.$this->l('1 to 4 letter ISO code').' (<a href="http://simple.wikipedia.org/wiki/List_of_U.S._states" target="_blank">'.$this->l('official list here').'</a>)</p>
+					<p>'.$this->l('1 to 4 letter ISO code (search on Wikipedia if you don\'t know)').'</p>
 				</div>
 				<label>'.$this->l('Country:').' </label>
 				<div class="margin-form">
 					<select name="id_country">';
-				$countries = Country::getCountries(intval($cookie->id_lang), false, true);
-				foreach ($countries AS $country)
-					echo '<option value="'.intval($country['id_country']).'"'.(($this->getFieldValue($obj, 'id_country') == $country['id_country']) ? ' selected="selected"' : '').'>'.$country['name'].'</option>';
+				foreach (Country::getCountries((int)$cookie->id_lang, false, true, false) as $country)
+					echo '<option value="'.(int)($country['id_country']).'"'.(($this->getFieldValue($obj, 'id_country') == $country['id_country']) ? ' selected="selected"' : '').'>'.$country['name'].'</option>';
 				echo '
 					</select>
 					<p>'.$this->l('Country where state, region or city is located').'</p>
@@ -69,21 +134,11 @@ class AdminStates extends AdminTab
 
 		$zones = Zone::getZones();
 		foreach ($zones AS $zone)
-			echo '<option value="'.intval($zone['id_zone']).'"'.(($this->getFieldValue($obj, 'id_zone') == $zone['id_zone']) ? ' selected="selected"' : '').'>'.$zone['name'].'</option>';
+			echo '<option value="'.(int)($zone['id_zone']).'"'.(($this->getFieldValue($obj, 'id_zone') == $zone['id_zone']) ? ' selected="selected"' : '').'>'.$zone['name'].'</option>';
 
 		echo '
 					</select>
-					<p>'.$this->l('Geographical zone where this state is located').'<br />'.$this->l('Used for shipping').'</p>
-				</div>
-				<label>'.$this->l('Tax behavior:').' </label>
-				<div class="margin-form">
-					<input type="radio" name="tax_behavior" id="product_tax" value="'.PS_PRODUCT_TAX.'" '.((!$obj->id OR $this->getFieldValue($obj, 'tax_behavior') == PS_PRODUCT_TAX) ? 'checked="checked" ' : '').'/>
-					<label class="t" for="product_tax">'.$this->l('Product tax').'</label>
-					<input type="radio" name="tax_behavior" id="state_tax" value="'.PS_STATE_TAX.'" '.(($this->getFieldValue($obj, 'tax_behavior') == PS_STATE_TAX AND $obj->id) ? 'checked="checked" ' : '').'/>
-					<label class="t" for="state_tax">'.$this->l('State tax').'</label>
-					<input type="radio" name="tax_behavior" id="both_tax" value="'.PS_BOTH_TAX.'" '.(($this->getFieldValue($obj, 'tax_behavior') == PS_BOTH_TAX AND $obj->id) ? 'checked="checked" ' : '').'/>
-					<label class="t" for="both_tax">'.$this->l('Both product & state tax').'</label>
-					<p>'.$this->l('Chose how tax will be applied for this state: the product\'s tax, the state\'s tax, or both.').'</p>
+					<p>'.$this->l('Geographical region where this state is located').'<br />'.$this->l('Used for shipping').'</p>
 				</div>
 				<label>'.$this->l('Status:').' </label>
 				<div class="margin-form">
@@ -102,4 +157,3 @@ class AdminStates extends AdminTab
 	}
 }
 
-?>

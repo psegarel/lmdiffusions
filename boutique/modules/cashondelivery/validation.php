@@ -1,31 +1,73 @@
 <?php
+/*
+* 2007-2013 PrestaShop
+*
+* NOTICE OF LICENSE
+*
+* This source file is subject to the Academic Free License (AFL 3.0)
+* that is bundled with this package in the file LICENSE.txt.
+* It is also available through the world-wide-web at this URL:
+* http://opensource.org/licenses/afl-3.0.php
+* If you did not receive a copy of the license and are unable to
+* obtain it through the world-wide-web, please send an email
+* to license@prestashop.com so we can send you a copy immediately.
+*
+* DISCLAIMER
+*
+* Do not edit or add to this file if you wish to upgrade PrestaShop to newer
+* versions in the future. If you wish to customize PrestaShop for your
+* needs please refer to http://www.prestashop.com for more information.
+*
+*  @author PrestaShop SA <contact@prestashop.com>
+*  @copyright  2007-2013 PrestaShop SA
+*  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
+*  International Registered Trademark & Property of PrestaShop SA
+*/
 
 include(dirname(__FILE__).'/../../config/config.inc.php');
 include(dirname(__FILE__).'/../../header.php');
 include(dirname(__FILE__).'/cashondelivery.php');
 
-$confirm = Tools::getValue('confirm');
+$cashOnDelivery = new CashOnDelivery();
+if ($cart->id_customer == 0 OR $cart->id_address_delivery == 0 OR $cart->id_address_invoice == 0 OR !$cashOnDelivery->active)
+	Tools::redirectLink(__PS_BASE_URI__.'order.php?step=1');
+
+// Check that this payment option is still available in case the customer changed his address just before the end of the checkout process
+$authorized = false;
+foreach (Module::getPaymentModules() as $module)
+	if ($module['name'] == 'cashondelivery')
+	{
+		$authorized = true;
+		break;
+	}
+if (!$authorized)
+	die(Tools::displayError('This payment method is not available.'));
+	
+$customer = new Customer((int)$cart->id_customer);
+
+if (!Validate::isLoadedObject($customer))
+	Tools::redirectLink(__PS_BASE_URI__.'order.php?step=1');
 
 /* Validate order */
-if ($confirm)
+if (Tools::getValue('confirm'))
 {
-	$customer = new Customer(intval($cart->id_customer));
-	$cashOnDelivery = new CashOnDelivery();
-	$total = $cart->getOrderTotal(true, 3);
-	$cashOnDelivery->validateOrder(intval($cart->id), _PS_OS_PREPARATION_, $total, $cashOnDelivery->displayName);
-	$order = new Order(intval($cashOnDelivery->currentOrder));
-	Tools::redirectLink(__PS_BASE_URI__.'order-confirmation.php?key='.$customer->secure_key.'&id_cart='.intval($cart->id).'&id_module='.intval($cashOnDelivery->id).'&id_order='.intval($cashOnDelivery->currentOrder));
+	$customer = new Customer((int)$cart->id_customer);
+	$total = $cart->getOrderTotal(true, Cart::BOTH);
+	$cashOnDelivery->validateOrder((int)$cart->id, Configuration::get('PS_OS_PREPARATION'), $total, $cashOnDelivery->displayName, NULL, array(), NULL, false, $customer->secure_key);
+	$order = new Order((int)$cashOnDelivery->currentOrder);
+	Tools::redirectLink(__PS_BASE_URI__.'order-confirmation.php?key='.$customer->secure_key.'&id_cart='.(int)($cart->id).'&id_module='.(int)$cashOnDelivery->id.'&id_order='.(int)$cashOnDelivery->currentOrder);
 }
 else
 {
 	/* or ask for confirmation */ 
 	$smarty->assign(array(
-		'total' => number_format($cart->getOrderTotal(true, 3), 2, '.', ''),
-		'this_path_ssl' => (Configuration::get('PS_SSL_ENABLED') ? 'https://' : 'http://').htmlspecialchars($_SERVER['HTTP_HOST'], ENT_COMPAT, 'UTF-8').__PS_BASE_URI__.'modules/cashondelivery/'
+		'total' => $cart->getOrderTotal(true, Cart::BOTH),
+		'this_path_ssl' => Tools::getShopDomainSsl(true, true).__PS_BASE_URI__.'modules/cashondelivery/'
 	));
 
 	$smarty->assign('this_path', __PS_BASE_URI__.'modules/cashondelivery/');
-	echo Module::display(__FILE__, 'validation.tpl');
+	$template = 'validation.tpl';
+	echo Module::display('cashondelivery', $template);
 }
 
 include(dirname(__FILE__).'/../../footer.php');

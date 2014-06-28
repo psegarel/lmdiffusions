@@ -1,15 +1,28 @@
 <?php
-
-/**
-  * Attributes tab for admin panel, AdminAttributes.php
-  * @category admin
-  *
-  * @author PrestaShop <support@prestashop.com>
-  * @copyright PrestaShop
-  * @license http://www.opensource.org/licenses/osl-3.0.php Open-source licence 3.0
-  * @version 1.2
-  *
-  */
+/*
+* 2007-2013 PrestaShop
+*
+* NOTICE OF LICENSE
+*
+* This source file is subject to the Open Software License (OSL 3.0)
+* that is bundled with this package in the file LICENSE.txt.
+* It is also available through the world-wide-web at this URL:
+* http://opensource.org/licenses/osl-3.0.php
+* If you did not receive a copy of the license and are unable to
+* obtain it through the world-wide-web, please send an email
+* to license@prestashop.com so we can send you a copy immediately.
+*
+* DISCLAIMER
+*
+* Do not edit or add to this file if you wish to upgrade PrestaShop to newer
+* versions in the future. If you wish to customize PrestaShop for your
+* needs please refer to http://www.prestashop.com for more information.
+*
+*  @author PrestaShop SA <contact@prestashop.com>
+*  @copyright  2007-2013 PrestaShop SA
+*  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+*  International Registered Trademark & Property of PrestaShop SA
+*/
 
 include_once(PS_ADMIN_DIR.'/../classes/AdminTab.php');
 
@@ -36,36 +49,38 @@ class AdminAttributes extends AdminTab
 	public function displayForm($token = NULL)
 	{
 		global $currentIndex;
+		parent::displayForm();
 
-		$defaultLanguage = intval(Configuration::get('PS_LANG_DEFAULT'));
-		$languages = Language::getLanguages();
-		$obj = $this->loadObject(true);
+		if (!($obj = $this->loadObject(true)))
+			return;
 		$color = ($obj->color ? $obj->color : 0);
-		$attributes_groups = AttributeGroup::getAttributesGroups($defaultLanguage);
-		
+		$attributes_groups = AttributeGroup::getAttributesGroups($this->_defaultFormLanguage);
+		$strAttributesGroups = '';
 		echo '
 		<script type="text/javascript">
-			id_language = Number('.$defaultLanguage.');
-			var attributesGroups = new Array();
-		';
+			var attributesGroups = {';
 		foreach ($attributes_groups AS $attribute_group)
-			echo 'attributesGroups['.$attribute_group['id_attribute_group'].'] = '.$attribute_group['is_color_group'].';'."\n";
-		echo '
+			$strAttributesGroups .= '"'.$attribute_group['id_attribute_group'].'" : '.$attribute_group['is_color_group'].',';
+		echo $strAttributesGroups.'};
 		</script>
 		<form action="'.$currentIndex.'&submitAdd'.$this->table.'=1&token='.($token ? $token : $this->token).'" method="post" enctype="multipart/form-data">
 		'.($obj->id ? '<input type="hidden" name="id_attribute" value="'.$obj->id.'" />' : '').'
-			<fieldset class="width3"><legend><img src="../img/admin/asterisk.gif" />'.$this->l('Attribute').'</legend>
+			<fieldset><legend><img src="../img/admin/asterisk.gif" />'.$this->l('Attribute').'</legend>
 				<label>'.$this->l('Name:').' </label>
 				<div class="margin-form">';
-		foreach ($languages as $language)
+		foreach ($this->_languages as $language)
 			echo '
-					<div id="name_'.$language['id_lang'].'" style="display: '.($language['id_lang'] == $defaultLanguage ? 'block' : 'none').'; float: left;">
-						<input size="33" type="text" name="name_'.$language['id_lang'].'" value="'.htmlspecialchars($this->getFieldValue($obj, 'name', intval($language['id_lang']))).'" /><sup> *</sup>
+					<div id="name_'.$language['id_lang'].'" style="display: '.($language['id_lang'] == $this->_defaultFormLanguage ? 'block' : 'none').'; float: left;">
+						<input size="33" type="text" name="name_'.$language['id_lang'].'" value="'.htmlspecialchars($this->getFieldValue($obj, 'name', (int)($language['id_lang']))).'" /><sup> *</sup>
 						<span class="hint" name="help_box">'.$this->l('Invalid characters:').' <>;=#{}<span class="hint-pointer">&nbsp;</span></span>
 					</div>';
-		$this->displayFlags($languages, $defaultLanguage, 'name', 'name');
+			echo '
+				<script type="text/javascript">
+					var flag_fields = \'name\';
+				</script>';
+		$this->displayFlags($this->_languages, $this->_defaultFormLanguage, 'flag_fields', 'name', false, true);
 		echo '
-					<div style="clear: both;"></div>
+					<div class="clear"></div>
 				</div>
 				<label>'.$this->l('Group:').' </label>
 				<div class="margin-form">
@@ -76,10 +91,11 @@ class AdminAttributes extends AdminTab
 		echo '
 					</select><sup> *</sup>
 				</div>
+				<script type="text/javascript" src="../js/jquery/jquery-colorpicker.js"></script>
 				<div id="colorAttributeProperties" style="'.((Validate::isLoadedObject($obj) AND $obj->isColorAttribute()) ? 'display: block;' : 'display: none;').'">
-					<label>'.$this->l('Color:').'</label>
+					<label>'.$this->l('Color').'</label>
 					<div class="margin-form">
-						<input type="text" size="33" name="color" value="'.(Tools::getValue('color', $color) ? htmlentities(Tools::getValue('color', $color)) : '#000000').'" /> <sup>*</sup>
+						<input width="20px" type="color" data-hex="true" class="color mColorPickerInput" name="color" value="'.(Tools::getValue('color', $color) ? htmlentities(Tools::getValue('color', $color)) : '#000000').'" /> <sup>*</sup>
 						<p class="clear">'.$this->l('HTML colors only (e.g.,').' "lightblue", "#CC6600")</p>
 					</div>
 					<label>'.$this->l('Texture:').' </label>
@@ -90,17 +106,21 @@ class AdminAttributes extends AdminTab
 					<label>'.$this->l('Current texture:').' </label>
 					<div class="margin-form">
 						<p>'.(file_exists(_PS_IMG_DIR_.$this->fieldImageSettings['dir'].'/'.$obj->id.'.jpg')
-							? '<img src="../img/'.$this->fieldImageSettings['dir'].'/'.$obj->id.'.jpg" alt="" title="" /> <a href="'.$_SERVER['REQUEST_URI'].'&deleteImage=1"><img src="../img/admin/delete.gif" alt="'.$this->l('delete').'" title="" /></a>'
+							? '<img src="../img/'.$this->fieldImageSettings['dir'].'/'.$obj->id.'.jpg" alt="" title="" /> <a href="'.Tools::safeOutput($_SERVER['REQUEST_URI']).'&deleteImage=1"><img src="../img/admin/delete.gif" alt="" title="'.$this->l('Delete').'" />'.$this->l('Delete').'</a>'
 							: $this->l('None')
 						).'</p>
 					</div>
 				</div>
+				'.Module::hookExec('attributeForm', array('id_attribute' => $obj->id)).'
 				<div class="margin-form">
 					<input type="submit" value="'.$this->l('   Save   ').'" name="submitAddattribute" class="button" />
 				</div>
 				<div class="small"><sup>*</sup> '.$this->l('Required field').'</div>
 			</fieldset>
-		</form>';
+		</form>
+		<script>
+			showAttributeColorGroup(\'id_attribute_group\', \'colorAttributeProperties\');
+		</script>';
 	}
 
 	/**
@@ -111,6 +131,10 @@ class AdminAttributes extends AdminTab
 	public function postProcess($token = NULL)
 	{
 		global $currentIndex;
+		
+		Module::hookExec('postProcessAttribute',
+		array('errors' => &$this->_errors)); // send _errors as reference to allow postProcessFeatureValue to stop saving process
+		
 		if (Tools::getValue('submitDel'.$this->table))
 		{
 			if ($this->tabAccess['delete'] === '1')
@@ -120,17 +144,29 @@ class AdminAttributes extends AdminTab
 					$object = new $this->className();
 					if ($object->deleteSelection($_POST[$this->table.$_POST['groupid'].'Box']))
 						Tools::redirectAdmin($currentIndex.'&conf=2'.'&token='.($token ? $token : $this->token));
-					$this->_errors[] = Tools::displayError('an error occurred while deleting selection');
+					$this->_errors[] = Tools::displayError('An error occurred while deleting selection.');
 				}
 				else
-					$this->_errors[] = Tools::displayError('you must select at least one element to delete');
+					$this->_errors[] = Tools::displayError('You must select at least one element to delete.');
 			}
 			else
 				$this->_errors[] = Tools::displayError('You do not have permission to delete here.');
 		}
+		elseif (Tools::isSubmit('submitAddattribute'))
+		{
+			// clean \n\r characters
+			foreach ($_POST as $key => $value)
+				if (preg_match('/^name_/Ui', $key))
+					$_POST[$key] = str_replace ('\n', '', str_replace('\r', '', $value));
+			parent::postProcess();
+		}
 		else
 			parent::postProcess();
+		if (isset($this->_errors) && count($this->_errors))
+		{
+			$key = array_search('An error occurred during deletion of '.$this->table.'.', $this->_errors);
+			if ($key !== false)
+				$this->_errors[$key] = Tools::displayError('cannot delete this Attribute, the selected item is still associated with one or more product combinations');
+		}
 	}
 }
-
-?>

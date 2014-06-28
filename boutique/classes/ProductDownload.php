@@ -1,18 +1,30 @@
 <?php
+/*
+* 2007-2013 PrestaShop
+*
+* NOTICE OF LICENSE
+*
+* This source file is subject to the Open Software License (OSL 3.0)
+* that is bundled with this package in the file LICENSE.txt.
+* It is also available through the world-wide-web at this URL:
+* http://opensource.org/licenses/osl-3.0.php
+* If you did not receive a copy of the license and are unable to
+* obtain it through the world-wide-web, please send an email
+* to license@prestashop.com so we can send you a copy immediately.
+*
+* DISCLAIMER
+*
+* Do not edit or add to this file if you wish to upgrade PrestaShop to newer
+* versions in the future. If you wish to customize PrestaShop for your
+* needs please refer to http://www.prestashop.com for more information.
+*
+*  @author PrestaShop SA <contact@prestashop.com>
+*  @copyright  2007-2013 PrestaShop SA
+*  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+*  International Registered Trademark & Property of PrestaShop SA
+*/
 
-/**
-  * ProductDownload class, ProductDownload.php
-  * Product download management
-  * @category classes
-  *
-  * @author PrestaShop <support@prestashop.com>
-  * @copyright PrestaShop
-  * @license http://www.opensource.org/licenses/osl-3.0.php Open-source licence 3.0
-  * @version 1.2
-  *
-  */
-
-class ProductDownload extends ObjectModel
+class ProductDownloadCore extends ObjectModel
 {
 	/** @var integer Product id which download belongs */
 	public $id_product;
@@ -38,7 +50,7 @@ class ProductDownload extends ObjectModel
 	/** @var boolean Active if file is accessible or not */
 	public $active = 1;
 
-	private static $_productIds = array();
+	protected static $_productIds = array();
 
 	protected	$fieldsRequired = array(
 		'id_product',
@@ -72,30 +84,44 @@ class ProductDownload extends ObjectModel
 	 *
 	 * @param integer $id_product_download Existing productDownload id in order to load object (optional)
 	 */
-	public function __construct($id_product_download = NULL)
+	public function __construct($id_product_download = null)
 	{
 		parent::__construct($id_product_download);
-		// TODO check if the file is present on hard drive
+		// @TODO check if the file is present on hard drive
 	}
-	
-	public function delete($deleteFile=false)
+
+	/**
+	 * Delete object
+	 *
+	 * @param bool $deleteFile if true delete the file on disk
+	 * @return bool success
+	 */
+	public function delete($deleteFile = false)
 	{
 		if ($deleteFile)
 			$this->deleteFile();
+
+		return parent::delete();
 	}
 
 	public function getFields()
 	{
-		parent::validateFields();
+		static $fieldValidated = false;
+		if (!$fieldValidated)
+			parent::validateFields();
+		$fieldValidated = true;
+		
+		if (!$this->date_expiration)
+			$this->date_expiration = '0000-00-00 00:00:00';
 
-		$fields['id_product'] = intval($this->id_product);
+		$fields['id_product'] = (int)($this->id_product);
 		$fields['display_filename'] = pSQL($this->display_filename);
 		$fields['physically_filename'] = pSQL($this->physically_filename);
 		$fields['date_deposit'] = pSQL($this->date_deposit);
 		$fields['date_expiration'] = pSQL($this->date_expiration);
-		$fields['nb_days_accessible'] = intval($this->nb_days_accessible);
-		$fields['nb_downloadable'] = intval($this->nb_downloadable);
-		$fields['active'] = intval($this->active);
+		$fields['nb_days_accessible'] = (int)($this->nb_days_accessible);
+		$fields['nb_downloadable'] = (int)($this->nb_downloadable);
+		$fields['active'] = (int)($this->active);
 		return $fields;
 	}
 
@@ -109,6 +135,11 @@ class ProductDownload extends ObjectModel
 	{
 		if (!$this->checkFile())
 			return false;
+
+		// Don't delete the file if it's still used somewhere else
+		if ($this->isUsedInMultipleProducts())
+			return true;
+
 		return unlink(_PS_DOWNLOAD_DIR_.$this->physically_filename);
 	}
 
@@ -128,7 +159,7 @@ class ProductDownload extends ObjectModel
 	 *
 	 * @return boolean
 	 */
-	static public function checkWritableDir()
+	public static function checkWritableDir()
 	{
 		return is_writable(_PS_DOWNLOAD_DIR_);
 	}
@@ -141,14 +172,14 @@ class ProductDownload extends ObjectModel
 	 */
 	public static function getIdFromIdProduct($id_product)
 	{
-		if (array_key_exists($id_product, self::$_productIds))
+		if (isset(self::$_productIds[$id_product]))
 			return self::$_productIds[$id_product];
-		$data = Db::getInstance()->getRow('
+			
+		self::$_productIds[$id_product] = (int)Db::getInstance()->getValue('
 		SELECT `id_product_download`
 		FROM `'._DB_PREFIX_.'product_download`
-		WHERE `id_product` = '.intval($id_product).'
-		AND `active` = 1');
-		self::$_productIds[$id_product] = isset($data['id_product_download']) ? $data['id_product_download'] : false;
+		WHERE `id_product` = '.(int)$id_product.' AND `active` = 1');
+		
 		return self::$_productIds[$id_product];
 	}
 
@@ -160,11 +191,11 @@ class ProductDownload extends ObjectModel
 	 */
 	public static function getFilenameFromIdProduct($id_product)
 	{
-		$sql = 'SELECT `physically_filename`
-				FROM `'._DB_PREFIX_.'product_download`
-				WHERE `id_product` = ' . intval($id_product);
-		$data = Db::getInstance()->getRow($sql);
-		return $data['physically_filename'];
+		return Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue('
+		SELECT `physically_filename`
+		FROM `'._DB_PREFIX_.'product_download`
+		WHERE `id_product` = '.(int)$id_product.'
+		AND `active` = 1');
 	}
 
 	/**
@@ -175,11 +206,10 @@ class ProductDownload extends ObjectModel
 	 */
 	public static function getFilenameFromFilename($physically_filename)
 	{
-		$sql = 'SELECT `display_filename`
-				FROM `'._DB_PREFIX_.'product_download`
-				WHERE `physically_filename` = \'' . pSQL($physically_filename) . '\'';
-		$data = Db::getInstance()->getRow($sql);
-		return $data['display_filename'];
+		return Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue('
+		SELECT `display_filename`
+		FROM `'._DB_PREFIX_.'product_download`
+		WHERE `physically_filename` = \''.pSQL($physically_filename).'\'');
 	}
 
 	/**
@@ -193,7 +223,7 @@ class ProductDownload extends ObjectModel
 	public function getTextLink($admin=true, $hash=false)
 	{
 		$key = $this->physically_filename . '-' . ($hash ? $hash : 'orderdetail');
-		$link = ($admin) ? './get-file-admin.php?' : 'http://'.htmlspecialchars($_SERVER['HTTP_HOST'], ENT_COMPAT, 'UTF-8').__PS_BASE_URI__.'get-file.php?';
+		$link = ($admin) ? './get-file-admin.php?' : Tools::getHttpHost(true, true).__PS_BASE_URI__.'get-file.php?';
 		$link .= ($admin) ? 'file='.$this->physically_filename : 'key='.$key;
 		return $link;
 	}
@@ -222,10 +252,9 @@ class ProductDownload extends ObjectModel
 	 */
 	public function getDeadline()
 	{
-		// TODO check if deadline is inferior than date_expiration
-		if (!intval($this->nb_days_accessible))
+		if (!(int)($this->nb_days_accessible))
 			return '0000-00-00 00:00:00';
-		$timestamp = strtotime('+'.intval($this->nb_days_accessible).' day');
+		$timestamp = strtotime('+'.(int)($this->nb_days_accessible).' day');
 		return date('Y-m-d H:i:s', $timestamp);
 	}
 
@@ -245,14 +274,33 @@ class ProductDownload extends ObjectModel
 	 *
 	 * @return string Sha1 unique filename
 	 */
-	function getNewFilename()
+	public static function getNewFilename()
 	{
 		$ret = sha1(microtime());
 		if (file_exists(_PS_DOWNLOAD_DIR_.$ret))
-			$ret = $this->getNewFilename();
+			$ret = ProductDownload::getNewFilename();
 		return $ret;
 	}
 
+	/**
+	 * Checks if a downloadable file is linked by more than one product (happens with product duplication)
+	 * @return bool
+	 */
+	public function isUsedInMultipleProducts()
+	{
+		if (!$this->physically_filename)
+			return false;
+
+		$result = Db::getInstance()->getValue('
+		SELECT COUNT(*)
+		FROM `'._DB_PREFIX_.'product_download`
+		WHERE `physically_filename` = \''.pSQL($this->physically_filename).'\'');
+
+		if ($result > 1)
+			return true;
+
+		return false;
+	}
 }
 
-?>
+

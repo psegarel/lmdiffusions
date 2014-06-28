@@ -1,15 +1,29 @@
 <?php
+/*
+* 2007-2013 PrestaShop
+*
+* NOTICE OF LICENSE
+*
+* This source file is subject to the Open Software License (OSL 3.0)
+* that is bundled with this package in the file LICENSE.txt.
+* It is also available through the world-wide-web at this URL:
+* http://opensource.org/licenses/osl-3.0.php
+* If you did not receive a copy of the license and are unable to
+* obtain it through the world-wide-web, please send an email
+* to license@prestashop.com so we can send you a copy immediately.
+*
+* DISCLAIMER
+*
+* Do not edit or add to this file if you wish to upgrade PrestaShop to newer
+* versions in the future. If you wish to customize PrestaShop for your
+* needs please refer to http://www.prestashop.com for more information.
+*
+*  @author PrestaShop SA <contact@prestashop.com>
+*  @copyright  2007-2013 PrestaShop SA
+*  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+*  International Registered Trademark & Property of PrestaShop SA
+*/
 
-/**
-  * Statistics
-  * @category stats
-  *
-  * @author Damien Metzger / Epitech
-  * @copyright Epitech / PrestaShop
-  * @license http://www.opensource.org/licenses/osl-3.0.php Open-source licence 3.0
-  * @version 1.2
-  */
-  
 include_once(PS_ADMIN_DIR.'/tabs/AdminPreferences.php');
 
 abstract class AdminStatsTab extends AdminPreferences
@@ -30,22 +44,40 @@ abstract class AdminStatsTab extends AdminPreferences
 		if (Tools::isSubmit('submitDatePicker'))
 		{
 			if (!Validate::isDate($from = Tools::getValue('datepickerFrom')) OR !Validate::isDate($to = Tools::getValue('datepickerTo')))
-				$this->_errors[] = Tools::displayError('date specified not valid');
+				$this->_errors[] = Tools::displayError('Date specified is invalid');
 		}
-		if (Tools::isSubmit('submitDateToday'))
+		if (Tools::isSubmit('submitDateDay'))
 		{
 			$from = date('Y-m-d');
 			$to = date('Y-m-d');
+		}
+		if (Tools::isSubmit('submitDateDayPrev'))
+		{
+			$yesterday = time() - 60*60*24;
+			$from = date('Y-m-d', $yesterday);
+			$to = date('Y-m-d', $yesterday);
 		}
 		if (Tools::isSubmit('submitDateMonth'))
 		{
 			$from = date('Y-m-01');
 			$to = date('Y-m-t');
 		}
+		if (Tools::isSubmit('submitDateMonthPrev'))
+		{
+			$m = (date('m') == 1 ? 12 : date('m') - 1);
+			$y = ($m == 12 ? date('Y') - 1 : date('Y'));
+			$from = $y.'-'.$m.'-01';
+			$to = $y.'-'.$m.date('-t', mktime(12, 0, 0, $m, 15, $y));
+		}
 		if (Tools::isSubmit('submitDateYear'))
 		{
 			$from = date('Y-01-01');
 			$to = date('Y-12-31');
+		}
+		if (Tools::isSubmit('submitDateYearPrev'))
+		{
+			$from = (date('Y') - 1).date('-01-01');
+			$to = (date('Y') - 1).date('-12-31');
 		}
 		if (isset($from) AND isset($to) AND !sizeof($this->_errors))
 		{
@@ -63,7 +95,7 @@ abstract class AdminStatsTab extends AdminPreferences
 				$this->_postConfig($this->_fieldsSettings);
 			}
 			else
-				$this->_errors[] = Tools::displayError('You do not have permission to edit something here.');
+				$this->_errors[] = Tools::displayError('You do not have permission to edit here.');
 		}
 		if (sizeof($this->_errors))
 			AdminTab::displayErrors();
@@ -79,7 +111,7 @@ abstract class AdminStatsTab extends AdminPreferences
 		$arrayGridEngines = ModuleGridEngine::getGridEngines();
 		
 		echo '
-		<form action="'.$_SERVER['REQUEST_URI'].'" method="post">
+		<form action="'.Tools::safeOutput($_SERVER['REQUEST_URI']).'" method="post">
 			<fieldset style="width: 200px;"><legend><img src="../img/admin/tab-preferences.gif" />'.$this->l('Settings', 'AdminStatsTab').'</legend>';
 		echo '<p><strong>'.$this->l('Graph engine', 'AdminStatsTab').' </strong><br />';
 		if (sizeof($arrayGraphEngines))
@@ -117,10 +149,13 @@ abstract class AdminStatsTab extends AdminPreferences
 	
 	public function displayCalendar()
 	{
-		echo '<div id="calendar">';
-		echo self::displayCalendarStatic(array('Calendar' => $this->l('Calendar', 'AdminStatsTab'), 'Today' => $this->l('Today', 'AdminStatsTab'), 
-										'Month' => $this->l('Month', 'AdminStatsTab'), 'Year' => $this->l('Year', 'AdminStatsTab')));
-		echo '<div class="clear space">&nbsp;</div></div>';
+		echo '<div id="calendar">
+		'.self::displayCalendarStatic(array(
+			'Calendar' => $this->l('Calendar', 'AdminStatsTab'), 'Day' => $this->l('Day', 'AdminStatsTab'), 
+			'Month' => $this->l('Month', 'AdminStatsTab'), 'Year' => $this->l('Year', 'AdminStatsTab'),
+			'From' => $this->l('From:', 'AdminStatsTab'), 'To' => $this->l('To:', 'AdminStatsTab'), 'Save' => $this->l('Save', 'AdminStatsTab')
+		)).'
+		<div class="clear space">&nbsp;</div></div>';
 	}
 	
 	public static function displayCalendarStatic($translations)
@@ -132,13 +167,16 @@ abstract class AdminStatsTab extends AdminPreferences
 		return '
 		<fieldset style="width: 200px; font-size:13px;"><legend><img src="../img/admin/date.png" /> '.$translations['Calendar'].'</legend>
 			<div>
-				<form action="'.$_SERVER['REQUEST_URI'].'" method="post">
-					<input type="submit" name="submitDateToday" class="button" value="'.$translations['Today'].'">
+				<form action="'.Tools::safeOutput($_SERVER['REQUEST_URI']).'" method="post">
+					<input type="submit" name="submitDateDay" class="button" value="'.$translations['Day'].'">
 					<input type="submit" name="submitDateMonth" class="button" value="'.$translations['Month'].'">
-					<input type="submit" name="submitDateYear" class="button" value="'.$translations['Year'].'">
-					<p>From: <input type="text" name="datepickerFrom" id="datepickerFrom" value="'.Tools::getValue('datepickerFrom', $employee->stats_date_from).'"></p>
-					<p>To: <input type="text" name="datepickerTo" id="datepickerTo" value="'.Tools::getValue('datepickerTo', $employee->stats_date_to).'"></p>
-					<input type="submit" name="submitDatePicker" class="button" />
+					<input type="submit" name="submitDateYear" class="button" value="'.$translations['Year'].'"><br />
+					<input type="submit" name="submitDateDayPrev" class="button" value="'.$translations['Day'].'-1" style="margin-top:2px">
+					<input type="submit" name="submitDateMonthPrev" class="button" value="'.$translations['Month'].'-1" style="margin-top:2px">
+					<input type="submit" name="submitDateYearPrev" class="button" value="'.$translations['Year'].'-1" style="margin-top:2px">
+					<p>'.(isset($translations['From']) ? $translations['From'] : 'From:').' <input type="text" name="datepickerFrom" id="datepickerFrom" value="'.Tools::htmlentitiesUTF8(Tools::getValue('datepickerFrom', $employee->stats_date_from)).'"></p>
+					<p>'.(isset($translations['To']) ? $translations['To'] : 'To:').' <input type="text" name="datepickerTo" id="datepickerTo" value="'.Tools::htmlentitiesUTF8(Tools::getValue('datepickerTo', $employee->stats_date_to)).'"></p>
+					<input type="submit" name="submitDatePicker" class="button" value="'.(isset($translations['Save']) ? $translations['Save'] : '   Save   ').'" />
 				</form>
 			</div>
 		</fieldset>';
@@ -153,33 +191,29 @@ abstract class AdminStatsTab extends AdminPreferences
 		</fieldset>';
 	}
 	
-	private function getModules($limit = false, $auto = true)
+	private function getModules()
 	{
-		$function = $limit ? 'getRow' : 'ExecuteS';
-		return Db::getInstance()->{$function}('
+		return Db::getInstance()->ExecuteS('
 		SELECT h.`name` AS hook, m.`name`
 		FROM `'._DB_PREFIX_.'module` m
 		LEFT JOIN `'._DB_PREFIX_.'hook_module` hm ON hm.`id_module` = m.`id_module`
 		LEFT JOIN `'._DB_PREFIX_.'hook` h ON hm.`id_hook` = h.`id_hook`
-		'.($auto ? 'WHERE h.`name` = \''.pSQL(Tools::getValue('tab')).'\'' : 'WHERE h.`name` LIKE \'AdminStats%\'').'
+		WHERE h.`name` LIKE \'AdminStatsModules\'
 		AND m.`active` = 1
 		ORDER BY hm.`position`');
 	}
 	
-	public function displayMenu($auto = true)
+	public function displayMenu()
 	{
 		global $currentIndex, $cookie;
-		$modules = $auto ? $this->getModules() : $this->getModules(false, false);
+		$modules = $this->getModules();
 
 		echo '<fieldset style="width: 200px"><legend><img src="../img/admin/navigation.png" /> '.$this->l('Navigation', 'AdminStatsTab').'</legend>';
 		if (sizeof($modules))
+		{
 			foreach ($modules AS $module)
-	    	{
-				$moduleInstance = Module::getInstanceByName($module['name']);
-				if (!$moduleInstance)
-					continue;
-				echo '
-				<h4><img src="../modules/'.$module['name'].'/logo.gif" /> <a href="index.php?tab='.$module['hook'].'&token='.Tools::getAdminToken($module['hook'].intval(Tab::getIdFromClassName($module['hook'])).intval($cookie->id_employee)).'&module='.$module['name'].'">'.$moduleInstance->displayName.'</a></h4>';
+				if ($moduleInstance = Module::getInstanceByName($module['name']))
+					echo '<h4><img src="../modules/'.$module['name'].'/logo.gif" /><a href="'.$currentIndex.'&token='.Tools::getValue('token').'&module='.$module['name'].'">'.$moduleInstance->displayName.'</a></h4>';
 		}
 		else
 			echo $this->l('No module installed', 'AdminStatsTab');
@@ -196,26 +230,23 @@ abstract class AdminStatsTab extends AdminPreferences
 		echo '</div>
 		<div style="float:left; margin-left:20px;">';
 		
-		if (!($moduleName = Tools::getValue('module')))
-		{
-			$module = $this->getModules(true);
-			if (isset($module['name']))
-				$moduleName = $module['name'];
-			else
-				echo Tools::displayError('No module available');
-		}
+		if (!($moduleName = Tools::getValue('module')) AND $moduleInstance = Module::getInstanceByName('statsforecast') AND $moduleInstance->active)
+			$moduleName = 'statsforecast';
 		if ($moduleName)
 		{
 			// Needed for the graphics display when this is the default module
 			$_GET['module'] = $moduleName;
-			$moduleInstance = Module::getInstanceByName($moduleName);
+			if (!isset($moduleInstance))
+				$moduleInstance = Module::getInstanceByName($moduleName);
 			if ($moduleInstance AND $moduleInstance->active)
-				echo Module::hookExec(Tools::getValue('tab'), NULL, $moduleInstance->id);
+				echo Module::hookExec('AdminStatsModules', NULL, $moduleInstance->id);
 			else
 				echo $this->l('Module not found', 'AdminStatsTab');
 		}
+		else
+			echo '<h3 class="space">'.$this->l('Please select a module in the left column.').'</h3>';
 		echo '</div><div class="clear"></div>';
 	}
 }
 
-?>
+

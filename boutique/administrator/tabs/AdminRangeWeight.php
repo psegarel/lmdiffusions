@@ -1,17 +1,28 @@
 <?php
-
-/**
-  * Weight ranges tab for admin panel, AdminRangeWeight.php
-  * @category admin
-  *
-  * @author PrestaShop <support@prestashop.com>
-  * @copyright PrestaShop
-  * @license http://www.opensource.org/licenses/osl-3.0.php Open-source licence 3.0
-  * @version 1.2
-  *
-  */
-
-include_once(PS_ADMIN_DIR.'/../classes/AdminTab.php');
+/*
+* 2007-2013 PrestaShop
+*
+* NOTICE OF LICENSE
+*
+* This source file is subject to the Open Software License (OSL 3.0)
+* that is bundled with this package in the file LICENSE.txt.
+* It is also available through the world-wide-web at this URL:
+* http://opensource.org/licenses/osl-3.0.php
+* If you did not receive a copy of the license and are unable to
+* obtain it through the world-wide-web, please send an email
+* to license@prestashop.com so we can send you a copy immediately.
+*
+* DISCLAIMER
+*
+* Do not edit or add to this file if you wish to upgrade PrestaShop to newer
+* versions in the future. If you wish to customize PrestaShop for your
+* needs please refer to http://www.prestashop.com for more information.
+*
+*  @author PrestaShop SA <contact@prestashop.com>
+*  @copyright  2007-2013 PrestaShop SA
+*  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+*  International Registered Trademark & Property of PrestaShop SA
+*/
 
 class AdminRangeWeight extends AdminTab
 {
@@ -25,7 +36,7 @@ class AdminRangeWeight extends AdminTab
 				
 		$this->fieldsDisplay = array(
 		'id_range_weight' => array('title' => $this->l('ID'), 'align' => 'center', 'width' => 25),
-		'carrier_name' => array('title' => $this->l('Carrier'), 'align' => 'center', 'width' => 25, 'filter_key' => 'ca!name'),
+		'carrier_name' => array('title' => $this->l('Carrier'), 'align' => 'left', 'width' => 25, 'filter_key' => 'ca!name'),
 		'delimiter1' => array('title' => $this->l('From'), 'width' => 86, 'float' => true, 'suffix' => Configuration::get('PS_WEIGHT_UNIT'), 'align' => 'right'),
 		'delimiter2' => array('title' => $this->l('To'), 'width' => 86, 'float' => true,'suffix' => Configuration::get('PS_WEIGHT_UNIT'), 'align' => 'right'));
 		
@@ -36,52 +47,79 @@ class AdminRangeWeight extends AdminTab
 		parent::__construct();
 	}
 	
-	public function displayListContent($token = NULL)
+	public function displayListContent($token = null)
 	{
 		foreach ($this->_list as $key => $list)
 			if ($list['carrier_name'] == '0')
 				$this->_list[$key]['carrier_name'] = Configuration::get('PS_SHOP_NAME');
 		parent::displayListContent($token);
 	}
-	
+
 	public function postProcess()
 	{
-		if (isset($_POST['submitAdd'.$this->table]) AND Tools::getValue('delimiter1') >= Tools::getValue('delimiter2'))
-			$this->_errors[] = Tools::displayError('invalid range');
-		else
-			parent::postProcess();
+		if (isset($_POST['submitAdd'.$this->table]))
+		{
+			$delimiter1 = Tools::getValue('delimiter1');
+			$delimiter2 = Tools::getValue('delimiter2');
+			
+			if ($delimiter1 >= $delimiter2)
+				$this->_errors[] = Tools::displayError('Invalid range, "From" must be lower than "To"');
+
+			/* Check that a similar range does not exist yet for this carrier */
+			if (!Tools::isSubmit('id_range_weight') && !count($this->_errors) && $ranges = RangeWeight::getRanges((int)Tools::getValue('id_carrier')))
+				foreach ($ranges as $range)
+					if (!($delimiter2 <= $range['delimiter1'] || $delimiter1 >= $range['delimiter2']))
+					{
+						$this->_errors[] = Tools::displayError('Invalid range, this range is overlapping an existing range');
+						break;
+					}
+		}
+
+		parent::postProcess();
 	}
-	
-	public function displayForm()
+
+	public function displayForm($isMainTab = true)
 	{
 		global $currentIndex;
+		parent::displayForm();
 		
-		$obj = $this->loadObject(true);
+		if (!($obj = $this->loadObject(true)))
+			return;
+		
+		$carrierArray = array();
+		$carriers = Carrier::getCarriers((int)_PS_LANG_DEFAULT_, true, false, false, null, Carrier::PS_CARRIERS_AND_CARRIER_MODULES_NEED_RANGE);
+		$id_carrier = Tools::getValue('id_carrier', $obj->id_carrier);
+		foreach ($carriers as $carrier)
+			if (!$carrier['is_free'])
+				$carrierArray[] = '<option value="'.(int)($carrier['id_carrier']).'"'.(($carrier['id_carrier'] == $id_carrier) ? ' selected="selected"' : '').'>'.$carrier['name'].'</option><sup>*</sup>';
 
 		echo '
-		<form action="'.$currentIndex.'&submitAdd'.$this->table.'=1&token='.$this->token.'" method="post" class="width2">
+		<form action="'.$currentIndex.'&submitAdd'.$this->table.'=1&token='.$this->token.'" method="post">
 		'.($obj->id ? '<input type="hidden" name="id_'.$this->table.'" value="'.$obj->id.'" />' : '').'
 			<fieldset><legend><img src="../img/t/AdminRangeWeight.gif" />'.$this->l('Weight ranges').'</legend>
-				<label>'.$this->l('Carrier:').'</label>
-				<div class="margin-form">
-					<select name="id_carrier">';
-			$carriers = Carrier::getCarriers(intval(Configuration::get('PS_LANG_DEFAULT')));
-			$id_carrier = Tools::getValue('id_carrier', $obj->id_carrier);
-			foreach ($carriers AS $carrier)
-				echo '<option value="'.intval($carrier['id_carrier']).'"'.(($carrier['id_carrier'] == $id_carrier) ? ' selected="selected"' : '').'>'.$carrier['name'].'</option><sup>*</sup>';
+				<label>'.$this->l('Carrier').'</label>
+				<div class="margin-form">';
+			if (count($carrierArray))
+			{
+				echo '<select name="id_carrier">';
+				foreach ($carrierArray AS $carrierOption)
+					echo $carrierOption;
+				echo '</select>
+				<p class="clear">'.$this->l('Carrier to which this range will be applied').'</p>';
+			}
+			else
+				echo '<div style="margin:5px 0 10px 0">'.$this->l('There isn\'t any carrier available for a weight range.').'</div>';
 			echo '
-					</select>
-					<p style="clear: both;">'.$this->l('Carrier to which this range will be applied').'</p>
 				</div>
 				<label>'.$this->l('From:').' </label>
 				<div class="margin-form">
 					<input type="text" size="4" name="delimiter1" value="'.htmlentities($this->getFieldValue($obj, 'delimiter1'), ENT_COMPAT, 'UTF-8').'" /> '.Configuration::get('PS_WEIGHT_UNIT').' <sup>*</sup>
-					<p style="clear: both;">'.$this->l('Range start (included)').'</p>
+					<p class="clear">'.$this->l('Start range (included)').'</p>
 				</div>
 				<label>'.$this->l('To:').' </label>
 				<div class="margin-form">
 					<input type="text" size="4" name="delimiter2" value="'.htmlentities($this->getFieldValue($obj, 'delimiter2'), ENT_COMPAT, 'UTF-8').'" /> '.Configuration::get('PS_WEIGHT_UNIT').' <sup>*</sup>
-					<p style="clear: both;">'.$this->l('Range end (excluded)').'</p>
+					<p class="clear">'.$this->l('End range (excluded)').'</p>
 				</div>
 				<div class="margin-form">
 					<input type="submit" value="'.$this->l('   Save   ').'" name="submitAdd'.$this->table.'" class="button" />
@@ -92,4 +130,4 @@ class AdminRangeWeight extends AdminTab
 	}
 }
 
-?>
+

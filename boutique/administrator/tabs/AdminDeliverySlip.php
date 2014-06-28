@@ -1,15 +1,28 @@
 <?php
-
-/**
-  * Delivery slip tab for admin panel, AdminDeliverySlip.php
-  * @category admin
-  *
-  * @author PrestaShop <support@prestashop.com>
-  * @copyright PrestaShop
-  * @license http://www.opensource.org/licenses/osl-3.0.php Open-source licence 3.0
-  * @version 1.2
-  *
-  */
+/*
+* 2007-2013 PrestaShop
+*
+* NOTICE OF LICENSE
+*
+* This source file is subject to the Open Software License (OSL 3.0)
+* that is bundled with this package in the file LICENSE.txt.
+* It is also available through the world-wide-web at this URL:
+* http://opensource.org/licenses/osl-3.0.php
+* If you did not receive a copy of the license and are unable to
+* obtain it through the world-wide-web, please send an email
+* to license@prestashop.com so we can send you a copy immediately.
+*
+* DISCLAIMER
+*
+* Do not edit or add to this file if you wish to upgrade PrestaShop to newer
+* versions in the future. If you wish to customize PrestaShop for your
+* needs please refer to http://www.prestashop.com for more information.
+*
+*  @author PrestaShop SA <contact@prestashop.com>
+*  @copyright  2007-2013 PrestaShop SA
+*  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+*  International Registered Trademark & Property of PrestaShop SA
+*/
 
 class AdminDeliverySlip extends AdminTab
 {
@@ -21,30 +34,32 @@ class AdminDeliverySlip extends AdminTab
 		
 		$this->optionTitle = $this->l('Delivery slips options');
 		$this->_fieldsOptions = array(
-			'PS_DELIVERY_PREFIX' => array('title' => $this->l('Delivery prefix:'), 'desc' => $this->l('Prefix used for delivery slips'), 'size' => 2, 'type' => 'textLang'),
-			'PS_DELIVERY_NUMBER' => array('title' => $this->l('Delivery number:'), 'desc' => $this->l('The next delivery slip will begin with this number, and then increase with each additional slip'), 'size' => 2, 'type' => 'text'),
+			'PS_DELIVERY_PREFIX' => array('title' => $this->l('Delivery prefix:'), 'desc' => $this->l('Prefix used for delivery slips'), 'size' => 6, 'type' => 'textLang'),
+			'PS_DELIVERY_NUMBER' => array('title' => $this->l('Delivery number:'), 'desc' => $this->l('The next delivery slip will begin with this number, and then increase with each additional slip'), 'size' => 6, 'type' => 'text', 'cast' => 'intval'),
 		);
 
 		parent::__construct();
 	}
 
-	public function displayForm()
+	public function displayForm($isMainTab = true)
 	{
 		global $currentIndex;
+		parent::displayForm();
 		
 		$output = '
 		<h2>'.$this->l('Print PDF delivery slips').'</h2>
-		<fieldset class="width2">
+		<fieldset>
 			<form action="'.$currentIndex.'&submitPrint=1&token='.$this->token.'" method="post">
+				<p>'.$this->l('Please select a date range, this one applies to the order\'s delivery date:').'<br /><br /></p>
 				<label>'.$this->l('From:').' </label>
 				<div class="margin-form">
 					<input type="text" size="4" maxlength="10" name="date_from" value="'.(date('Y-m-d')).'" style="width: 120px;" /> <sup>*</sup>
-					<p style="clear: both;">'.$this->l('Format: 2007-12-31 (inclusive)').'</p>
+					<p class="clear">'.$this->l('Format: 2007-12-31 (inclusive)').'</p>
 				</div>
 				<label>'.$this->l('To:').' </label>
 				<div class="margin-form">
 					<input type="text" size="4" maxlength="10" name="date_to" value="'.(date('Y-m-d')).'" style="width: 120px;" /> <sup>*</sup>
-					<p style="clear: both;">'.$this->l('Format: 2008-12-31 (inclusive)').'</p>
+					<p class="clear">'.$this->l('Format: 2008-12-31 (inclusive)').'</p>
 				</div>
 				<div class="margin-form">
 					<input type="submit" value="'.$this->l('Generate PDF file').'" name="submitPrint" class="button" />
@@ -66,7 +81,7 @@ class AdminDeliverySlip extends AdminTab
 	{
 		global $currentIndex;
 		
-		if(Tools::getValue('submitPrint'))
+		if (Tools::getValue('submitPrint'))
 		{
 			if (!Validate::isDate($_POST['date_from']))
 				$this->_errors[] = $this->l('Invalid from date');
@@ -81,9 +96,20 @@ class AdminDeliverySlip extends AdminTab
 					$this->_errors[] = $this->l('No delivery slip found for this period');
 			}			
 		}
+		elseif (Tools::getValue('submitOptionsdelivery'))
+		{
+		    $next_slipnum = abs((int)Tools::getValue('PS_DELIVERY_NUMBER'));
+		    $_POST['PS_DELIVERY_NUMBER']= $next_slipnum;
+		    $max_existing = abs((int)Db::getInstance()->getValue('SELECT MAX(`delivery_number`) FROM `'._DB_PREFIX_.'orders`'));
+		    if ((int)$next_slipnum < 1 || (int)$next_slipnum > 4294967295)
+		        $this->_errors[] = $this->l('The delivery number requires a value between 1 and 4294967295');
+		    if ($max_existing  &&  $next_slipnum <= abs((int)($max_existing)))
+		        $this->_errors[] = $this->l('To avoid duplicating numbers assigned to existing slips, delivery slip number must be greater than').' '.$max_existing;
+
+		    if (!count($this->_errors))
+		        parent::postProcess();
+		}
 		else
 			parent::postProcess();
 	}
 }
-
-?>

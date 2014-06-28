@@ -1,12 +1,3 @@
-<?php
-
-if (isset($smarty))
-{
-	$smarty->assign(array(
-		'HOOK_RIGHT_COLUMN' => Module::hookExec('rightColumn'),
-		'HOOK_FOOTER' => Module::hookExec('footer'),
-		'content_only' => intval(Tools::getValue('content_only'))));
-	$smarty->display(_PS_THEME_DIR_.'footer.tpl');
-}
-
-?>
+<?php $controller = new FrontController();
+/* PrestaShop Mobile */ if (_THEME_NAME_ == 'prestashop_mobile') { global $smarty; $smarty->display(_PS_THEME_DIR_.'footer-page.tpl'); $smarty->assign('no_footer', 1); }
+$controller->displayFooter();

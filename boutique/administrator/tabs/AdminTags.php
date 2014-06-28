@@ -1,15 +1,28 @@
 <?php
-
-/**
-  * Tags tab for admin panel, AdminTags.php
-  * @category admin
-  *
-  * @author PrestaShop <support@prestashop.com>
-  * @copyright PrestaShop
-  * @license http://www.opensource.org/licenses/osl-3.0.php Open-source licence 3.0
-  * @version 1.2
-  *
-  */
+/*
+* 2007-2013 PrestaShop
+*
+* NOTICE OF LICENSE
+*
+* This source file is subject to the Open Software License (OSL 3.0)
+* that is bundled with this package in the file LICENSE.txt.
+* It is also available through the world-wide-web at this URL:
+* http://opensource.org/licenses/osl-3.0.php
+* If you did not receive a copy of the license and are unable to
+* obtain it through the world-wide-web, please send an email
+* to license@prestashop.com so we can send you a copy immediately.
+*
+* DISCLAIMER
+*
+* Do not edit or add to this file if you wish to upgrade PrestaShop to newer
+* versions in the future. If you wish to customize PrestaShop for your
+* needs please refer to http://www.prestashop.com for more information.
+*
+*  @author PrestaShop SA <contact@prestashop.com>
+*  @copyright  2007-2013 PrestaShop SA
+*  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+*  International Registered Trademark & Property of PrestaShop SA
+*/
 
 class AdminTags extends AdminTab
 {
@@ -23,16 +36,16 @@ class AdminTags extends AdminTab
 		$this->delete = true;
 
 		$this->fieldsDisplay = array(
-		'id_tag' => array('title' => $this->l('ID'), 'align' => 'center', 'width' => 25, 'filter_key' => 'a!id_seller_message'),
+		'id_tag' => array('title' => $this->l('ID'), 'align' => 'center', 'width' => 25),
 		'lang' => array('title' => $this->l('Language'), 'filter_key' => 'l!name'),
-		'name' => array('title' => $this->l('Name'), 'width' => 200),
-		'products' => array('title' => $this->l('Products'), 'align' => 'right'));
+		'name' => array('title' => $this->l('Name'), 'width' => 200, 'filter_key' => 'a!name'),
+		'products' => array('title' => $this->l('# Products'), 'align' => 'right', 'havingFilter' => true, 'width' => 20));
 
 		$this->_select = 'l.name as lang, COUNT(pt.id_product) as products';
 		$this->_join = '
 		LEFT JOIN `'._DB_PREFIX_.'product_tag` pt ON (a.`id_tag` = pt.`id_tag`)
-		LEFT JOIN `'._DB_PREFIX_.'lang` l ON l.`id_lang` = a.`id_lang`';
-		$this->_where = 'GROUP BY a.name, a.id_lang';
+		LEFT JOIN `'._DB_PREFIX_.'lang` l ON (l.`id_lang` = a.`id_lang`)';
+		$this->_group = 'GROUP BY a.name, a.id_lang';
 
 		parent::__construct();
 	}
@@ -40,21 +53,23 @@ class AdminTags extends AdminTab
 	public function postProcess()
 	{		
 		if ($this->tabAccess['edit'] === '1' AND Tools::getValue('submitAdd'.$this->table))
-			if ($id = intval(Tools::getValue($this->identifier)) AND $obj = new $this->className($id) AND Validate::isLoadedObject($obj))
+			if ($id = (int)(Tools::getValue($this->identifier)) AND $obj = new $this->className($id) AND Validate::isLoadedObject($obj))
 				$obj->setProducts($_POST['products']);
 		return parent::postProcess();
 	}
 	
-	public function displayForm()
+	public function displayForm($isMainTab = true)
 	{
 		global $currentIndex, $cookie;
-		$obj = $this->loadObject(true);
-		$languages = Language::getLanguages();
+		parent::displayForm();
+		
+		if (!($obj = $this->loadObject(true)))
+			return;
 		$products1 = $obj->getProducts(true);
 		$products2 = $obj->getProducts(false);
 		
 		echo '
-		<form id="formTag" action="'.$currentIndex.'&submitAdd'.$this->table.'=1&token='.$this->token.'" method="post" class="width3">
+		<form id="formTag" action="'.$currentIndex.'&submitAdd'.$this->table.'=1&token='.$this->token.'" method="post" class="width5">
 		'.($obj->id ? '<input type="hidden" name="id_'.$this->table.'" value="'.$obj->id.'" />' : '').'
 			<fieldset><legend><img src="../img/t/AdminTags.gif" />'.$this->l('Tag').'</legend>
 				<label>'.$this->l('Name').' </label>
@@ -65,7 +80,7 @@ class AdminTags extends AdminTab
 				<div class="margin-form">
 					<select name="id_lang">
 						<option value="">-</option>';
-		foreach ($languages as $language)
+		foreach ($this->_languages as $language)
 			echo '		<option value="'.$language['id_lang'].'" '.($language['id_lang'] == $this->getFieldValue($obj, 'id_lang') ? 'selected="selected"' : '').'>'.$language['name'].'</option>';
 		echo '		</select> <sup>*</sup>
 				</div>
@@ -120,4 +135,4 @@ class AdminTags extends AdminTab
 	}
 }
 
-?>
+

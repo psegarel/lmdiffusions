@@ -1,17 +1,28 @@
 <?php
-
-/**
-  * Order statues tab for admin panel, AdminOrdersStates.php
-  * @category admin
-  *
-  * @author PrestaShop <support@prestashop.com>
-  * @copyright PrestaShop
-  * @license http://www.opensource.org/licenses/osl-3.0.php Open-source licence 3.0
-  * @version 1.2
-  *
-  */
-
-include_once(PS_ADMIN_DIR.'/../classes/AdminTab.php');
+/*
+* 2007-2013 PrestaShop
+*
+* NOTICE OF LICENSE
+*
+* This source file is subject to the Open Software License (OSL 3.0)
+* that is bundled with this package in the file LICENSE.txt.
+* It is also available through the world-wide-web at this URL:
+* http://opensource.org/licenses/osl-3.0.php
+* If you did not receive a copy of the license and are unable to
+* obtain it through the world-wide-web, please send an email
+* to license@prestashop.com so we can send you a copy immediately.
+*
+* DISCLAIMER
+*
+* Do not edit or add to this file if you wish to upgrade PrestaShop to newer
+* versions in the future. If you wish to customize PrestaShop for your
+* needs please refer to http://www.prestashop.com for more information.
+*
+*  @author PrestaShop SA <contact@prestashop.com>
+*  @copyright  2007-2013 PrestaShop SA
+*  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+*  International Registered Trademark & Property of PrestaShop SA
+*/
 
 class AdminSlip extends AdminTab
 {
@@ -26,19 +37,59 @@ class AdminSlip extends AdminTab
  		$this->fieldsDisplay = array(
 		'id_order_slip' => array('title' => $this->l('ID'), 'align' => 'center', 'width' => 25),
 		'id_order' => array('title' => $this->l('ID Order'), 'width' => 75, 'align' => 'center'),
-		'date_add' => array('title' => $this->l('Date issued'), 'width' => 60, 'type' => 'date'));
+		'date_add' => array('title' => $this->l('Date issued'), 'width' => 60, 'type' => 'date', 'align' => 'right'));
 		
 		$this->optionTitle = $this->l('Slip');
 		
 		parent::__construct();
 	}
+	
+	public function postProcess()
+	{
+		if (Tools::isSubmit('submitPrint'))
+		{
+			if (!Validate::isDate(Tools::getValue('date_from')))
+				$this->_errors[] = $this->l('Invalid from date');
+			if (!Validate::isDate(Tools::getValue('date_to')))
+				$this->_errors[] = $this->l('Invalid end date');
+			if (!sizeof($this->_errors))
+			{
+				$orderSlips = OrderSlip::getSlipsIdByDate(Tools::getValue('date_from'), Tools::getValue('date_to'));
+				if (count($orderSlips))
+					Tools::redirectAdmin('pdf.php?slips&date_from='.urlencode(Tools::getValue('date_from')).'&date_to='.urlencode(Tools::getValue('date_to')).'&token='.$this->token);
+				$this->_errors[] = $this->l('No order slips found for this period');
+			}
+		}
+		return parent::postProcess();
+	}
 
 	public function display()
 	{
-		global $cookie;
+		global $cookie, $currentIndex;		
 
-		$this->getList(intval($cookie->id_lang), !Tools::getValue($this->table.'Orderby') ? 'date_add' : NULL, !Tools::getValue($this->table.'Orderway') ? 'DESC' : NULL);
+		echo '<div style="float:left;width:600px">';
+		$this->getList((int)($cookie->id_lang), !Tools::getValue($this->table.'Orderby') ? 'date_add' : NULL, !Tools::getValue($this->table.'Orderway') ? 'DESC' : NULL);
 		$this->displayList();
+		echo '</div>';
+		
+		echo '
+		<fieldset style="float:left;width:280px"><legend><img src="../img/admin/pdf.gif" alt="" /> '.$this->l('Print PDF').'</legend>
+			<form action="'.$currentIndex.'&token='.$this->token.'" method="post">
+				<label style="width:90px">'.$this->l('From:').' </label>
+				<div class="margin-form" style="padding-left:100px">
+					<input type="text" size="4" maxlength="10" name="date_from" value="'.date('Y-m-01').'" style="width: 120px;" />
+					<p class="clear">'.$this->l('Format: 2007-12-31 (inclusive)').'</p>
+				</div>
+				<label style="width:90px">'.$this->l('To:').' </label>
+				<div class="margin-form" style="padding-left:100px">
+					<input type="text" size="4" maxlength="10" name="date_to" value="'.date('Y-m-t').'" style="width: 120px;" />
+					<p class="clear">'.$this->l('Format: 2008-12-31 (inclusive)').'</p>
+				</div>
+				<div class="margin-form" style="padding-left:100px">
+					<input type="submit" value="'.$this->l('Generate PDF file').'" name="submitPrint" class="button" />
+				</div>
+			</form>
+		</fieldset><div class="clear">&nbsp;</div>';
 	}
 	
 	public function displayListContent($token = NULL)
@@ -66,4 +117,3 @@ class AdminSlip extends AdminTab
 	}
 }
 
-?>

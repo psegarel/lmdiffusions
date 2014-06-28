@@ -1,18 +1,30 @@
 <?php
+/*
+* 2007-2013 PrestaShop
+*
+* NOTICE OF LICENSE
+*
+* This source file is subject to the Open Software License (OSL 3.0)
+* that is bundled with this package in the file LICENSE.txt.
+* It is also available through the world-wide-web at this URL:
+* http://opensource.org/licenses/osl-3.0.php
+* If you did not receive a copy of the license and are unable to
+* obtain it through the world-wide-web, please send an email
+* to license@prestashop.com so we can send you a copy immediately.
+*
+* DISCLAIMER
+*
+* Do not edit or add to this file if you wish to upgrade PrestaShop to newer
+* versions in the future. If you wish to customize PrestaShop for your
+* needs please refer to http://www.prestashop.com for more information.
+*
+*  @author PrestaShop SA <contact@prestashop.com>
+*  @copyright  2007-2013 PrestaShop SA
+*  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+*  International Registered Trademark & Property of PrestaShop SA
+*/
 
-/**
-  * Alias class, Alias.php
-  * Alias management
-  * @category classes
-  *
-  * @author PrestaShop <support@prestashop.com>
-  * @copyright PrestaShop
-  * @license http://www.opensource.org/licenses/osl-3.0.php Open-source licence 3.0
-  * @version 1.2
-  *
-  */
-
-class Alias extends ObjectModel
+class AliasCore extends ObjectModel
 {
 	public $alias;
 	public $search;
@@ -25,20 +37,20 @@ class Alias extends ObjectModel
 	protected 	$table = 'alias';
 	protected 	$identifier = 'id_alias';
 
-	function __construct($id = NULL, $alias = NULL, $search = NULL, $id_lang = NULL)
+	public function __construct($id = null, $alias = null, $search = null, $id_lang = null)
 	{
 		if ($id)
 			parent::__construct($id);
 		elseif ($alias AND Validate::isValidSearch($alias))
 		{
-			$row = Db::getInstance()->getRow('
+			$row = Db::getInstance(_PS_USE_SQL_SLAVE_)->getRow('
 			SELECT a.id_alias, a.search, a.alias
 			FROM `'._DB_PREFIX_.'alias` a
 			WHERE `alias` LIKE \''.pSQL($alias).'\' AND `active` = 1');
 
 			if ($row)
 			{
-			 	$this->id = intval($row['id_alias']);
+			 	$this->id = (int)($row['id_alias']);
 			 	$this->search = $search ? trim($search) : $row['search'];
 				$this->alias = $row['alias'];
 			}
@@ -50,20 +62,13 @@ class Alias extends ObjectModel
 		}
 	}
 
-	static public function deleteAliases($search)
-	{
-		return Db::getInstance()->Execute('
-			DELETE
-			FROM `'._DB_PREFIX_.'alias`
-			WHERE `search` LIKE \''.pSQL($search).'\'');
-	}
-	
 	public function getAliases()
 	{
 		$aliases = Db::getInstance()->ExecuteS('
-			SELECT a.alias
-			FROM `'._DB_PREFIX_.'alias` a
-			WHERE `search` = \''.pSQL($this->search).'\'');
+		SELECT a.alias
+		FROM `'._DB_PREFIX_.'alias` a
+		WHERE `search` = \''.pSQL($this->search).'\'');
+
 		$aliases = array_map('implode', $aliases);
 		return implode(', ', $aliases);
 	}
@@ -74,9 +79,8 @@ class Alias extends ObjectModel
 		
 		$fields['alias'] = pSQL($this->alias);
 		$fields['search'] = pSQL($this->search);
-		$fields['active'] = intval($this->active);
+		$fields['active'] = (int)($this->active);
 		return $fields;
 	}
 }
 
-?>

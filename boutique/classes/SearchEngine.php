@@ -1,16 +1,30 @@
 <?php
+/*
+* 2007-2013 PrestaShop
+*
+* NOTICE OF LICENSE
+*
+* This source file is subject to the Open Software License (OSL 3.0)
+* that is bundled with this package in the file LICENSE.txt.
+* It is also available through the world-wide-web at this URL:
+* http://opensource.org/licenses/osl-3.0.php
+* If you did not receive a copy of the license and are unable to
+* obtain it through the world-wide-web, please send an email
+* to license@prestashop.com so we can send you a copy immediately.
+*
+* DISCLAIMER
+*
+* Do not edit or add to this file if you wish to upgrade PrestaShop to newer
+* versions in the future. If you wish to customize PrestaShop for your
+* needs please refer to http://www.prestashop.com for more information.
+*
+*  @author PrestaShop SA <contact@prestashop.com>
+*  @copyright  2007-2013 PrestaShop SA
+*  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+*  International Registered Trademark & Property of PrestaShop SA
+*/
 
-/**
-  * Statistics
-  * @category stats
-  *
-  * @author Damien Metzger / Epitech
-  * @copyright Epitech / PrestaShop
-  * @license http://www.opensource.org/licenses/osl-3.0.php Open-source licence 3.0
-  * @version 1.2
-  */
-  
-class SearchEngine extends ObjectModel
+class SearchEngineCore extends ObjectModel
 {	
 	public $server;
 	public $getvar;
@@ -34,8 +48,8 @@ class SearchEngine extends ObjectModel
 		$parsedUrl = @parse_url($url);
 		if (!isset($parsedUrl['host']) OR !isset($parsedUrl['query']))
 			return false;
-		$result = Db::getInstance()->ExecuteS('SELECT `server`, `getvar` FROM `'._DB_PREFIX_.'search_engine`');
-		foreach ($result as $index => $row)
+		$result = Db::getInstance(_PS_USE_SQL_SLAVE_)->ExecuteS('SELECT `server`, `getvar` FROM `'._DB_PREFIX_.'search_engine`');
+		foreach ($result as $row)
 		{
 			$host =& $row['server'];
 			$varname =& $row['getvar'];
@@ -48,10 +62,12 @@ class SearchEngine extends ObjectModel
 				if (empty($kArray[0]))
 					return false;
 				$kString = urldecode(str_replace('+', ' ', ltrim(substr(rtrim($kArray[0], '&'), strlen($varname) + 1), '=')));
+				if (!Validate::isMessage($kString))
+					return false;
 				return $kString;
 			}
 		}
 	}
 }
 
-?>
+

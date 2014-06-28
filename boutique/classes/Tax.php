@@ -1,24 +1,39 @@
 <?php
+/*
+* 2007-2013 PrestaShop
+*
+* NOTICE OF LICENSE
+*
+* This source file is subject to the Open Software License (OSL 3.0)
+* that is bundled with this package in the file LICENSE.txt.
+* It is also available through the world-wide-web at this URL:
+* http://opensource.org/licenses/osl-3.0.php
+* If you did not receive a copy of the license and are unable to
+* obtain it through the world-wide-web, please send an email
+* to license@prestashop.com so we can send you a copy immediately.
+*
+* DISCLAIMER
+*
+* Do not edit or add to this file if you wish to upgrade PrestaShop to newer
+* versions in the future. If you wish to customize PrestaShop for your
+* needs please refer to http://www.prestashop.com for more information.
+*
+*  @author PrestaShop SA <contact@prestashop.com>
+*  @copyright  2007-2013 PrestaShop SA
+*  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+*  International Registered Trademark & Property of PrestaShop SA
+*/
 
-/**
-  * Taxes class, Tax.php
-  * Taxes management
-  * @category classes
-  *
-  * @author PrestaShop <support@prestashop.com>
-  * @copyright PrestaShop
-  * @license http://www.opensource.org/licenses/osl-3.0.php Open-source licence 3.0
-  * @version 1.2
-  *
-  */
-
-class Tax extends ObjectModel
+class TaxCore extends ObjectModel
 {
- 	/** @var string Name */
+ 	/** @var mixed Name */
 	public 		$name;
 
 	/** @var float Rate (%) */
 	public 		$rate;
+
+	/** @var bool active state */
+	public 		$active;
 
  	protected 	$fieldsRequired = array('rate');
  	protected 	$fieldsValidate = array('rate' => 'isFloat');
@@ -29,17 +44,25 @@ class Tax extends ObjectModel
 	protected 	$table = 'tax';
 	protected 	$identifier = 'id_tax';
 
-	public		$noZeroObject = 'getTaxes';
+	protected static $_product_country_tax = array();
+	protected static $_product_tax_via_rules = array();
 
+	protected	$webserviceParameters = array(
+		'objectsNodeName' => 'taxes',
+			'fields' => array(
+				'rate' => array('required' => true),
+				'active' => array(),
+				'name' => array('i18n' => true, 'required' => true),
+			),
+	);
+	
 	public function getFields()
 	{
 		parent::validateFields();
-		$fields['rate'] = floatval($this->rate);
+		$fields['rate'] = (float)($this->rate);
+		$fields['active'] = (int)($this->active);
 		return $fields;
 	}
-	
-	/** @var array Tax zones cache */
-	private static $_TAX_ZONES;
 
 	/**
 	* Check then return multilingual fields for database interaction
@@ -52,77 +75,101 @@ class Tax extends ObjectModel
 		return parent::getTranslationsFields(array('name'));
 	}
 
+	public function delete()
+	{
+		/* Clean associations */
+		TaxRule::deleteTaxRuleByIdTax((int)$this->id);
+		return parent::delete();
+	}
+
+	/**
+	 * @deprecated zones are not related to a tax
+	 */
 	public static function checkTaxZone($id_tax, $id_zone)
 	{
-		return isset(self::$_TAX_ZONES[intval($id_zone)][intval($id_tax)]);
+		Tools::displayAsDeprecated();
+		return true;
 	}
 
+	/**
+	 * @deprecated states are not related to a tax. Check TaxRules.
+	 */
 	public function getStates()
 	{
-		return Db::getInstance()->ExecuteS('SELECT `id_state`, `id_tax` FROM `'._DB_PREFIX_.'tax_state` WHERE `id_tax` = '.intval($this->id));
+	    Tools::displayAsDeprecated();
+	    return false;
 	}
 
+	/**
+	 * @deprecated states are not related to a tax. Check TaxRules.
+	 */
 	public function getState($id_state)
 	{
-		return Db::getInstance()->getRow('SELECT `id_state` FROM `'._DB_PREFIX_.'tax_state` WHERE `id_tax` = '.intval($this->id).' AND `id_state` = '.intval($id_state));
+		Tools::displayAsDeprecated();
+		return false;
 	}
 
+	/**
+	 * @deprecated states are not related to a tax. Check TaxRules.
+	 */
 	public function addState($id_state)
 	{
-		return Db::getInstance()->Execute('INSERT INTO `'._DB_PREFIX_.'tax_state` (`id_tax`, `id_state`) VALUES ('.intval($this->id).', '.intval($id_state).')');
+		Tools::displayAsDeprecated();
+		return true;
 	}
 
+
+	/**
+	 * @deprecated states are not related to a tax. Check TaxRules.
+	 */
 	public function deleteState($id_state)
 	{
-		return Db::getInstance()->Execute('DELETE FROM `'._DB_PREFIX_.'tax_state` WHERE `id_tax` = '.intval($this->id).' AND `id_state` = '.intval($id_state));
+	    Tools::displayAsDeprecated();
+	    return true;
 	}
 
 	/**
 	 * Get all zones
 	 *
 	 * @return array Zones
+	 * @deprecated zones are not related to a tax
 	 */
 	public function getZones()
 	{
-		return Db::getInstance()->ExecuteS('
-			SELECT *
-			FROM `'._DB_PREFIX_.'tax_zone`
-			WHERE `id_tax` = '.intval($this->id));
+	    Tools::displayAsDeprecated();
+		return false;
 	}
 
 	/**
 	 * Get a specific zones
 	 *
 	 * @return array Zone
+	 * @deprecated zones are not related to a tax
 	 */
 	public function getZone($id_zone)
 	{
-		return Db::getInstance()->ExecuteS('
-			SELECT *
-			FROM `'._DB_PREFIX_.'tax_zone`
-			WHERE `id_tax` = '.intval($this->id).'
-			AND `id_zone` = '.intval($id_zone));
+	    Tools::displayAsDeprecated();
+		return false;
 	}
 
 	/**
 	 * Add zone
+	 * @deprecated zones are not related to a tax
 	 */
 	public function addZone($id_zone)
 	{
-		return Db::getInstance()->ExecuteS('
-			INSERT INTO `'._DB_PREFIX_.'tax_zone` (`id_tax` , `id_zone`)
-			VALUES ('.intval($this->id).', '.intval($id_zone).')');
+	    Tools::displayAsDeprecated();
+		return true;
 	}
 
 	/**
 	 * Delete zone
+	 * @deprecated zones are not related to a tax
 	 */
 	public function deleteZone($id_zone)
 	{
-		return Db::getInstance()->ExecuteS('
-			DELETE FROM `'._DB_PREFIX_.'tax_zone`
-			WHERE `id_tax` = '.intval($this->id).'
-			AND `id_zone` = '.intval($id_zone).' LIMIT 1');
+	    Tools::displayAsDeprecated();
+		return true;
 	}
 
 	/**
@@ -130,92 +177,233 @@ class Tax extends ObjectModel
 	*
 	* @return array Taxes
 	*/
-	static public function getTaxes($id_lang = false)
+	public static function getTaxes($id_lang = false, $active = 1)
 	{
-		return Db::getInstance()->ExecuteS('
-		SELECT t.id_tax, t.rate'.(intval($id_lang) ? ', tl.name, tl.id_lang ' : '').'
+		return Db::getInstance(_PS_USE_SQL_SLAVE_)->ExecuteS('
+		SELECT t.id_tax, t.rate'.((int)($id_lang) ? ', tl.name, tl.id_lang ' : '').'
 		FROM `'._DB_PREFIX_.'tax` t
-		'.(intval($id_lang) ? 'LEFT JOIN `'._DB_PREFIX_.'tax_lang` tl ON (t.`id_tax` = tl.`id_tax` AND tl.`id_lang` = '.intval($id_lang).')
+		'.((int)($id_lang) ? 'LEFT JOIN `'._DB_PREFIX_.'tax_lang` tl ON (t.`id_tax` = tl.`id_tax` AND tl.`id_lang` = '.(int)($id_lang).')'
+		.($active == 1 ? 'WHERE t.`active` = 1' : '').'
 		ORDER BY `name` ASC' : ''));
 	}
 
-	static public function excludeTaxeOption()
+	public static function excludeTaxeOption()
 	{
-		return !Configuration::get('PS_TAX');
+		return !_PS_TAX_;
 	}
 
-	static public function zoneHasTax($id_tax, $id_zone)
+	/*
+	 * @deprecated zones are not related to a tax
+	 */
+	public static function zoneHasTax($id_tax, $id_zone)
 	{
-		return Tax::checkTaxZone(intval($id_tax), intval($id_zone));
+	    Tools::displayAsDeprecated();
+		return true;
 	}
 
-	static public function getRateByState($id_state)
-	{
-		$tax = Db::getInstance()->getRow('
-			SELECT ts.`id_tax`, t.`rate`
-			FROM `'._DB_PREFIX_.'tax_state` ts
-			LEFT JOIN `'._DB_PREFIX_.'tax` t ON (t.`id_tax` = ts.`id_tax`)
-			WHERE `id_state` = '.intval($id_state));
-		return $tax ? floatval($tax['rate']) : false;
-	}
 
-	static public function getApplicableTax($id_tax, $productTax)
-	{
-		global $cart, $cookie, $defaultCountry;
 
-		$id_address_invoice = intval((Validate::isLoadedObject($cart) AND $cart->id_address_invoice) ? $cart->id_address_invoice : (isset($cookie->id_address_invoice) ? $cookie->id_address_invoice : 0));
-		/* If customer has an address (implies that he is registered and logged) */
-		if ($id_address_invoice AND $address_ids = Address::getCountryAndState($id_address_invoice))
-		{
-			$id_zone_country = Country::getIdZone(intval($address_ids['id_country']));
-			/* If customer's invoice address is inside a state */
-			if ($address_ids['id_state'])
-			{
-				$state = new State(intval($address_ids['id_state']));
-				
-				if (!Validate::isLoadedObject($state))
-					die(Tools::displayError());
-				/* Return tax value depending to the tax behavior */
-				$tax_behavior = intval($state->tax_behavior);
-				if ($tax_behavior == PS_PRODUCT_TAX)
-					return $productTax * Tax::zoneHasTax(intval($id_tax), intval($id_zone_country));
-				if ($tax_behavior == PS_STATE_TAX)
-					return Tax::getRateByState(intval($address_ids['id_state']));
-				if ($tax_behavior == PS_BOTH_TAX)
-					return ($productTax * Tax::zoneHasTax(intval($id_tax), intval($id_zone_country))) + Tax::getRateByState(intval($address_ids['id_state']));
-				/* Unknown behavior */
-				die(Tools::displayError('Unknown tax behavior!'));
-			}
-			/* Else getting country zone tax */
-			if (!$id_zone = Address::getZoneById($id_address_invoice))
-				die(Tools::displayError());
-			return $productTax * Tax::zoneHasTax(intval($id_tax), intval($id_zone));
-		}
-		/* Default tax application */
-		if (!Validate::isLoadedObject($defaultCountry))
-			die(Tools::displayError());
-		return $productTax * Tax::zoneHasTax(intval($id_tax), intval($defaultCountry->id_zone));
-	}
-	
 	/**
-	  * Load all tax/zones relations in memory for caching
-	  */
-	static public function loadTaxZones()
+	 * @deprecated states are not related to a tax. Check TaxRules.
+	 */
+	public static function getRateByState($id_state, $active = 1)
 	{
-		self::$_TAX_ZONES = array();
-		$result = Db::getInstance()->ExecuteS('SELECT `id_tax`, `id_zone` FROM `'._DB_PREFIX_.'tax_zone`');
-		if ($result === false)
-			die(Tools::displayError('Invalid loadTaxZones() SQL query!'));
-		foreach ($result AS $row)
-			self::$_TAX_ZONES[intval($row['id_zone'])][intval($row['id_tax'])] = true;
+	    Tools::displayAsDeprecated();
+        return false;
 	}
-	
-	static public function getTaxIdByRate($rate)
+
+	/**
+	 *  Return the applicable tax rate depending of the country and state
+	 * @deprecated use getApplicableTaxRate
+	 * @param integer $id_tax
+	 * @param float $productTax
+	 * @param integer $id_address
+	 *
+	 * @return float taxe_rate
+	 */
+	public static function getApplicableTax($id_tax, $productTax, $id_address = null)
 	{
-		$tax = Db::getInstance()->getRow('
-			SELECT `id_tax`
-			FROM `'._DB_PREFIX_.'tax`
-			WHERE `rate` LIKE '.floatval($rate));
-		return $tax ? intval($tax['id_tax']) : false;
+		Tools::displayAsDeprecated();
+		return Tax::getApplicableTaxRate($id_tax, $productTax, $id_address);
+	}
+
+	/**
+	 *  Return the applicable tax rate depending of the country and state
+	 *
+	 * @param integer $id_tax
+	 * @param float $productTax
+	 * @param integer $id_address
+	 *
+	 * @return float taxe_rate
+	 */
+	public static function getApplicableTaxRate($id_tax, $productTax, $id_address = null)
+	{
+	    Tools::displayAsDeprecated();
+		return $productTax;
+	}
+
+	public static function getTaxIdByRate($rate, $active = 1)
+	{
+	    Tools::displayAsDeprecated();
+		$tax = Db::getInstance(_PS_USE_SQL_SLAVE_)->getRow('
+			SELECT t.`id_tax`
+			FROM `'._DB_PREFIX_.'tax` t
+			LEFT JOIN `'._DB_PREFIX_.'tax_lang` tl ON (t.id_tax = tl.id_tax)
+			WHERE t.`rate` = '.(float)($rate).
+			($active == 1 ? ' AND t.`active` = 1' : ''));
+		return $tax ? (int)($tax['id_tax']) : false;
+	}
+
+	public static function getTaxIdByName($tax_name, $active =1)
+	{
+		$tax = Db::getInstance(_PS_USE_SQL_SLAVE_)->getRow('
+			SELECT t.`id_tax`
+			FROM `'._DB_PREFIX_.'tax` t
+			LEFT JOIN `'._DB_PREFIX_.'tax_lang` tl ON (tl.id_tax = t.id_tax)
+			WHERE tl.`name` = \''.pSQL($tax_name).'\' '.
+			($active == 1 ? ' AND t.`active` = 1' : ''));
+
+		return $tax ? (int)($tax['id_tax']) : false;
+	}
+
+	public static function getDataByProductId($id_product)
+	{
+	    Tools::displayAsDeprecated();
+
+        $tax_rate = Tax::getProductTaxRate((int)$id_product);
+        $id_tax = Tax::getTaxIdByRate($tax_rate);
+
+		return array('id_tax' => $id_tax, 'rate' => $tax_rate);
+	}
+
+	/**
+	 * Return the product tax rate
+	 *
+	 * @param integer $id_product
+	 * @param integer $id_address
+	 * @return Tax
+	 */
+	public static function getProductTaxRate($id_product, $id_address = null)
+	{
+		$id_country = (int)Country::getDefaultCountryId();
+		$id_state = 0;
+		$id_county = 0;
+		$rate = 0;
+
+		if (!empty($id_address))
+		{
+			$address_infos = Address::getCountryAndState($id_address);
+			if ($address_infos['id_country'])
+			{
+				$id_country = (int)($address_infos['id_country']);
+				$id_state = (int)$address_infos['id_state'];
+				$id_county = (int)County::getIdCountyByZipCode($address_infos['id_state'], $address_infos['postcode']);
+			}
+
+			if (!empty($address_infos['vat_number']) && $address_infos['id_country'] != Configuration::get('VATNUMBER_COUNTRY') && Configuration::get('VATNUMBER_MANAGEMENT'))
+				return 0;
+		}
+
+		return Tax::getProductTaxRateViaRules((int)$id_product, (int)$id_country, (int)$id_state, (int)$id_county);
+	}
+
+	public static function getProductEcotaxRate($id_address = null)
+	{
+		$id_state = 0;
+		$id_county = 0;
+
+		if (!empty($id_address))
+		{
+			$address_infos = Address::getCountryAndState($id_address);
+			if ($address_infos['id_country'])
+			{
+				$id_country = (int)($address_infos['id_country']);
+				$id_state = (int)$address_infos['id_state'];
+				$id_county = (int)County::getIdCountyByZipCode($address_infos['id_state'], $address_infos['postcode']);
+			}
+
+			if (!empty($address_infos['vat_number']) && $address_infos['id_country'] != Configuration::get('VATNUMBER_COUNTRY') && Configuration::get('VATNUMBER_MANAGEMENT'))
+				return 0;
+		}
+		
+		if (!isset($id_country))
+			$id_country = (int)Country::getDefaultCountryId();
+
+		return (float)TaxRulesGroup::getTaxesRate((int)Configuration::get('PS_ECOTAX_TAX_RULES_GROUP_ID'), (int)$id_country, (int)$id_state, (int)$id_county);
+	}
+
+	/**
+	 * Return the product tax rate using the tax rules system
+	 *
+	 * @param integer $id_product
+	 * @param integer $id_country
+	 * @return Tax
+	 */
+	public static function getProductTaxRateViaRules($id_product, $id_country, $id_state, $id_county)
+	{
+		if (!isset(self::$_product_tax_via_rules[$id_product.'-'.$id_country.'-'.$id_state.'-'.$id_county]))
+		    self::$_product_tax_via_rules[$id_product.'-'.$id_country.'-'.$id_county] = TaxRulesGroup::getTaxesRate((int)Product::getIdTaxRulesGroupByIdProduct((int)$id_product), (int)$id_country, (int)$id_state, (int)$id_county);
+
+		return self::$_product_tax_via_rules[$id_product.'-'.$id_country.'-'.$id_county];
+	}
+
+
+	public static function getCarrierTaxRate($id_carrier, $id_address = null)
+	{
+		global $cookie, $defaultCountry;
+        $id_country = (int)Country::getDefaultCountryId();
+
+        if ($id_country == _PS_COUNTRY_DEFAULT_ && isset($cookie->id_country) && $cookie->id_country != (int)_PS_COUNTRY_DEFAULT_)
+		{
+			$country = new Country((int)$cookie->id_country, $cookie->id_lang);
+			if (ValidaTe::isLoadedObject($country) && $country->active)
+			{
+				$id_country = (int)$country->id;
+				$defaultCountry = $country;
+			}
+		}
+       	
+        $id_state = 0;
+        $id_county = 0;
+        if (!empty($id_address))
+        {
+             $address_infos = Address::getCountryAndState($id_address);
+         	 if ($address_infos['id_country'])
+             {
+					$id_country = (int)$address_infos['id_country'];
+             	    $id_state = (int)$address_infos['id_state'];
+ 	                $id_county = (int)County::getIdCountyByZipCode($address_infos['id_state'], $address_infos['postcode']);
+             }
+
+			    if (!empty($address_infos['vat_number']) && $address_infos['id_country'] != Configuration::get('VATNUMBER_COUNTRY') && Configuration::get('VATNUMBER_MANAGEMENT'))
+				    return 0;
+	   }
+
+	   return TaxRulesGroup::getTaxesRate((int)Carrier::getIdTaxRulesGroupByIdCarrier((int)$id_carrier), (int)$id_country, (int)$id_state, (int)$id_county);
+	}
+
+	public function toggleStatus()
+	{
+	    if (parent::toggleStatus())
+            return $this->_onStatusChange();
+
+        return false;
+	}
+
+	public function update($nullValues = false)
+	{
+	    if (parent::update($nullValues))
+            return $this->_onStatusChange();
+
+        return false;
+	}
+
+	protected function _onStatusChange()
+	{
+        if (!$this->active)
+            return TaxRule::deleteTaxRuleByIdTax($this->id);
+
+        return true;
 	}
 }
+

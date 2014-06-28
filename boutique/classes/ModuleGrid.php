@@ -1,16 +1,30 @@
 <?php
+/*
+* 2007-2013 PrestaShop
+*
+* NOTICE OF LICENSE
+*
+* This source file is subject to the Open Software License (OSL 3.0)
+* that is bundled with this package in the file LICENSE.txt.
+* It is also available through the world-wide-web at this URL:
+* http://opensource.org/licenses/osl-3.0.php
+* If you did not receive a copy of the license and are unable to
+* obtain it through the world-wide-web, please send an email
+* to license@prestashop.com so we can send you a copy immediately.
+*
+* DISCLAIMER
+*
+* Do not edit or add to this file if you wish to upgrade PrestaShop to newer
+* versions in the future. If you wish to customize PrestaShop for your
+* needs please refer to http://www.prestashop.com for more information.
+*
+*  @author PrestaShop SA <contact@prestashop.com>
+*  @copyright  2007-2013 PrestaShop SA
+*  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+*  International Registered Trademark & Property of PrestaShop SA
+*/
 
-/**
-  * Statistics
-  * @category stats
-  *
-  * @author Damien Metzger / Epitech
-  * @copyright Epitech / PrestaShop
-  * @license http://www.opensource.org/licenses/osl-3.0.php Open-source licence 3.0
-  * @version 1.2
-  */
-  
-abstract class ModuleGrid extends Module
+abstract class ModuleGridCore extends Module
 {
 	protected $_employee;
 	
@@ -40,7 +54,7 @@ abstract class ModuleGrid extends Module
 	
 	public function setEmployee($id_employee)
 	{
-		$this->_employee = new Employee(intval($id_employee));
+		$this->_employee = new Employee((int)$id_employee);
 	}
 	public function setLang($id_lang)
 	{
@@ -49,7 +63,11 @@ abstract class ModuleGrid extends Module
 	
 	public function create($render, $type, $width, $height, $start, $limit, $sort, $dir)
 	{
-		require_once(dirname(__FILE__).'/../modules/'.$render.'/'.$render.'.php');
+		if (!Validate::isModuleName($render))
+    		die(Tools::displayError());
+		if (!file_exists($file = _PS_ROOT_DIR_.'/modules/'.$render.'/'.$render.'.php'))
+			die(Tools::displayError());
+		require_once($file);
 		$this->_render = new $render($type);
 		
 		$this->_start = $start;
@@ -63,6 +81,7 @@ abstract class ModuleGrid extends Module
 		$this->_render->setSize($width, $height);
 		$this->_render->setValues($this->_values);
 		$this->_render->setTotalCount($this->_totalCount);
+		$this->_render->setLimit($this->_start, $this->_limit);
 	}
 	
 	public function render()
@@ -74,14 +93,16 @@ abstract class ModuleGrid extends Module
 	{
 		if (!($render = Configuration::get('PS_STATS_GRID_RENDER')))
 			return Tools::displayError('No grid engine selected');
-		if (!file_exists(dirname(__FILE__).'/../modules/'.$render.'/'.$render.'.php'))
-			return Tools::displayError('Grid engine selected unavailable');
+		if (!Validate::isModuleName($render))
+    		die(Tools::displayError());
+		if (!file_exists(_PS_ROOT_DIR_.'/modules/'.$render.'/'.$render.'.php'))
+			return Tools::displayError('Grid engine selected is unavailable.');
 			
-		$grider = 'grider.php?render='.$render.'&module='.Tools::getValue('module');
+		$grider = 'grider.php?render='.$render.'&module='.Tools::safeOutput(Tools::getValue('module'));
 		
 		global $cookie;
-		$grider .= '&id_employee='.intval($cookie->id_employee);
-		$grider .= '&id_lang='.intval($cookie->id_lang);
+		$grider .= '&id_employee='.(int)($cookie->id_employee);
+		$grider .= '&id_lang='.(int)($cookie->id_lang);
 		
 		if (!isset($params['width']) OR !Validate::IsUnsignedInt($params['width']))
 			$params['width'] = 600;
@@ -89,7 +110,7 @@ abstract class ModuleGrid extends Module
 			$params['height'] = 920;
 		if (!isset($params['start']) OR !Validate::IsUnsignedInt($params['start']))
 			$params['start'] = 0;
-		if (!isset($params['limit']) OR !Validate::IsUnsignedInt($params['height']))
+		if (!isset($params['limit']) OR !Validate::IsUnsignedInt($params['limit']))
 			$params['limit'] = 40;
 
 		$grider .= '&width='.$params['width'];
@@ -107,8 +128,45 @@ abstract class ModuleGrid extends Module
 		if (isset($params['dir']) AND Validate::IsSortDirection($params['dir']))
 			$grider .= '&dir='.$params['dir'];
 			
-		require_once(dirname(__FILE__).'/../modules/'.$render.'/'.$render.'.php');
+		require_once(_PS_ROOT_DIR_.'/modules/'.$render.'/'.$render.'.php');
 		return call_user_func(array($render, 'hookGridEngine'), $params, $grider);
+	}
+	
+	protected function csvExport($datas)
+	{
+		global $cookie;
+		$this->_sort = $datas['defaultSortColumn'];
+		$this->setLang($cookie->id_lang);
+		$this->getData();
+
+		$layers = isset($datas['layers']) ?  $datas['layers'] : 1;
+
+		if (isset($datas['option']))
+			$this->setOption($datas['option'], $layers);
+					
+		if (count($datas['columns']))
+		{
+			foreach ($datas['columns'] as $column)
+				$this->_csv .= $column['header'].';';
+			$this->_csv = rtrim($this->_csv, ';')."\n";
+			
+			foreach ($this->_values as $value)
+			{
+				foreach ($datas['columns'] as $column)
+					$this->_csv .= $value[$column['dataIndex']].';';
+				$this->_csv = rtrim($this->_csv, ';')."\n";
+			}
+		}		
+		$this->_displayCsv();
+	}
+	
+	protected function _displayCsv()
+	{
+		ob_end_clean();
+		header('Content-Type: application/octet-stream');
+		header('Content-Disposition: attachment; filename="'.$this->displayName.' - '.time().'.csv"');
+		echo $this->_csv;
+		exit;
 	}
 	
 	abstract protected function getData();
@@ -122,4 +180,3 @@ abstract class ModuleGrid extends Module
 		return $this->_id_lang;
 	}
 }
-?>

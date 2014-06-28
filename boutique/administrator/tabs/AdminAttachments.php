@@ -1,21 +1,35 @@
 <?php
-
-/**
-  * Attachments tab for admin panel, AdminAttachments.php
-  * @category admin
-  *
-  * @author PrestaShop <support@prestashop.com>
-  * @copyright PrestaShop
-  * @license http://www.opensource.org/licenses/osl-3.0.php Open-source licence 3.0
-  * @version 1.2
-  *
-  */
+/*
+* 2007-2013 PrestaShop
+*
+* NOTICE OF LICENSE
+*
+* This source file is subject to the Open Software License (OSL 3.0)
+* that is bundled with this package in the file LICENSE.txt.
+* It is also available through the world-wide-web at this URL:
+* http://opensource.org/licenses/osl-3.0.php
+* If you did not receive a copy of the license and are unable to
+* obtain it through the world-wide-web, please send an email
+* to license@prestashop.com so we can send you a copy immediately.
+*
+* DISCLAIMER
+*
+* Do not edit or add to this file if you wish to upgrade PrestaShop to newer
+* versions in the future. If you wish to customize PrestaShop for your
+* needs please refer to http://www.prestashop.com for more information.
+*
+*  @author PrestaShop SA <contact@prestashop.com>
+*  @copyright  2007-2013 PrestaShop SA
+*  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+*  International Registered Trademark & Property of PrestaShop SA
+*/
 
 include_once(PS_ADMIN_DIR.'/../classes/AdminTab.php');
 
 class AdminAttachments extends AdminTab
 {
-	protected $maxFileSize  = 2000000;
+	
+	private $_productAttachements = array();
 	
 	public function __construct()
 	{
@@ -37,68 +51,91 @@ class AdminAttachments extends AdminTab
 
 	public function postProcess()
 	{
-		if (Tools::isSubmit('submitAdd'.$this->table))
+		/* PrestaShop demo mode */
+		if (_PS_MODE_DEMO_)
 		{
-			if ($id = intval(Tools::getValue('id_attachment')) AND $a = new Attachment($id))
+			$this->_errors[] = Tools::displayError('This functionnality has been disabled.');
+			return;
+		}
+		
+		global $cookie;
+		
+		$this->tabAccess = Profile::getProfileAccess($cookie->profile, $this->id);
+		if ($this->tabAccess['add'] === '1' AND Tools::isSubmit('submitAdd'.$this->table))
+		{
+			if ($id = (int)(Tools::getValue('id_attachment')) AND $a = new Attachment($id))
 			{
 				$_POST['file'] = $a->file;
 				$_POST['mime'] = $a->mime;
 			}
 			if (!sizeof($this->_errors))
+			{
 				if (isset($_FILES['file']) AND is_uploaded_file($_FILES['file']['tmp_name']))
 				{
-					if ($_FILES['file']['size'] > $this->maxFileSize)
-						$this->_errors[] = $this->l('File too large, maximum size allowed:').' '.($this->maxFileSize/1000).' '.$this->l('kb');
+					if ($_FILES['file']['size'] > (Configuration::get('PS_ATTACHMENT_MAXIMUM_SIZE') * 1024 * 1024))
+						$this->_errors[] = $this->l('File too large, maximum size allowed:').' '.(Configuration::get('PS_ATTACHMENT_MAXIMUM_SIZE') * 1024).' '.$this->l('kb').'. '.$this->l('File size you\'re trying to upload is:').number_format(($_FILES['file']['size']/1024), 2, '.', '').$this->l('kb');
 					else
 					{
-						$uploadDir = dirname(__FILE__).'/../../download/';
-						do $uniqid = sha1(microtime());	while (file_exists($uploadDir.$uniqid));
-						if (!copy($_FILES['file']['tmp_name'], $uploadDir.$uniqid))
+						do $uniqid = sha1(microtime());	while (file_exists(_PS_DOWNLOAD_DIR_.$uniqid));
+						if (!copy($_FILES['file']['tmp_name'], _PS_DOWNLOAD_DIR_.$uniqid))
 							$this->_errors[] = $this->l('File copy failed');
+						$_POST['file_name'] = $_FILES['file']['name'];
 						@unlink($_FILES['file']['tmp_name']);
+						if (!sizeof($this->_errors) && file_exists(_PS_DOWNLOAD_DIR_.$a->file))
+							@unlink(_PS_DOWNLOAD_DIR_.$a->file);	
 						$_POST['file'] = $uniqid;
 						$_POST['mime'] = $_FILES['file']['type'];
 					}
 				}
+				elseif (array_key_exists('file', $_FILES) && (int)$_FILES['file']['error'] === 1) 
+				{
+					$max_upload = (int)(ini_get('upload_max_filesize'));
+					$max_post = (int)(ini_get('post_max_size'));
+					$upload_mb = min($max_upload, $max_post);
+					$this->_errors[] = $this->l('the File').' <b>'.$_FILES['file']['name'].'</b> '.$this->l('exceeds the size allowed by the server. This limit is set to').' <b>'.$upload_mb.$this->l('Mb').'</b>';
+				}
+				elseif (!empty($_FILES['file']['tmp_name']))
+					$this->_errors[] = $this->l('The file does not exist or cannot be downloaded;check your server configuration regarding the maximum upload size.');
+			}
 			$this->validateRules();
 		}
-		return parent::postProcess();
+		$return = parent::postProcess();
+		if (!$return && isset($uniqid) && file_exists(_PS_DOWNLOAD_DIR_.$uniqid))
+			@unlink(_PS_DOWNLOAD_DIR_.$uniqid);
+		return $return;
 	}
 	
-	public function displayForm()
+	public function displayForm($isMainTab = true)
 	{
 		global $currentIndex, $cookie;
+		parent::displayForm();
 		
-		$obj = $this->loadObject(true);
-		$defaultLanguage = intval(Configuration::get('PS_LANG_DEFAULT'));
-		$languages = Language::getLanguages();
+		if (!($obj = $this->loadObject(true)))
+			return;
 		
 		echo '
-		<script type="text/javascript">
-			id_language = Number('.$defaultLanguage.');
-		</script>
-		<form action="'.$currentIndex.'&submitAdd'.$this->table.'=1&token='.$this->token.'" method="post" enctype="multipart/form-data" class="width2">
+		<form action="'.$currentIndex.'&submitAdd'.$this->table.'=1&token='.$this->token.'" method="post" enctype="multipart/form-data">
 		'.($obj->id ? '<input type="hidden" name="id_'.$this->table.'" value="'.$obj->id.'" />' : '').'
 			<fieldset><legend><img src="../img/t/AdminAttachments.gif" />'.$this->l('Attachment').'</legend>
-				<label>'.$this->l('Name:').' </label>
+				<label>'.$this->l('Filename:').' </label>
 				<div class="margin-form">';
-		foreach ($languages as $language)
-			echo '	<div id="cname_'.$language['id_lang'].'" style="display: '.($language['id_lang'] == $defaultLanguage ? 'block' : 'none').'; float: left;">
-						<input size="33" type="text" name="name_'.$language['id_lang'].'" value="'.htmlentities($this->getFieldValue($obj, 'name', intval($language['id_lang'])), ENT_COMPAT, 'UTF-8').'" /><sup> *</sup>
+		foreach ($this->_languages as $language)
+			echo '	<div id="cname_'.$language['id_lang'].'" style="display: '.($language['id_lang'] == $this->_defaultFormLanguage ? 'block' : 'none').'; float: left;">
+						<input size="33" type="text" name="name_'.$language['id_lang'].'" value="'.htmlentities($this->getFieldValue($obj, 'name', (int)($language['id_lang'])), ENT_COMPAT, 'UTF-8').'" /><sup> *</sup>
 					</div>';							
-		$this->displayFlags($languages, $defaultLanguage, 'cname¤cdescription', 'cname');
+		$this->displayFlags($this->_languages, $this->_defaultFormLanguage, 'cname¤cdescription', 'cname');
 		echo '	</div>
 				<div class="clear">&nbsp;</div>
 				<label>'.$this->l('Description:').' </label>
 				<div class="margin-form">';
-		foreach ($languages as $language)
-			echo '	<div id="cdescription_'.$language['id_lang'].'" style="display: '.($language['id_lang'] == $defaultLanguage ? 'block' : 'none').'; float: left;">
-						<textarea name="description_'.$language['id_lang'].'">'.htmlentities($this->getFieldValue($obj, 'description', intval($language['id_lang'])), ENT_COMPAT, 'UTF-8').'</textarea>
+		foreach ($this->_languages as $language)
+			echo '	<div id="cdescription_'.$language['id_lang'].'" style="display: '.($language['id_lang'] == $this->_defaultFormLanguage ? 'block' : 'none').'; float: left;">
+						<textarea name="description_'.$language['id_lang'].'">'.htmlentities($this->getFieldValue($obj, 'description', (int)($language['id_lang'])), ENT_COMPAT, 'UTF-8').'</textarea>
 					</div>';							
-		$this->displayFlags($languages, $defaultLanguage, 'cname¤cdescription', 'cdescription');
+		$this->displayFlags($this->_languages, $this->_defaultFormLanguage, 'cname¤cdescription', 'cdescription');
 		echo '	</div>
 				<div class="clear">&nbsp;</div>
-				<label>'.$this->l('File:').'</label>
+				<label>'.$this->l('File').'</label>
 				<div class="margin-form">
 					<p><input type="file" name="file" /></p>
 					<p>'.$this->l('Upload file from your computer').'</p>
@@ -111,6 +148,38 @@ class AdminAttachments extends AdminTab
 			</fieldset>
 		</form>';
 	}
+	
+	public function getList($id_lang, $orderBy = NULL, $orderWay = NULL, $start = 0, $limit = NULL)
+	{
+		parent::getList((int)$id_lang, $orderBy, $orderWay, $start, $limit);
+		if (sizeof($this->_list))
+			$this->_productAttachements = Attachment::getProductAttached((int)$id_lang, $this->_list);	
+	}
+	
+	protected function _displayDeleteLink($token = NULL, $id)
+	{
+	    global $currentIndex;
+		
+		$_cacheLang['Delete'] = $this->l('Delete');
+		$_cacheLang['DeleteItem'] = $this->l('Delete item #', __CLASS__, TRUE, FALSE);
+		
+		if (isset($this->_productAttachements[$id]))
+		{
+			$productList = '';
+			foreach($this->_productAttachements[$id] as $product)
+				$productList .= $product.', ';
+		}
+		echo '
+			<script>
+				function confirmProductAttached(productList)
+				{
+					if (confirm(\''.$_cacheLang['DeleteItem'].$id.'\'))
+						return confirm(\''.$this->l('This attachment is used by the following products:').'\r\n\' + productList);
+					return false;
+				}
+			</script>
+			<a href="'.$currentIndex.'&'.$this->identifier.'='.$id.'&delete'.$this->table.'&token='.($token!=NULL ? $token : $this->token).'"
+			onclick="'.(isset($this->_productAttachements[$id]) ? 'return confirmProductAttached(\''.$productList.'\')' : 'return confirm(\''.$_cacheLang['DeleteItem'].$id.' ?'.(!is_null($this->specificConfirmDelete) ? '\r'.rtrim($this->specificConfirmDelete, ', ') : '').'\')' ).'">
+			<img src="../img/admin/delete.gif" alt="'.$_cacheLang['Delete'].'" title="'.$_cacheLang['Delete'].'" /></a>';
+	}
 }
-
-?>

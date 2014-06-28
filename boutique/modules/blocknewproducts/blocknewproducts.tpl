@@ -1,21 +1,49 @@
+{*
+* 2007-2013 PrestaShop
+*
+* NOTICE OF LICENSE
+*
+* This source file is subject to the Academic Free License (AFL 3.0)
+* that is bundled with this package in the file LICENSE.txt.
+* It is also available through the world-wide-web at this URL:
+* http://opensource.org/licenses/afl-3.0.php
+* If you did not receive a copy of the license and are unable to
+* obtain it through the world-wide-web, please send an email
+* to license@prestashop.com so we can send you a copy immediately.
+*
+* DISCLAIMER
+*
+* Do not edit or add to this file if you wish to upgrade PrestaShop to newer
+* versions in the future. If you wish to customize PrestaShop for your
+* needs please refer to http://www.prestashop.com for more information.
+*
+*  @author PrestaShop SA <contact@prestashop.com>
+*  @copyright  2007-2013 PrestaShop SA
+*  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
+*  International Registered Trademark & Property of PrestaShop SA
+*}
+
 <!-- MODULE Block new products -->
 <div id="new-products_block_right" class="block products_block">
-	<h4><a href="{$base_dir}new-products.php" title="{l s='New products' mod='blocknewproducts'}">{l s='New products' mod='blocknewproducts'}</a></h4>
+	<h4><a href="{$link->getPageLink('new-products.php')}" title="{l s='New products' mod='blocknewproducts'}">{l s='New products' mod='blocknewproducts'}</a></h4>
 	<div class="block_content">
-	{if $new_products|@count > 0}
-		<ul class="product_images">
-			<li><a href="{$new_products.0.link}" title="{$new_products.0.legend|escape:htmlall:'UTF-8'}"><img src="{$link->getImageLink($new_products.0.link_rewrite, $new_products.0.id_image, 'medium')}" alt="{$new_products.0.legend|escape:htmlall:'UTF-8'}" /></a></li>
-			{if $new_products|@count > 1}<li><a href="{$new_products.1.link}" title="{$new_products.1.legend|escape:htmlall:'UTF-8'}"><img src="{$link->getImageLink($new_products.1.link_rewrite, $new_products.1.id_image, 'medium')}" height="{$mediumSize.height}" width="{$mediumSize.width}" alt="{$new_products.1.legend|escape:htmlall:'UTF-8'}" /></a></li>{/if}
+	{if $new_products !== false}
+		<ul class="product_images clearfix">
+		{foreach from=$new_products item='product' name='newProducts'}
+			{if $smarty.foreach.newProducts.index < 2}
+				<li{if $smarty.foreach.newProducts.first} class="first"{/if}><a href="{$product.link}" title="{$product.legend|escape:html:'UTF-8'}"><img src="{$link->getImageLink($product.link_rewrite, $product.id_image, 'medium')}" height="{$mediumSize.height}" width="{$mediumSize.width}" alt="{$product.legend|escape:html:'UTF-8'}" /></a></li>
+			{/if}
+		{/foreach}
 		</ul>
 		<dl class="products">
 		{foreach from=$new_products item=newproduct name=myLoop}
-			<dt class="{if $smarty.foreach.myLoop.first}first_item{elseif $smarty.foreach.myLoop.last}last_item{else}item{/if}"><a href="{$newproduct.link}" title="{$newproduct.name|escape:htmlall:'UTF-8'}">{$newproduct.name|strip_tags|escape:htmlall:'UTF-8'}</a></dt>
-			{if $newproduct.description_short}<dd class="{if $smarty.foreach.myLoop.first}first_item{elseif $smarty.foreach.myLoop.last}last_item{else}item{/if}"><a href="{$newproduct.link}">{t text=$newproduct.description_short length='50' strip='true' encode='true'}</a>&nbsp;<a href="{$newproduct.link}"><img alt=">>" src="{$img_dir}bullet.gif"/></a></dd>{/if}
+			<dt class="{if $smarty.foreach.myLoop.first}first_item{elseif $smarty.foreach.myLoop.last}last_item{else}item{/if}"><a href="{$newproduct.link}" title="{$newproduct.name|escape:html:'UTF-8'}">{$newproduct.name|strip_tags|escape:html:'UTF-8'}</a></dt>
+			{if $newproduct.description_short}<dd class="{if $smarty.foreach.myLoop.first}first_item{elseif $smarty.foreach.myLoop.last}last_item{else}item{/if}"><a href="{$newproduct.link}">{$newproduct.description_short|strip_tags:'UTF-8'|truncate:50:'...'}</a>&nbsp;<a href="{$newproduct.link}"><img src="{$img_dir}bullet.gif" alt="&gt;&gt;" width="10" height="7" /></a></dd>{/if}
 		{/foreach}
 		</dl>
-		<p><a href="{$base_dir}new-products.php" title="{l s='All new products' mod='blocknewproducts'}" class="button_large">{l s='All new products' mod='blocknewproducts'}</a></p>
+		<p><a href="{$link->getPageLink('new-products.php')}" title="{l s='All new products' mod='blocknewproducts'}" class="button_large">{l s='All new products' mod='blocknewproducts'}</a></p>
 	{else}
-		<p>{l s='No new product at this time' mod='blocknewproducts'}</p>
+		<p>{l s='No new products at this time' mod='blocknewproducts'}</p>
 	{/if}
 	</div>
 </div>

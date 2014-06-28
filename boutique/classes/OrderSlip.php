@@ -1,31 +1,46 @@
 <?php
+/*
+* 2007-2013 PrestaShop
+*
+* NOTICE OF LICENSE
+*
+* This source file is subject to the Open Software License (OSL 3.0)
+* that is bundled with this package in the file LICENSE.txt.
+* It is also available through the world-wide-web at this URL:
+* http://opensource.org/licenses/osl-3.0.php
+* If you did not receive a copy of the license and are unable to
+* obtain it through the world-wide-web, please send an email
+* to license@prestashop.com so we can send you a copy immediately.
+*
+* DISCLAIMER
+*
+* Do not edit or add to this file if you wish to upgrade PrestaShop to newer
+* versions in the future. If you wish to customize PrestaShop for your
+* needs please refer to http://www.prestashop.com for more information.
+*
+*  @author PrestaShop SA <contact@prestashop.com>
+*  @copyright  2007-2013 PrestaShop SA
+*  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+*  International Registered Trademark & Property of PrestaShop SA
+*/
 
-/**
-  * OrderDetail class, OrderDetail.php
-  * Orders detail management
-  * @category classes
-  *
-  * @author PrestaShop <support@prestashop.com>
-  * @copyright PrestaShop
-  * @license http://www.opensource.org/licenses/osl-3.0.php Open-source licence 3.0
-  * @version 1.2
-  *
-  */
-
-class OrderSlip extends ObjectModel
+class OrderSlipCore extends ObjectModel
 {
 	/** @var integer */
 	public		$id;
-	
+
 	/** @var integer */
 	public 		$id_customer;
-	
+
 	/** @var integer */
 	public 		$id_order;
-	
+
+	/** @var float */
+	public		$conversion_rate;
+
 	/** @var integer */
 	public		$shipping_cost;
-	
+
 	/** @var string Object creation date */
 	public 		$date_add;
 
@@ -34,84 +49,139 @@ class OrderSlip extends ObjectModel
 
 	protected $tables = array ('order_slip');
 
-	protected	$fieldsRequired = array ('id_customer', 'id_order');
-	protected	$fieldsValidate = array('id_customer' => 'isUnsignedId', 'id_order' => 'isUnsignedId');
+	protected	$fieldsRequired = array ('id_customer', 'id_order', 'conversion_rate');
+	protected	$fieldsValidate = array('id_customer' => 'isUnsignedId', 'id_order' => 'isUnsignedId', 'conversion_rate' => 'isFloat');
 
 	protected 	$table = 'order_slip';
 	protected 	$identifier = 'id_order_slip';
-	
+
 	public function getFields()
 	{
 		parent::validateFields();
 
-		$fields['id_customer'] = intval($this->id_customer);
-		$fields['id_order'] = intval($this->id_order);
-		$fields['shipping_cost'] = intval($this->shipping_cost);
+		$fields['id_customer'] = (int)($this->id_customer);
+		$fields['id_order'] = (int)($this->id_order);
+		$fields['conversion_rate'] = (float)($this->conversion_rate);
+		$fields['shipping_cost'] = (int)($this->shipping_cost);
 		$fields['date_add'] = pSQL($this->date_add);
 		$fields['date_upd'] = pSQL($this->date_upd);
 		return $fields;
 	}
-	
+
 	public function addSlipDetail($orderDetailList, $productQtyList)
 	{
 		foreach ($orderDetailList as $key => $orderDetail)
-			if ($qty = intval($productQtyList[$key]))
-				Db::getInstance()->AutoExecute(_DB_PREFIX_.'order_slip_detail', array('id_order_slip' => intval($this->id), 'id_order_detail' => intval($orderDetail), 'product_quantity' => $qty), 'INSERT');
+		{
+			if ($qty = (int)($productQtyList[$key]))
+				Db::getInstance()->AutoExecute(_DB_PREFIX_.'order_slip_detail', array('id_order_slip' => (int)($this->id), 'id_order_detail' => (int)($orderDetail), 'product_quantity' => $qty), 'INSERT');
+		}
 	}
-	
-	static public function getOrdersSlip($customer_id, $order_id = false)
+
+	public static function getOrdersSlip($customer_id, $order_id = false)
 	{
-		global $cookie;
-		
 		return Db::getInstance()->ExecuteS('
 		SELECT *
 		FROM `'._DB_PREFIX_.'order_slip`
-		WHERE `id_customer` = '.intval($customer_id).
-		($order_id ? ' AND `id_order` = '.intval($order_id) : '').'
+		WHERE `id_customer` = '.(int)($customer_id).
+		($order_id ? ' AND `id_order` = '.(int)($order_id) : '').'
 		ORDER BY `date_add` DESC');
 	}
-	
-	static public function getOrdersSlipDetail($id_order_slip = true, $id_order_detail = false)
+
+	public static function getOrdersSlipDetail($id_order_slip = true, $id_order_detail = false)
 	{
-		return Db::getInstance()->ExecuteS(
-		($id_order_detail ? 'SELECT sum(`product_quantity`) as `total`' : 'SELECT *').
+		return Db::getInstance(_PS_USE_SQL_SLAVE_)->ExecuteS(
+		($id_order_detail ? 'SELECT SUM(`product_quantity`) `total`' : 'SELECT *').
 		'FROM `'._DB_PREFIX_.'order_slip_detail`'
-		.($id_order_slip ? ' WHERE `id_order_slip` = '.intval($id_order_slip) : '')
-		.($id_order_detail ? ' WHERE `id_order_detail` = '.intval($id_order_detail) : ''));
+		.($id_order_slip ? ' WHERE `id_order_slip` = '.(int)($id_order_slip) : '')
+		.($id_order_detail ? ' WHERE `id_order_detail` = '.(int)($id_order_detail) : ''));
 	}
-	
-	static public function getOrdersSlipProducts($orderSlipId, $order)
+
+	public static function getOrdersSlipProducts($orderSlipId, $order)
 	{
+		$discounts = $order->getDiscounts(true);
 		$productsRet = self::getOrdersSlipDetail($orderSlipId);
 		$products = $order->getProductsDetail();
+
 		$tmp = array();
 		foreach ($productsRet as $slip_detail)
 			$tmp[$slip_detail['id_order_detail']] = $slip_detail['product_quantity'];
-		$resTab = array();
-		foreach ($products as $key => $product)
+		foreach ($products as $key => &$product)
+		{											
 			if (isset($tmp[$product['id_order_detail']]))
-			{
-				$resTab[$key] = $product;
-				$resTab[$key]['product_quantity'] = $tmp[$product['id_order_detail']];;
+			{		
+				$product['product_quantity'] = $tmp[$product['id_order_detail']];
+				$order->setProductPrices($product);				
+				if (count($discounts))
+				{
+					foreach ($discounts as $discount)
+					{
+						if ($discount['id_discount_type'] == 1)
+						{						
+							$product['product_price'] = $product['product_price'] - ($product['product_price'] * ($discount['value'] / 100));
+							$product['product_price_wt'] = $product['product_price_wt'] - ($product['product_price_wt'] * ($discount['value'] / 100));
+						}
+						elseif ($discount['id_discount_type'] == 2)
+						{
+							$product['product_price'] = $product['product_price'] - (($discount['value'] * ($product['product_price_wt'] / $order->total_products_wt)) / (1.00 + ($product['tax_rate'] / 100)));
+							$product['product_price_wt'] = $product['product_price_wt'] - (($discount['value'] * ($product['product_price_wt'] / $order->total_products_wt)));
+							$product['product_price_wt'] = Tools::ps_round($product['product_price_wt'] + $product['ecotax'] * (1 + $product['ecotax_tax_rate'] / 100), 2);
+						}
+					}
+					$product['product_price_wt_but_ecotax'] = $product['product_price_wt'];
+					$product['total_wt'] = $product['product_quantity'] * $product['product_price_wt'];
+					$product['total_price'] = $product['product_quantity'] * $product['product_price'];
+				}
 			}
-		return $order->getProducts($resTab);
+			else
+				unset($products[$key]);
+		}
+		return $products;
 	}
-	
-	static public function createOrderSlip($order, $productList, $qtyList, $shipping_cost = false)
+
+	public function getProducts()
 	{
-		// create orderSlip
+		$result = Db::getInstance(_PS_USE_SQL_SLAVE_)->ExecuteS('
+		SELECT *, osd.product_quantity
+		FROM `'._DB_PREFIX_.'order_slip_detail` osd
+		INNER JOIN `'._DB_PREFIX_.'order_detail` od ON osd.id_order_detail = od.id_order_detail
+		WHERE osd.`id_order_slip` = '.(int)$this->id);
+
+		$order = new Order($this->id_order);
+		$products = array();
+		foreach ($result as $row)
+		{
+			$order->setProductPrices($row);
+			$products[] = $row;
+		}
+		return $products;
+	}
+
+	public static function getSlipsIdByDate($dateFrom, $dateTo)
+	{
+		$result = Db::getInstance(_PS_USE_SQL_SLAVE_)->ExecuteS('
+		SELECT `id_order_slip`
+		FROM `'._DB_PREFIX_.'order_slip`
+		WHERE `date_add` BETWEEN \''.pSQL($dateFrom).' 00:00:00\' AND \''.pSQL($dateTo).' 23:59:59\'
+		ORDER BY `date_add` ASC');
+
+		$slips = array();
+		foreach ($result as $slip)
+			$slips[] = (int)$slip['id_order_slip'];
+		return $slips;
+	}
+
+	public static function createOrderSlip($order, $productList, $qtyList, $shipping_cost = false)
+	{
+		$currency = new Currency($order->id_currency);
 		$orderSlip =  new OrderSlip();
-		$orderSlip->id_customer = intval($order->id_customer);
-		$orderSlip->id_order = intval($order->id);
-		$orderSlip->shipping_cost = intval($shipping_cost);
+		$orderSlip->id_customer = (int)($order->id_customer);
+		$orderSlip->id_order = (int)($order->id);
+		$orderSlip->shipping_cost = (int)($shipping_cost);
+		$orderSlip->conversion_rate = $currency->conversion_rate;
 		if (!$orderSlip->add())
 			return false;
-		
-		// add details
+
 		$orderSlip->addSlipDetail($productList, $qtyList);
-		
 		return true;
 	}
 }
-
-?>

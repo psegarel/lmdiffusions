@@ -1,15 +1,32 @@
 <?php
+/*
+* 2007-2013 PrestaShop
+*
+* NOTICE OF LICENSE
+*
+* This source file is subject to the Academic Free License (AFL 3.0)
+* that is bundled with this package in the file LICENSE.txt.
+* It is also available through the world-wide-web at this URL:
+* http://opensource.org/licenses/afl-3.0.php
+* If you did not receive a copy of the license and are unable to
+* obtain it through the world-wide-web, please send an email
+* to license@prestashop.com so we can send you a copy immediately.
+*
+* DISCLAIMER
+*
+* Do not edit or add to this file if you wish to upgrade PrestaShop to newer
+* versions in the future. If you wish to customize PrestaShop for your
+* needs please refer to http://www.prestashop.com for more information.
+*
+*  @author PrestaShop SA <contact@prestashop.com>
+*  @copyright  2007-2013 PrestaShop SA
+*  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
+*  International Registered Trademark & Property of PrestaShop SA
+*/
 
-/**
-  * Statistics
-  * @category stats
-  *
-  * @author Damien Metzger / Epitech
-  * @copyright Epitech / PrestaShop
-  * @license http://www.opensource.org/licenses/osl-3.0.php Open-source licence 3.0
-  * @version 1.1
-  */
-  
+if (!defined('_PS_VERSION_'))
+	exit;
+
 class GraphGoogleChart extends ModuleGraphEngine
 {
 	private $_width;
@@ -27,8 +44,10 @@ class GraphGoogleChart extends ModuleGraphEngine
 		else
 		{
 			$this->name = 'graphgooglechart';
-			$this->tab = 'Stats Engines';
+			$this->tab = 'administration';
 			$this->version = 1.0;
+			$this->author = 'PrestaShop';
+			$this->need_instance = 0;
 
 			Module::__construct();
 				
@@ -37,7 +56,7 @@ class GraphGoogleChart extends ModuleGraphEngine
 		}
     }
 
-	function install()
+	public function install()
 	{
 		return (parent::install() AND $this->registerHook('GraphEngine'));
 	}
@@ -93,10 +112,19 @@ class GraphGoogleChart extends ModuleGraphEngine
 		$url = 'bvs&chxt=x,y&chxr=1,0,'.$max_y.'&chbh='.$this->getChbh($sizeof_values).'&chg=0,12.5&chxl=0:|';
 		for ($i = 0; $i < $sizeof_values; $i++)
 			if (!isset($this->_values[0]) || !is_array($this->_values[0]))
-				$this->_values[$i] = ($this->_values[$i] * 100) / $max_y;
+			{
+				if (isset($this->_values[$i]))
+					$this->_values[$i] = ($this->_values[$i] * 100) / $max_y;
+				else
+					$this->_values[$i] = 0;
+			}
 			else
 				foreach ($this->_values as $k => $value)
+				{
+					if (!isset($this->_values[$k][$i]))
+						$this->_values[$k][$i] = 0;
 					$this->_values[$k][$i] = ($this->_values[$k][$i] * 100) / $max_y;
+				}
 		return ($url);
 	}
 	
@@ -155,7 +183,7 @@ class GraphGoogleChart extends ModuleGraphEngine
 			}
 		}
 		
-		$url .= '&chs='.intval($this->_width).'x'.intval($this->_height);
+		$url .= '&chs='.(int)($this->_width).'x'.(int)($this->_height);
 		if (!isset($this->_values[0]) || !is_array($this->_values[0]))
 			$url .= (isset($this->_titles['main'])) ? '&chtt='.urlencode($this->_titles['main']) : '';
 		else
@@ -166,9 +194,9 @@ class GraphGoogleChart extends ModuleGraphEngine
 			{
 				if ($i == 0 && !empty($this->_titles['main']))
 					$url .= '&chtt='.urlencode($this->_titles['main'][$i]);
-				else if ($i == 1)
+				elseif ($i == 1)
 					$url .= '&chdl=';
-				else if ($i > 1)
+				elseif ($i > 1)
 					$url .= '|';
 				if ($i != 0)
 					$url .= urlencode($this->_titles['main'][$i]);
@@ -216,4 +244,4 @@ class GraphGoogleChart extends ModuleGraphEngine
 	}
 }
 
-?>
+

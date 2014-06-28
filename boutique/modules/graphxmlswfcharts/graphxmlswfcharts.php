@@ -1,15 +1,42 @@
 <?php
+/*
+* 2007-2013 PrestaShop
+*
+* NOTICE OF LICENSE
+*
+* This source file is subject to the Academic Free License (AFL 3.0)
+* that is bundled with this package in the file LICENSE.txt.
+* It is also available through the world-wide-web at this URL:
+* http://opensource.org/licenses/afl-3.0.php
+* If you did not receive a copy of the license and are unable to
+* obtain it through the world-wide-web, please send an email
+* to license@prestashop.com so we can send you a copy immediately.
+*
+* DISCLAIMER
+*
+* Do not edit or add to this file if you wish to upgrade PrestaShop to newer
+* versions in the future. If you wish to customize PrestaShop for your
+* needs please refer to http://www.prestashop.com for more information.
+*
+*  @author PrestaShop SA <contact@prestashop.com>
+*  @copyright  2007-2013 PrestaShop SA
+*  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
+*  International Registered Trademark & Property of PrestaShop SA
+*/
 
 /**
   * Statistics
   * @category stats
   *
-  * @author Damien Metzger / Epitech
-  * @copyright Epitech / PrestaShop
-  * @license http://www.opensource.org/licenses/osl-3.0.php Open-source licence 3.0
-  * @version 1.1
+  * @author PrestaShop
+  * @copyright PrestaShop
+  * @license http://www.opensource.org/licenses/afl-3.0.php Open-source licence 3.0
+  * @version 1.4
   */
-  
+
+if (!defined('_PS_VERSION_'))
+	exit;
+
 class GraphXmlSwfCharts extends ModuleGraphEngine
 {
 	private	$_xml;
@@ -18,7 +45,7 @@ class GraphXmlSwfCharts extends ModuleGraphEngine
 	private	$_legend_more = '';
 	private	$_titles = '';
 
-	function __construct($type = null)
+	public function __construct($type = null)
 	{
 		if ($type != null)
 		{
@@ -28,8 +55,10 @@ class GraphXmlSwfCharts extends ModuleGraphEngine
 		else
 		{
 			$this->name = 'graphxmlswfcharts';
-			$this->tab = 'Stats Engines';
+			$this->tab = 'administration';
 			$this->version = 1.0;
+			$this->author = 'PrestaShop';
+			$this->need_instance = 0;
 
 			Module::__construct();
 			
@@ -38,7 +67,7 @@ class GraphXmlSwfCharts extends ModuleGraphEngine
 		}
 	}
 
-	function install()
+	public function install()
 	{
 		return (parent::install() AND $this->registerHook('GraphEngine'));
 	}
@@ -62,7 +91,7 @@ class GraphXmlSwfCharts extends ModuleGraphEngine
 				alert("This page requires AC_RunActiveContent.js.");
 			} else {
 				var hasRightVersion = DetectFlashVer(requiredMajorVersion, requiredMinorVersion, requiredRevision);
-				if(hasRightVersion) {
+				if (hasRightVersion) {
 					AC_FL_RunContent(
 					\'codebase\', \'http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=9,0,45,0\',
 					\'width\', \''.$params['width'].'\',
@@ -205,7 +234,7 @@ class GraphXmlSwfCharts extends ModuleGraphEngine
 		{
 			$this->_xml .= '<row><string>'.$this->_titles['main'].'</string>';
 			foreach ($this->_values as $value)
-				$this->_xml .= '<number>'. (($value > 0) ? $value : -$value) .'</number>'; //si jamais la valeur est négative... logiquement ne devrait jamais arriver
+				$this->_xml .= '<number>'. (($value > 0) ? $value : -$value) .'</number>'; //si jamais la valeur est nï¿½gative... logiquement ne devrait jamais arriver
 			$this->_xml .= '</row>';
 		}
 		else

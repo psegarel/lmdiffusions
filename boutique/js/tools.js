@@ -1,3 +1,44 @@
+/*
+* 2007-2013 PrestaShop
+*
+* NOTICE OF LICENSE
+*
+* This source file is subject to the Open Software License (OSL 3.0)
+* that is bundled with this package in the file LICENSE.txt.
+* It is also available through the world-wide-web at this URL:
+* http://opensource.org/licenses/osl-3.0.php
+* If you did not receive a copy of the license and are unable to
+* obtain it through the world-wide-web, please send an email
+* to license@prestashop.com so we can send you a copy immediately.
+*
+* DISCLAIMER
+*
+* Do not edit or add to this file if you wish to upgrade PrestaShop to newer
+* versions in the future. If you wish to customize PrestaShop for your
+* needs please refer to http://www.prestashop.com for more information.
+*
+*  @author PrestaShop SA <contact@prestashop.com>
+*  @copyright  2007-2013 PrestaShop SA
+*  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+*  International Registered Trademark & Property of PrestaShop SA
+*/
+
+function ps_round(value, precision)
+{
+	if (typeof(roundMode) == 'undefined')
+		roundMode = 2;
+	if (typeof(precision) == 'undefined')
+		precision = 2;
+	
+	method = roundMode;
+	if (method == 0)
+		return ceilf(value, precision);
+	else if (method == 1)
+		return floorf(value, precision);
+	precisionFactor = precision == 0 ? 1 : Math.pow(10, precision);
+	return Math.round(value * precisionFactor) / precisionFactor;
+}
+
 function	autoUrl(name, dest)
 {
 	var loc;
@@ -80,7 +121,7 @@ function addBookmark(url, title)
 {
 	if (window.sidebar)
 		return window.sidebar.addPanel(title, url, "");
-	else if ( window.external )
+	else if ( window.external && ('AddFavorite' in window.external))
 		return window.external.AddFavorite( url, title);
 	else if (window.opera && window.print)
 		return true;
@@ -91,9 +132,10 @@ function writeBookmarkLink(url, title, text, img)
 {
 	var insert = '';
 	if (img)
-		insert = writeBookmarkLinkObject(url, title, '<img src="' + img + '" alt="' + escape(text) + '" title="' + escape(text) + '" />') + '&nbsp';
+		insert = writeBookmarkLinkObject(url, title, '<img src="' + img + '" alt="' + escape(text) + '" title="' + escape(text) + '" />') + '&nbsp;';
 	insert += writeBookmarkLinkObject(url, title, text);
-	document.write(insert);
+	if (window.sidebar || window.opera && window.print || (window.external && ('AddFavorite' in window.external)))	
+		document.write(insert);
 }
 
 function writeBookmarkLinkObject(url, title, insert)
@@ -107,11 +149,91 @@ function writeBookmarkLinkObject(url, title, insert)
 
 function checkCustomizations()
 {
-	var tmp;
 	var pattern = new RegExp(' ?filled ?');
-	for (var i = 0; i < customizationFields.length; i++)
-		/* If the field is required and empty then we abort */
-		if (parseInt(customizationFields[i][1]) == 1 && $('#' + customizationFields[i][0]).val() == '' && !pattern.test($('#' + customizationFields[i][0]).attr('class')))
-			return false;
+
+	if (typeof customizationFields != 'undefined')
+		for (var i = 0; i < customizationFields.length; i++)
+			/* If the field is required and empty then we abort */
+			if (parseInt(customizationFields[i][1]) == 1 && ($('#' + customizationFields[i][0]).html() == '' ||  $('#' + customizationFields[i][0]).html() != $('#' + customizationFields[i][0]).val()) && !pattern.test($('#' + customizationFields[i][0]).attr('class')))
+				return false;
 	return true;
 }
+
+function emptyCustomizations()
+{
+	if(typeof(customizationFields) == 'undefined') return;
+
+	$('.customization_block .success').fadeOut(function(){
+		$(this).remove();
+	});
+	$('.customization_block .error').fadeOut(function(){
+		$(this).remove();
+	});
+	for (var i = 0; i < customizationFields.length; i++)
+	{
+		$('#' + customizationFields[i][0]).html('');
+		$('#' + customizationFields[i][0]).val('');
+	}
+}
+
+function ceilf(value, precision)
+{
+	if (typeof(precision) == 'undefined')
+		precision = 0;
+	var precisionFactor = precision == 0 ? 1 : Math.pow(10, precision);
+	var tmp = value * precisionFactor;
+	var tmp2 = tmp.toString();
+	// If the current value has already the desired precision
+	if (tmp2.indexOf('.') === false)
+		return (value);
+	if (tmp2.charAt(tmp2.length - 1) == 0)
+		return value;
+	return Math.ceil(tmp) / precisionFactor;
+}
+
+function floorf(value, precision)
+{
+	if (typeof(precision) == 'undefined')
+		precision = 0;
+	var precisionFactor = precision == 0 ? 1 : Math.pow(10, precision);
+	var tmp = value * precisionFactor;
+	var tmp2 = tmp.toString();
+	// If the current value has already the desired precision
+	if (tmp2.indexOf('.') === false)
+		return (value);
+	if (tmp2.charAt(tmp2.length - 1) == 0)
+		return value;
+	return Math.floor(tmp) / precisionFactor;
+}
+
+function setCurrency(id_currency)
+{
+	$.ajax({
+		type: 'POST',
+		headers: { "cache-control": "no-cache" },   		
+		url: baseDir + 'changecurrency.php' + '?rand=' + new Date().getTime(),
+		data: 'id_currency='+parseInt(id_currency),
+		success: function(msg)
+		{
+			location.reload(true);
+		}
+	});
+}
+
+function isArrowKey(k_ev)
+{
+	var unicode=k_ev.keyCode? k_ev.keyCode : k_ev.charCode;
+	if (unicode >= 37 && unicode <= 40)
+		return true;
+	return false;
+}
+
+//On dom ready
+$().ready(function()
+{
+	// Hide all elements with .hideOnSubmit class when parent form is submit
+	$('form').submit(function()
+	{
+		$(this).find('.hideOnSubmit').hide();
+	});
+});

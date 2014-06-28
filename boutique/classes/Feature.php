@@ -1,20 +1,32 @@
 <?php
+/*
+* 2007-2013 PrestaShop
+*
+* NOTICE OF LICENSE
+*
+* This source file is subject to the Open Software License (OSL 3.0)
+* that is bundled with this package in the file LICENSE.txt.
+* It is also available through the world-wide-web at this URL:
+* http://opensource.org/licenses/osl-3.0.php
+* If you did not receive a copy of the license and are unable to
+* obtain it through the world-wide-web, please send an email
+* to license@prestashop.com so we can send you a copy immediately.
+*
+* DISCLAIMER
+*
+* Do not edit or add to this file if you wish to upgrade PrestaShop to newer
+* versions in the future. If you wish to customize PrestaShop for your
+* needs please refer to http://www.prestashop.com for more information.
+*
+*  @author PrestaShop SA <contact@prestashop.com>
+*  @copyright  2007-2013 PrestaShop SA
+*  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+*  International Registered Trademark & Property of PrestaShop SA
+*/
 
-/**
-  * Feature class, Feature.php
-  * Feature management
-  * @category classes
-  *
-  * @author PrestaShop <support@prestashop.com>
-  * @copyright PrestaShop
-  * @license http://www.opensource.org/licenses/osl-3.0.php Open-source licence 3.0
-  * @version 1.2
-  *
-  */
-
-class		Feature extends ObjectModel
+class FeatureCore extends ObjectModel
 {
- 	/** @var string Name */
+ 	/** @var mixed Name */
 	public 		$name;
 	
  	protected 	$fieldsRequiredLang = array('name');
@@ -23,10 +35,16 @@ class		Feature extends ObjectModel
 		
 	protected 	$table = 'feature';
 	protected 	$identifier = 'id_feature';
+	
+	protected	$webserviceParameters = array(
+		'objectsNodeName' => 'product_features',
+		'objectNodeName' => 'product_feature',
+		'fields' => array(),
+	);
 
 	public function getFields()
 	{
-		return array('id_feature' => NULL);
+		return array('id_feature' => null);
 	}
 	
 	/**
@@ -48,13 +66,13 @@ class		Feature extends ObjectModel
 	 * @return array Array with feature's data
 	 * @static
 	 */
-	static public function getFeature($id_lang, $id_feature)
+	public static function getFeature($id_lang, $id_feature)
 	{
 		return Db::getInstance()->getRow('
 		SELECT *
 		FROM `'._DB_PREFIX_.'feature` f
-		LEFT JOIN `'._DB_PREFIX_.'feature_lang` fl ON ( f.`id_feature` = fl.`id_feature` AND fl.`id_lang` = '.intval($id_lang).')
-		WHERE f.`id_feature` = '.intval($id_feature));
+		LEFT JOIN `'._DB_PREFIX_.'feature_lang` fl ON ( f.`id_feature` = fl.`id_feature` AND fl.`id_lang` = '.(int)($id_lang).')
+		WHERE f.`id_feature` = '.(int)($id_feature));
 	}
 	
 	/**
@@ -64,12 +82,12 @@ class		Feature extends ObjectModel
 	 * @return array Multiple arrays with feature's data
 	 * @static
 	 */
-	static public function getFeatures($id_lang)
+	public static function getFeatures($id_lang)
 	{
 		return Db::getInstance()->ExecuteS('
 		SELECT *
 		FROM `'._DB_PREFIX_.'feature` f
-		LEFT JOIN `'._DB_PREFIX_.'feature_lang` fl ON (f.`id_feature` = fl.`id_feature` AND fl.`id_lang` = '.intval($id_lang).')
+		LEFT JOIN `'._DB_PREFIX_.'feature_lang` fl ON (f.`id_feature` = fl.`id_feature` AND fl.`id_lang` = '.(int)($id_lang).')
 		ORDER BY fl.`name` ASC');
 	}
 	
@@ -82,7 +100,8 @@ class		Feature extends ObjectModel
 	public function deleteSelection($selection)
 	{
 		/* Also delete Attributes */
-		foreach ($selection AS $value) {
+		foreach ($selection as $value)
+		{
 			$obj = new Feature($value);
 			if (!$obj->delete())
 				return false;
@@ -92,32 +111,42 @@ class		Feature extends ObjectModel
 
 	public function add($autodate = true, $nullValues = false)
 	{
-		return parent::add($autodate, true);
+		$return = parent::add($autodate, true);
+		Module::hookExec('afterSaveFeature', array('id_feature' => $this->id));
+		return $return;
 	}
 
 	public function delete()
 	{
-	 	/* Also delete related attributes */
-		Db::getInstance()->Execute('DELETE FROM `'._DB_PREFIX_.'feature_value_lang` WHERE `id_feature_value` IN (SELECT id_feature_value FROM `'._DB_PREFIX_.'feature_value` WHERE `id_feature` = '.intval($this->id).')');
-		Db::getInstance()->Execute('DELETE FROM `'._DB_PREFIX_.'feature_value` WHERE `id_feature` = '.intval($this->id));
-		return parent::delete();
+		/* Also delete related attributes */
+		Db::getInstance()->Execute('DELETE FROM `'._DB_PREFIX_.'feature_value_lang` WHERE `id_feature_value` IN (SELECT id_feature_value FROM `'._DB_PREFIX_.'feature_value` WHERE `id_feature` = '.(int)($this->id).')');
+		Db::getInstance()->Execute('DELETE FROM `'._DB_PREFIX_.'feature_value` WHERE `id_feature` = '.(int)($this->id));
+		/* Also delete related products */
+		Db::getInstance()->Execute('DELETE FROM `'._DB_PREFIX_.'feature_product` WHERE `id_feature` = '.(int)($this->id));
+		$return = parent::delete();
+		if ($return)
+			Module::hookExec('afterDeleteFeature', array('id_feature' => $this->id));
+		return $return;
 	}
-	
+
 	public function update($nullValues = false)
 	{
-	 	$result = 1;
-	 	$fields = $this->getTranslationsFieldsChild();
+		$this->clearCache();
+		
+		$result = 1;
+		$fields = $this->getTranslationsFieldsChild();
 		foreach ($fields as $field)
 		{
-			foreach ($field as $key => $value)
-			 	if (!Validate::isTableOrIdentifier($key))
-	 				die(Tools::displayError());
+			foreach (array_keys($field) as $key)
+				if (!Validate::isTableOrIdentifier($key))
+					die(Tools::displayError());
 			$mode = Db::getInstance()->getRow('SELECT `id_lang` FROM `'.pSQL(_DB_PREFIX_.$this->table).'_lang` WHERE `'.pSQL($this->identifier).
-			'` = '.intval($this->id).' AND `id_lang` = '.intval($field['id_lang']));
+			'` = '.(int)($this->id).' AND `id_lang` = '.(int)($field['id_lang']));
 			$result *= (!Db::getInstance()->NumRows()) ? Db::getInstance()->AutoExecute(_DB_PREFIX_.$this->table.'_lang', $field, 'INSERT') : 
 			Db::getInstance()->AutoExecute(_DB_PREFIX_.$this->table.'_lang', $field, 'UPDATE', '`'.
-			pSQL($this->identifier).'` = '.intval($this->id).' AND `id_lang` = '.intval($field['id_lang']));
+			pSQL($this->identifier).'` = '.(int)($this->id).' AND `id_lang` = '.(int)($field['id_lang']));
 		}
+		Module::hookExec('afterSaveFeature', array('id_feature' => $this->id));
 		return $result;
 	}
 	
@@ -128,12 +157,12 @@ class		Feature extends ObjectModel
 	* @return int Number of feature
 	* @static
 	*/
-	static public function nbFeatures($id_lang)
+	public static function nbFeatures($id_lang)
 	{
 		$result = Db::getInstance()->getRow('
 		SELECT COUNT(ag.`id_feature`) as nb
 		FROM `'._DB_PREFIX_.'feature` ag
-		LEFT JOIN `'._DB_PREFIX_.'feature_lang` agl ON (ag.`id_feature` = agl.`id_feature` AND `id_lang` = '.intval($id_lang).')
+		LEFT JOIN `'._DB_PREFIX_.'feature_lang` agl ON (ag.`id_feature` = agl.`id_feature` AND `id_lang` = '.(int)($id_lang).')
 		ORDER BY `name` ASC');
 		return ($result['nb']);
 	}
@@ -145,11 +174,11 @@ class		Feature extends ObjectModel
 	* @param integer $id_product Product id	
 	* @param array $value Feature Value		
 	*/	
-	static public function addFeatureImport($name)
+	public static function addFeatureImport($name)
 	{
 		$rq = Db::getInstance()->getRow('SELECT `id_feature` FROM '._DB_PREFIX_.'feature_lang WHERE `name` = \''.pSQL($name).'\' GROUP BY `id_feature`');
 		if (!empty($rq))
-			return intval($rq['id_feature']);
+			return (int)($rq['id_feature']);
 		// Feature doesn't exist, create it
 		$feature = new Feature();
 		$languages = Language::getLanguages();
@@ -158,5 +187,27 @@ class		Feature extends ObjectModel
 		$feature->add();
 		return $feature->id;
 	}
+	
+	public static function getFeaturesForComparison($list_ids_product, $id_lang)
+	{
+		$ids = '';
+		foreach ($list_ids_product as $id)
+			$ids .= (int)($id).',';
+			
+		$ids = rtrim($ids, ',');
+	
+		if (empty($ids))
+			return false;
+			
+		return Db::getInstance()->ExecuteS('
+		SELECT * , COUNT(*) as nb
+		FROM `'._DB_PREFIX_.'feature` f
+		LEFT JOIN `'._DB_PREFIX_.'feature_product` fp ON f.`id_feature` = fp.`id_feature`
+		LEFT JOIN `'._DB_PREFIX_.'feature_lang` fl ON f.`id_feature` = fl.`id_feature`
+		WHERE fp.`id_product` IN ('.$ids.')
+		AND `id_lang` = '.(int)$id_lang.'
+		GROUP BY f.`id_feature`
+		ORDER BY nb DESC');
+	}
 }
-?>
+

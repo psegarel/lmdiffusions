@@ -1,12 +1,41 @@
 <?php
+/*
+* 2007-2013 PrestaShop
+*
+* NOTICE OF LICENSE
+*
+* This source file is subject to the Academic Free License (AFL 3.0)
+* that is bundled with this package in the file LICENSE.txt.
+* It is also available through the world-wide-web at this URL:
+* http://opensource.org/licenses/afl-3.0.php
+* If you did not receive a copy of the license and are unable to
+* obtain it through the world-wide-web, please send an email
+* to license@prestashop.com so we can send you a copy immediately.
+*
+* DISCLAIMER
+*
+* Do not edit or add to this file if you wish to upgrade PrestaShop to newer
+* versions in the future. If you wish to customize PrestaShop for your
+* needs please refer to http://www.prestashop.com for more information.
+*
+*  @author PrestaShop SA <contact@prestashop.com>
+*  @copyright  2007-2013 PrestaShop SA
+*  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
+*  International Registered Trademark & Property of PrestaShop SA
+*/
+
+if (!defined('_PS_VERSION_'))
+	exit;
 
 class TrackingFront extends Module
 {
 	public function __construct()
 	{
 		$this->name = 'trackingfront';
-		$this->tab = 'Stats';
+		$this->tab = 'shipping_logistics';
 		$this->version = 1.0;
+		$this->author = 'PrestaShop';
+		$this->need_instance = 0;
 
 		parent::__construct();
 
@@ -26,9 +55,9 @@ class TrackingFront extends Module
 			$result = Db::getInstance()->getRow('
 			SELECT `id_referrer`
 			FROM `'._DB_PREFIX_.'referrer`
-			WHERE `id_referrer` = '.intval(Tools::getValue('id_referrer')).' AND `passwd` = \''.pSQL(Tools::getValue('token')).'\'');
+			WHERE `id_referrer` = '.(int)(Tools::getValue('id_referrer')).' AND `passwd` = \''.pSQL(Tools::getValue('token')).'\'');
 			if (isset($result['id_referrer']) ? $result['id_referrer'] : false)
-				Referrer::getAjaxProduct(intval(Tools::getValue('id_referrer')), intval(Tools::getValue('id_product')), $fakeEmployee);
+				Referrer::getAjaxProduct((int)(Tools::getValue('id_referrer')), (int)(Tools::getValue('id_product')), $fakeEmployee);
 		}
 		elseif (Tools::isSubmit('logout_tracking'))
 		{
@@ -47,7 +76,7 @@ class TrackingFront extends Module
 				$errors[] = $this->l('invalid login');
 			elseif (empty($passwd))
 				$errors[] = $this->l('password is required');
-			elseif (!Validate::isPasswd($passwd))
+			elseif (!Validate::isPasswd($passwd,1))
 				$errors[] = $this->l('invalid password');
 			else
 			{
@@ -56,7 +85,7 @@ class TrackingFront extends Module
 				SELECT `id_referrer`
 				FROM `'._DB_PREFIX_.'referrer`
 				WHERE `name` = \''.pSQL($login).'\' AND `passwd` = \''.pSQL($passwd).'\'');
-				if (!isset($result['id_referrer']) OR !($tracking_id = intval($result['id_referrer'])))
+				if (!isset($result['id_referrer']) OR !($tracking_id = (int)($result['id_referrer'])))
 					$errors[] = $this->l('authentication failed');
 				else
 				{
@@ -73,20 +102,38 @@ class TrackingFront extends Module
 			$cookie->stats_date_from = Tools::getValue('datepickerFrom');
 			$cookie->stats_date_to = Tools::getValue('datepickerTo');
 		}
-		if (Tools::isSubmit('submitDateToday'))
+		if (Tools::isSubmit('submitDateDay'))
 		{
-			$cookie->stats_date_from = date('Y-m-d');
-			$cookie->stats_date_to = date('Y-m-d');
+			$from = date('Y-m-d');
+			$to = date('Y-m-d');
+		}
+		if (Tools::isSubmit('submitDateDayPrev'))
+		{
+			$yesterday = time() - 60*60*24;
+			$from = date('Y-m-d', $yesterday);
+			$to = date('Y-m-d', $yesterday);
 		}
 		if (Tools::isSubmit('submitDateMonth'))
 		{
-			$cookie->stats_date_from = date('Y-m-01');
-			$cookie->stats_date_to = date('Y-m-t');
+			$from = date('Y-m-01');
+			$to = date('Y-m-t');
+		}
+		if (Tools::isSubmit('submitDateMonthPrev'))
+		{
+			$m = (date('m') == 1 ? 12 : date('m') - 1);
+			$y = ($m == 12 ? date('Y') - 1 : date('Y'));
+			$from = $y.'-'.$m.'-01';
+			$to = $y.'-'.$m.date('-t', mktime(12, 0, 0, $m, 15, $y));
 		}
 		if (Tools::isSubmit('submitDateYear'))
 		{
-			$cookie->stats_date_from = date('Y-01-01');
-			$cookie->stats_date_to = date('Y-12-31');
+			$from = date('Y-01-01');
+			$to = date('Y-12-31');
+		}
+		if (Tools::isSubmit('submitDateYearPrev'))
+		{
+			$from = (date('Y') - 1).date('-01-01');
+			$to = (date('Y') - 1).date('-12-31');
 		}
 	}
 	
@@ -98,7 +145,7 @@ class TrackingFront extends Module
 		$result = Db::getInstance()->getRow('
 		SELECT `id_referrer`
 		FROM `'._DB_PREFIX_.'referrer`
-		WHERE `id_referrer` = '.intval($cookie->tracking_id).' AND `passwd` = \''.pSQL($cookie->tracking_passwd).'\'');
+		WHERE `id_referrer` = '.(int)($cookie->tracking_id).' AND `passwd` = \''.pSQL($cookie->tracking_passwd).'\'');
 		return isset($result['id_referrer']) ? $result['id_referrer'] : false;
 	}
 		
@@ -118,9 +165,9 @@ class TrackingFront extends Module
 		$fakeEmployee = new Employee();
 		$fakeEmployee->stats_date_from = $cookie->stats_date_from;
 		$fakeEmployee->stats_date_to = $cookie->stats_date_to;
-		Referrer::refreshCache(array(array('id_referrer' => intval($cookie->tracking_id))), $fakeEmployee);
+		Referrer::refreshCache(array(array('id_referrer' => (int)($cookie->tracking_id))), $fakeEmployee);
 		
-		$referrer = new Referrer(intval($cookie->tracking_id));
+		$referrer = new Referrer((int)($cookie->tracking_id));
 		$smarty->assign('referrer', $referrer);
 		$smarty->assign('datepickerFrom', $fakeEmployee->stats_date_from);
 		$smarty->assign('datepickerTo', $fakeEmployee->stats_date_to);
@@ -141,13 +188,13 @@ class TrackingFront extends Module
 			'order_rate' => $this->l('Order rate'));
 		$smarty->assign('displayTab', $displayTab);
 		
-		$products = Product::getSimpleProducts(intval($cookie->id_lang));
+		$products = Product::getSimpleProducts((int)($cookie->id_lang));
 		$productsArray = array();
 		foreach ($products as $product)
 			$productsArray[] = $product['id_product'];
 		
 		$echo = '
-		<script type="text/javascript" src="../../js/jquery/datepicker/ui/i18n/ui.datepicker-'.Db::getInstance()->getValue('SELECT iso_code FROM '._DB_PREFIX_.'lang WHERE `id_lang` = '.intval($cookie->id_lang)).'.js"></script>
+		<script type="text/javascript" src="../../js/jquery/datepicker/ui/i18n/ui.datepicker-'.Db::getInstance()->getValue('SELECT iso_code FROM '._DB_PREFIX_.'lang WHERE `id_lang` = '.(int)($cookie->id_lang)).'.js"></script>
 		<script type="text/javascript">
 			$("#datepickerFrom").datepicker({
 				prevText:"",
@@ -208,11 +255,10 @@ class TrackingFront extends Module
 		$echo2 = '
 		<script type="text/javascript">
 			updateValues();
-			showProductLines();
+			//showProductLines();
 		</script>';
 		
 		return $this->display(__FILE__, 'header.tpl').$echo.$this->display(__FILE__, 'account.tpl').$echo2;
 	}	
 }
 
-?>
