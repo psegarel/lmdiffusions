@@ -1,7 +1,7 @@
 {if scenes}
-<script type="text/javascript" src="{$base_dir}js/jquery/jquery.cluetip.js"></script>
-<script type="text/javascript" src="{$base_dir}js/jquery/jquery.scrollto.js"></script>
-<script type="text/javascript" src="{$base_dir}js/jquery/jquery.serialScroll.js"></script>
+<script type="text/javascript" src="{$content_dir}js/jquery/jquery.cluetip.js"></script>
+<script type="text/javascript" src="{$content_dir}js/jquery/jquery.scrollto.js"></script>
+<script type="text/javascript" src="{$content_dir}js/jquery/jquery.serialScroll.js"></script>
 <script type="text/javascript">// <![CDATA[
 i18n_scene_close = '{l s='Close'}';
 $(function () {ldelim}
@@ -14,6 +14,7 @@ $(function () {ldelim}
 		{foreach from=$scenes key='scene_key' item='scene' name='scenes'}
 		<div class="screen_scene" id="screen_scene_{$scene->id}" style="background:transparent url(img/scenes/{$scene->id}-large_scene.jpg); height:{$largeSceneImageType.height}px; width:{$largeSceneImageType.width}px; {if !$smarty.foreach.scenes.first} display:none;{/if}">
 			{foreach from=$scene->products key='product_key' item='product'}
+			{assign var=imageIds value=`$product.id_product`-`$product.id_image`}
 				<a href="{$product.link|escape:'htmlall':'UTF-8'}" rel="#scene_products_cluetip_{$scene_key}_{$product_key}_{$product.id_product}" class="cluetip" style="width:{$product.zone_width}px; height:{$product.zone_height}px; margin-left:{$product.x_axis}px ;margin-top:{$product.y_axis}px;">
 					<span style="margin-top:{math equation='a/2 -10' a=$product.zone_height}px; margin-left:{math equation='a/2 -10' a=$product.zone_width}px;">&nbsp;</span>
 				</a>
@@ -29,9 +30,9 @@ $(function () {ldelim}
 					</div>
 					<div class="clear">
 						<a href="{$product.link|escape:'htmlall':'UTF-8'}" title="{$product.details->name|escape:'htmlall':'UTF-8'}">
-							<img src="{$img_prod_dir}{$product.id_product}-{$product.id_image}-medium.jpg" alt="" />
+							<img src="{$link->getImageLink($product.id_product, $imageIds, 'medium')}" alt="" />
 						</a>
-						<p class="description">{$product.details->description_short|strip_tags|truncate:170}</p>
+						<p class="description">{$product.details->description_short|strip_tags|truncate:170:'...'}</p>
 					</div>
 				</div>
 			{/foreach}
@@ -48,7 +49,7 @@ $(function () {ldelim}
 			{foreach from=$scenes item='scene' name='scenes_list'}
 				<li id="scene_thumb_{$scene->id}" style="{if !$smarty.foreach.scenes_list.last} padding-right:10px;{/if}">
 					<a style="width:{$thumbSceneImageType.width}px; height:{$thumbSceneImageType.height}px" title="{$scene->name|escape:'htmlall':'UTF-8'}" href="#" rel="{$scene->id}" onclick="{ldelim}loadScene({$scene->id});return false;{rdelim}">
-						<img alt="{$scene->name|escape:'htmlall':'UTF-8'}" src="img/scenes/thumbs/{$scene->id}-thumb_scene.jpg" />
+						<img alt="{$scene->name|escape:'htmlall':'UTF-8'}" src="{$content_dir}img/scenes/thumbs/{$scene->id}-thumb_scene.jpg" />
 					</a>
 				</li>
 		 	{/foreach}

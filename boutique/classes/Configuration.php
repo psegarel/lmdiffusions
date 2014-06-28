@@ -8,7 +8,7 @@
   * @author PrestaShop <support@prestashop.com>
   * @copyright PrestaShop
   * @license http://www.opensource.org/licenses/osl-3.0.php Open-source licence 3.0
-  * @version 1.1
+  * @version 1.2
   *
   */
 
@@ -104,8 +104,17 @@ class		Configuration extends ObjectModel
 		FROM `'._DB_PREFIX_.'configuration` c
 		'.($id_lang ? ('LEFT JOIN `'._DB_PREFIX_.'configuration_lang` cl ON (c.`id_configuration` = cl.`id_configuration` AND cl.`id_lang` = '.intval($id_lang).')') : '').'
 		WHERE `name` = \''.pSQL($key).'\'');
-
-		return ($result ? $result['value'] : false);
+		
+		if ($id_lang)
+		{
+			self::$_CONF_LANG[intval($id_lang)][$key] = ($result ? $result['value'] : false);
+			return self::$_CONF_LANG[intval($id_lang)][$key];
+		}
+		else
+		{
+			self::$_CONF[$key] = ($result ? $result['value'] : false);
+			return self::$_CONF[$key];
+		}
 	}
 
 	/**
@@ -158,9 +167,11 @@ class		Configuration extends ObjectModel
 
 		$resTab = array();
 		if (!$id_lang)
+		{
 			foreach ($keys AS $key)
 				if (key_exists($key, self::$_CONF))
 					$resTab[$key] = self::$_CONF[$key];
+		}
 		elseif (key_exists($id_lang, self::$_CONF_LANG))
 			foreach ($keys AS $key)
 				if (key_exists($key, self::$_CONF_LANG[intval($id_lang)]))

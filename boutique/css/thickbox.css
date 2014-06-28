@@ -9,13 +9,11 @@
 #TB_window {
 	font: 12px Arial, Helvetica, sans-serif;
 	color: #333333;
-	
 }
 
 #TB_secondLine {
-	font: 12px Arial, Helvetica, sans-serif;
-	color:red;
-	
+	font: 10px Arial, Helvetica, sans-serif;
+	color:#666666;
 }
 
 /*#TB_window a:link {color: #666666;}
@@ -27,7 +25,6 @@
 	text-align:center;
 	padding-bottom: 25px;
 	display: block;
-	
 }
 
 
@@ -43,7 +40,7 @@
 	width:100%;
 }
 
-.TB_overlayMacFFBGHack {background: url(macFFBgHack.png) repeat;}
+.TB_overlayMacFFBGHack {background: url(../img/macFFBgHack.png) repeat;}
 .TB_overlayBG {
 	background-color:#000;
 	filter:alpha(opacity=75);
@@ -66,7 +63,6 @@
 	text-align:left;
 	top:50%;
 	left:50%;
-	background-color:black;
 }
 
 * html #TB_window { /* ie6 hack */
@@ -106,14 +102,11 @@ margin-top: expression(0 - parseInt(this.offsetHeight / 2) + (TBWindowMargin = d
 	float:left;
 	padding:7px 0 5px 10px;
 	margin-bottom:1px;
-	color: white;
 }
 
 #TB_title{
-	background-color:black;
-	color: white;
+	background-color:#e8e8e8;
 	height:27px;
-	
 }
 
 #TB_ajaxContent{

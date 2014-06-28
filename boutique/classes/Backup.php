@@ -142,10 +142,11 @@ class Backup
 		$this->id = realpath($backupfile);
 
 		fwrite($fp, '/* Backup for ' . $_SERVER['HTTP_HOST'] . __PS_BASE_URI__ . "\n *  at " . date($date) . "\n */\n");
-
+		fwrite($fp, "\n".'SET NAMES \'utf8\';'."\n\n");
+		
 		// Find all tables
 		$tables = Db::getInstance()->ExecuteS('SHOW TABLES');
-		$found = 0;		
+		$found = 0;
 		foreach ($tables as $table)
 		{
 			$table = current($table);
@@ -168,26 +169,30 @@ class Backup
 			fwrite($fp, '/* Scheme for table ' . $schema[0]['Table'] . " */\n");
 			fwrite($fp, $schema[0]['Create Table'] . ";\n\n");
 		
-			$data = Db::getInstance()->ExecuteS('SELECT * FROM `' . $schema[0]['Table'] . '`');
-
-			if (count($data) > 0)
+			$data = Db::getInstance()->ExecuteS('SELECT * FROM `' . $schema[0]['Table'] . '`', false);
+			$sizeof = DB::getInstance()->NumRows();
+			if ($data AND $sizeof > 0)
 			{
 				// Export the table data
 				fwrite($fp, 'INSERT INTO `' . $schema[0]['Table'] . "` VALUES\n");
 
-				foreach ($data as $i => $row)
+				$i = 1;
+				while ($row = DB::getInstance()->nextRow($data))
 				{
 					$s = '(';
 					foreach ($row as $field => $value)
 						$s .= "'" . mysql_real_escape_string($value) . "',";
 					$s = rtrim($s, ',');
 
-					if ($i < count($data) - 1)
+					if ($i%200 == 0 AND $i < $sizeof)
+						$s .= ");\nINSERT INTO `".$schema[0]['Table']."` VALUES\n";
+					elseif ($i < $sizeof)
 						$s .= "),\n";
 					else
-						$s .= ");\n\n\n";
+						$s .= ");\n";
 					
 					fwrite($fp, $s);
+					++$i;
 				}
 			}
 			$found++;
@@ -205,4 +210,3 @@ class Backup
 	}
 	
 }
-?>

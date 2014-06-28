@@ -1,4 +1,10 @@
-{capture name=path}<a href="my-account.php">{l s='My account'}</a><span class="navigation-pipe">{$navigationPipe}</span>{l s='Your vouchers'}{/capture}
+<script type="text/javascript">
+<!--
+	var baseDir = '{$base_dir_ssl}';
+-->
+</script>
+
+{capture name=path}<a href="{$base_dir_ssl}my-account.php">{l s='My account'}</a><span class="navigation-pipe">{$navigationPipe}</span>{l s='Your vouchers'}{/capture}
 {include file=$tpl_dir./breadcrumb.tpl}
 
 <h2>{l s='Your vouchers'}</h2>
@@ -10,7 +16,7 @@
 			<th class="discount_code first_item">{l s='Code'}</th>
 			<th class="discount_description item">{l s='Description'}</th>
 			<th class="discount_quantity item">{l s='Quantity'}</th>
-			<th class="discount_value item">{l s='Value'}</th>
+			<th class="discount_value item">{l s='Value'}*</th>
 			<th class="discount_minimum item">{l s='Minimum'}</th>
 			<th class="discount_cumulative item">{l s='Cumulative'}</th>
 			<th class="discount_expiration_date last_item">{l s='Expiration date'}</th>
@@ -50,15 +56,14 @@
 	{/foreach}
 	</tbody>
 </table>
+<p>
+	*{l s='Tax included'}
+</p>
 {else}
 	<p class="warning">{l s='You do not possess any vouchers.'}</p>
 {/if}
 
-<p>
-	<a href="{$base_dir}my-account.php" title="{l s='Back to Your Account'}"><img src="{$img_dir}icon/my-account.gif" alt="{l s='Back to Your Account'}" class="icon" /></a>
-	<a href="{$base_dir}my-account.php" title="{l s='Back to Your Account'}">{l s='Back to Your Account'}</a>
-</p>
-<p>
-	<a href="{$base_dir}" title="{l s='Home'}"><img src="{$img_dir}icon/home.gif" alt="{l s='Home'}" class="icon" /></a>
-	<a href="{$base_dir}my-account.php" title="{l s='Back to Your Account'}">{l s='Home'}</a>
-</p>
+<ul class="footer_links">
+	<li><a href="{$base_dir_ssl}my-account.php"><img src="{$img_dir}icon/my-account.gif" alt="" class="icon" /></a><a href="{$base_dir_ssl}my-account.php">{l s='Back to Your Account'}</a></li>
+	<li><a href="{$base_dir}"><img src="{$img_dir}icon/home.gif" alt="" class="icon" /></a><a href="{$base_dir}">{l s='Home'}</a></li>
+</ul>

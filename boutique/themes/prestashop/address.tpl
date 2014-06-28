@@ -1,4 +1,10 @@
 <script type="text/javascript">
+<!--
+	var baseDir = '{$base_dir_ssl}';
+-->
+</script>
+
+<script type="text/javascript">
 // <![CDATA[
 idSelectedCountry = {if isset($smarty.post.id_state)}{$smarty.post.id_state|intval}{else}false{/if};
 countries = new Array();
@@ -10,6 +16,9 @@ countries = new Array();
 		{/foreach}
 	{/if}
 {/foreach}
+$(function(){ldelim}
+	$('.id_state option[value={if isset($smarty.post.id_state)}{$smarty.post.id_state}{else}{$address->id_state|escape:'htmlall':'UTF-8'}{/if}]').attr('selected', 'selected');
+{rdelim});
 //]]>
 </script>
 
@@ -22,7 +31,7 @@ countries = new Array();
 
 {include file=$tpl_dir./errors.tpl}
 
-<form action="{$request_uri|escape:'htmlall':'UTF-8'}" method="post" class="std">
+<form action="{$base_dir_ssl}address.php" method="post" class="std">
 	<fieldset>
 		<h3>{if isset($id_address)}{l s='Your address'}{else}{l s='New address'}{/if}</h3>
 		<p class="text">
@@ -85,13 +94,14 @@ countries = new Array();
 		</p>
 		<p class="required text" id="adress_alias">
 			<label for="alias">{l s='Assign an address title for future reference'}</label>
-			<input type="text" id="alias" name="alias" value="{if isset($smarty.post.alias)}{$smarty.post.alias}{elseif $address->alias}{$address->alias|escape:'htmlall':'UTF-8'}{else}{l s='My address'}{/if}" />
+			<input type="text" id="alias" name="alias" value="{if isset($smarty.post.alias)}{$smarty.post.alias}{elseif $address->alias}{$address->alias|escape:'htmlall':'UTF-8'}{elseif isset($select_address)}{else}{l s='My address'}{/if}" />
 			<sup>*</sup>
 		</p>
 	</fieldset>
-	<p class="submit">
-		{if isset($id_address)}<input type="hidden" name="a" value="{$id_address|intval}" />{/if}
+	<p class="submit2">
+		{if isset($id_address)}<input type="hidden" name="id_address" value="{$id_address|intval}" />{/if}
 		{if isset($back)}<input type="hidden" name="back" value="{$back}?step=1" />{/if}
+		{if isset($select_address)}<input type="hidden" name="select_address" value="{$select_address|intval}" />{/if}
 		<input type="submit" name="submitAddress" id="submitAddress" value="{l s='Save'}" class="button" />
 	</p>
 	<p class="required"><sup>*</sup>{l s='Required field'}</p>

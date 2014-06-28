@@ -24,12 +24,12 @@
 				<!-- name -->
 				<h3>
 					{if $manufacturer.nb_products > 0}<a href="{$link->getmanufacturerLink($manufacturer.id_manufacturer, $manufacturer.link_rewrite)|escape:'htmlall':'UTF-8'}">{/if}
-					{$manufacturer.name|truncate:60|escape:'htmlall':'UTF-8'}
+					{$manufacturer.name|truncate:60:'...'|escape:'htmlall':'UTF-8'}
 					{if $manufacturer.nb_products > 0}</a>{/if}
 				</h3>
-				<p class="description">
+				<p class="description rte">
 				{if $manufacturer.nb_products > 0}<a href="{$link->getmanufacturerLink($manufacturer.id_manufacturer, $manufacturer.link_rewrite)|escape:'htmlall':'UTF-8'}">{/if}
-				{$manufacturer.description|truncate:300|escape:'htmlall':'UTF-8'}
+				{$manufacturer.description}
 				{if $manufacturer.nb_products > 0}</a>{/if}
 				</p>
 			</div>

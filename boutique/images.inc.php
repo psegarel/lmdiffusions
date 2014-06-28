@@ -16,17 +16,17 @@ function cacheImage($image, $cacheImage, $size, $imageType = 'jpg')
 			$imageGd = ($imageType == 'gif' ? imagecreatefromgif($image) : imagecreatefromjpeg($image));
 			$x = imagesx($imageGd);
 			$y = imagesy($imageGd);
-
+			
 			/* Size is already ok */
-			if ($y < $size)
+			if ($y < $size) 
 				copy($image, _PS_TMP_IMG_DIR_.$cacheImage);
 
 			/* We need to resize */
 			else
 			{
 				$ratioX = $x / ($y / $size);
-				$newImage = ($imageType == 'gif' ? imagecreatetruecolor($ratioX, $size) : imagecreatetruecolor($ratioX, $size));
-
+				$newImage = ($imageType == 'gif' ? imagecreate($ratioX, $size) : imagecreatetruecolor($ratioX, $size));
+				
 				/* Allow to keep nice look even if resized */
 				$white = imagecolorallocate($newImage, 255, 255, 255);
 				imagefill($newImage, 0, 0, $white);
@@ -62,62 +62,28 @@ function	checkImage($file, $maxFileSize)
 	return false;
 }
 
-/*
 function isPicture($file)
 {
-    // Detect mime content type
+    /* Detect mime content type */
     $mime_type = false;
     $types = array('image/gif', 'image/jpg', 'image/jpeg', 'image/pjpeg', 'image/png', 'image/x-png');
 
     if (function_exists('finfo_open'))
     {
-        $finfo = @finfo_open(FILEINFO_MIME);
-        $mime_type = @finfo_file($finfo, $file['tmp_name']);
-        @finfo_close($finfo);
+        $finfo = finfo_open(FILEINFO_MIME);
+        $mime_type = finfo_file($finfo, $file['tmp_name']);
+        finfo_close($finfo);
     }
     elseif (function_exists('mime_content_type'))
-        $mime_type = @mime_content_type($file['tmp_name']);
+        $mime_type = mime_content_type($file['tmp_name']);
     elseif (function_exists('exec'))
-        $mime_type = trim(@exec('file -bi '.escapeshellarg($file['tmp_name'])));
-     if (empty($mime_type))
+        $mime_type = trim(exec('file -b --mime-type '.escapeshellarg($file['tmp_name'])));
+	if (empty($mime_type) || $mime_type == 'regular file')
 		$mime_type = $file['type'];
-
+	if (($pos = strpos($mime_type, ';')) !== false)
+		$mime_type = substr($mime_type, 0, $pos);
     // is it a picture ?
     return $mime_type && in_array($mime_type, $types);
-}
-*/
-
-function isPicture($file, $types = NULL)
-{
-	/* Detect mime content type */
-	$mimeType = false;
-	if (!$types)
-		$types = array('image/gif', 'image/jpg', 'image/jpeg', 'image/pjpeg', 'image/png', 'image/x-png');
-	/* Try 4 different methods to determine the mime type */
-	if (function_exists('finfo_open'))
-	{
-		$const = defined('FILEINFO_MIME_TYPE') ? FILEINFO_MIME_TYPE : FILEINFO_MIME;
-		$finfo = finfo_open($const);
-		$mimeType = finfo_file($finfo, $file['tmp_name']);
-		finfo_close($finfo);
-	}
-	elseif (function_exists('mime_content_type'))
-		$mimeType = mime_content_type($file['tmp_name']);
-	elseif (function_exists('exec'))
-	{
-		$mimeType = trim(exec('file -b --mime-type '.escapeshellarg($file['tmp_name'])));
-		if (!$mimeType)
-			$mimeType = trim(exec('file --mime '.escapeshellarg($file['tmp_name'])));
-		if (!$mimeType)
-			$mimeType = trim(exec('file -bi '.escapeshellarg($file['tmp_name'])));
-	}
-	if (empty($mimeType) OR $mimeType == 'regular file' OR $mimeType == 'text/plain')
-		$mimeType = $file['type'];
-	/* For each allowed MIME type, we are looking for it inside the current MIME type */
-	foreach ($types AS $type)
-		if (strstr($mimeType, $type))
-			return true;
-	return false;
 }
 
 /**
@@ -149,19 +115,17 @@ function	checkIco($file, $maxFileSize)
   */
 function imageResize($sourceFile, $destFile, $destWidth = NULL, $destHeight = NULL, $fileType = 'jpg')
 {
-	if (!isset($sourceFile['tmp_name']) OR !file_exists($sourceFile['tmp_name']))
-		return false;
-	list($sourceWidth, $sourceHeight, $type, $attr) = @getimagesize($sourceFile['tmp_name']);
+	list($sourceWidth, $sourceHeight, $type, $attr) = getimagesize($sourceFile);
 	if (!$sourceWidth)
 		return false;
 	if ($destWidth == NULL) $destWidth = $sourceWidth;
 	if ($destHeight == NULL) $destHeight = $sourceHeight;
 
-	$sourceImage = createSrcImage($type, $sourceFile['tmp_name']);
+	$sourceImage = createSrcImage($type, $sourceFile);
 
 	$widthDiff = $destWidth / $sourceWidth;
 	$heightDiff = $destHeight / $sourceHeight;
-
+	
 	if ($widthDiff > 1 AND $heightDiff > 1)
 	{
 		$nextWidth = $sourceWidth;
@@ -182,13 +146,13 @@ function imageResize($sourceFile, $destFile, $destWidth = NULL, $destHeight = NU
 			$destHeight = (intval(Configuration::get('PS_IMAGE_GENERATION_METHOD')) == 0 ? $destHeight : $nextHeight);
 		}
 	}
-
+	
 	$borderWidth = intval(($destWidth - $nextWidth) / 2);
 	$borderHeight = intval(($destHeight - $nextHeight) / 2);
+	
+	$destImage = imagecreatetruecolor($destWidth, $destHeight);
 
-	$destImage = @imagecreatetruecolor($destWidth, $destHeight);
-
-	$purple = imagecolorallocate($destImage, 39, 10, 35);
+	$white = imagecolorallocate($destImage, 255, 255, 255);
 	imagefill($destImage, 0, 0, $white);
 
 	imagecopyresampled($destImage, $sourceImage, $borderWidth, $borderHeight, 0, 0, $nextWidth, $nextHeight, $sourceWidth, $sourceHeight);
@@ -212,23 +176,22 @@ function	imageCut($srcFile, $destFile, $destWidth = NULL, $destHeight = NULL, $f
 		return false;
 
 	// Source infos
-	$srcInfos = @getimagesize($srcFile['tmp_name']);
+	$srcInfos = getimagesize($srcFile['tmp_name']);
 	$src['width'] = $srcInfos[0];
 	$src['height'] = $srcInfos[1];
 	$src['ressource'] = createSrcImage($srcInfos[2], $srcFile['tmp_name']);
-
+	
 	// Destination infos
 	$dest['x'] = $destX;
 	$dest['y'] = $destY;
 	$dest['width'] = $destWidth != NULL ? $destWidth : $src['width'];
 	$dest['height'] = $destHeight != NULL ? $destHeight : $src['height'];
 	$dest['ressource'] = createDestImage($dest['width'], $dest['height']);
-
+	
 	$white = imagecolorallocate($dest['ressource'], 255, 255, 255);
 	imagecopyresampled($dest['ressource'], $src['ressource'], 0, 0, $dest['x'], $dest['y'], $dest['width'], $dest['height'], $dest['width'], $dest['height']);
 	imagecolortransparent($dest['ressource'], $white);
 	$return = returnDestImage($fileType, $dest['ressource'], $destFile);
-	Tools::p(var_dump($return));
 	return	($return);
 }
 
@@ -237,23 +200,23 @@ function	createSrcImage($type, $filename)
 	switch ($type)
 	{
 		case 1:
-			return @imagecreatefromgif($filename);
+			return imagecreatefromgif($filename);
 			break;
 		case 3:
-			return @imagecreatefrompng($filename);
+			return imagecreatefrompng($filename);
 			break;
 		case 2:
 		default:
-			return @imagecreatefromjpeg($filename);
+			return imagecreatefromjpeg($filename);
 			break;
 	}
 }
 
 function	createDestImage($width, $height)
 {
-	$image = @imagecreatetruecolor($width, $height);
-	$white = @imagecolorallocate($image, 255, 255, 255);
-	@imagefill($image, 0, 0, $white);
+	$image = imagecreatetruecolor($width, $height);
+	$white = imagecolorallocate($image, 255, 255, 255);
+	imagefill($image, 0, 0, $white);
 	return $image;
 }
 
@@ -287,21 +250,25 @@ function deleteImage($id_item, $id_image = NULL)
 {
 	$path = ($id_image) ? _PS_PROD_IMG_DIR_ : _PS_CAT_IMG_DIR_;
 	$table = ($id_image) ? 'product' : 'category';
-
+	
 	if (file_exists(_PS_TMP_IMG_DIR_.$table.'_'.$id_item.'.jpg'))
 		unlink(_PS_TMP_IMG_DIR_.$table.'_'.$id_item.'.jpg');
-
+	
 	if ($id_image AND file_exists($path.$id_item.'-'.$id_image.'.jpg'))
 		unlink($path.$id_item.'-'.$id_image.'.jpg');
 	elseif (!$id_image AND file_exists($path.$id_item.'.jpg'))
 		unlink($path.$id_item.'.jpg');
-
+	/* Auto-generated images */
 	$imagesTypes = ImageType::getImagesTypes();
 	foreach ($imagesTypes AS $k => $imagesType)
 		if ($id_image AND file_exists($path.$id_item.'-'.$id_image.'-'.$imagesType['name'].'.jpg'))
 			unlink($path.$id_item.'-'.$id_image.'-'.$imagesType['name'].'.jpg');
 		elseif (!$id_image AND file_exists($path.$id_item.'-'.$imagesType['name'].'.jpg'))
 			unlink($path.$id_item.'-'.$imagesType['name'].'.jpg');
+	/* BO "mini" image */
+	if (file_exists(_PS_TMP_IMG_DIR_.$table.'_mini_'.$id_item.'.jpg'))
+		unlink(_PS_TMP_IMG_DIR_.$table.'_mini_'.$id_item.'.jpg');
+	return true;
 }
 
 ?>

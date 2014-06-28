@@ -8,7 +8,7 @@
   * @author PrestaShop <support@prestashop.com>
   * @copyright PrestaShop
   * @license http://www.opensource.org/licenses/osl-3.0.php Open-source licence 3.0
-  * @version 1.1
+  * @version 1.2
   *
   */
 
@@ -53,8 +53,6 @@ abstract class Module
 
 	protected $identifier = 'id_module';
 
-	protected $page;
-
 	static public $_db;
 
 	/**
@@ -62,6 +60,7 @@ abstract class Module
 	 *
 	 * @param string $name Module unique name
 	 */
+	private static $modulesCache = NULL;
 	public function __construct($name = NULL)
 	{
 		global $cookie;
@@ -70,12 +69,18 @@ abstract class Module
 			$this->name = $this->id;
 		if ($this->name != NULL)
 		{
-			$result = Db::getInstance()->GetRow('SELECT * FROM `'.pSQL(_DB_PREFIX_.$this->table).'` WHERE `name` = \''.pSQL($this->name).'\'');
-			if (!$result)
+			if (self::$modulesCache == NULL AND !is_array(self::$modulesCache))
+			{
+				self::$modulesCache = array();
+				$result = Db::getInstance()->ExecuteS('SELECT * FROM `'.pSQL(_DB_PREFIX_.$this->table).'`');
+				foreach ($result as $row)
+					self::$modulesCache[$row['name']] = $row;
+			}
+			if (!isset(self::$modulesCache[$this->name]))
 				return false;
 			$this->active = true;
-			$this->id = $result['id_module'];
-			foreach ($result AS $key => $value)
+			$this->id = self::$modulesCache[$this->name]['id_module'];
+			foreach (self::$modulesCache[$this->name] AS $key => $value)
 				if (key_exists($key, $this))
 					$this->{$key} = $value;
 			$this->_path = __PS_BASE_URI__.'modules/'.$this->name.'/';
@@ -114,7 +119,7 @@ abstract class Module
 		$result = Db::getInstance()->ExecuteS('
 				SELECT `id_hook`
 				FROM `'._DB_PREFIX_.'hook_module` hm
-				WHERE `id_module` = '.$this->id);
+				WHERE `id_module` = '.intval($this->id));
 		foreach	($result AS $row)
 		{
 			Db::getInstance()->Execute('
@@ -307,11 +312,28 @@ abstract class Module
 	  */
 	public static function getModulesOnDisk()
 	{
+		$moduleList = array();
+		$errors = array();
 		$modules_dir = self::getModulesDirOnDisk();
 		foreach ($modules_dir AS $module)
 		{
-			require_once _PS_MODULE_DIR_.'/'.$module.'/'.$module.'.php';
-			$moduleList[] = new $module;
+			$file = trim(file_get_contents(_PS_MODULE_DIR_.'/'.$module.'/'.$module.'.php'));
+			if (substr($file, 0, 5) == '<?php')
+				$file = substr($file, 5);
+			if (substr($file, -2) == '?>')
+				$file = substr($file, 0, -2);
+			if (class_exists($module, false) OR eval($file) !== false)
+				$moduleList[] = new $module;
+			else
+				$errors[] = $module;
+		}
+		
+		if (sizeof($errors))
+		{
+			echo '<div class="alert error"><h3>'.Tools::displayError('Parse error(s) in module(s)').'</h3><ol>';
+			foreach ($errors AS $error)
+				echo '<li>'.$error.'</li>';
+			echo '</ol></div>';
 		}
 		return $moduleList;
 	}
@@ -362,6 +384,7 @@ abstract class Module
 			die(Tools::displayError());
 
 		global $cart, $cookie;
+		$altern = 0;
 
 		if (!isset($hookArgs['cookie']) OR !$hookArgs['cookie'])
 			$hookArgs['cookie'] = $cookie;
@@ -393,7 +416,10 @@ abstract class Module
 					if ($fileindex == $exception['file_name'])
 						$show = false;
 			if (is_callable(array($moduleInstance, 'hook'.$hook_name)) AND $show)
+			 {
+				$hookArgs['altern'] = ++$altern;
 				$output .= call_user_func(array($moduleInstance, 'hook'.$hook_name), $hookArgs);
+			}
 		}
 		return $output;
 	}
@@ -402,13 +428,16 @@ abstract class Module
 	{
 		global $cart, $cookie;
 		$hookArgs = array('cookie' => $cookie, 'cart' => $cart);
+		$id_customer = intval($cookie->id_customer);
 		$billing = new Address(intval($cart->id_address_invoice));
 		$output = '';
 
 		$result = Db::getInstance()->ExecuteS('
-		SELECT h.`id_hook`, m.`name`, hm.`position`
+		SELECT DISTINCT h.`id_hook`, m.`name`, hm.`position`
 		FROM `'._DB_PREFIX_.'module_country` mc
 		LEFT JOIN `'._DB_PREFIX_.'module` m ON m.`id_module` = mc.`id_module`
+		INNER JOIN `'._DB_PREFIX_.'module_group` mg ON (m.`id_module` = mg.`id_module`)
+		INNER JOIN `'._DB_PREFIX_.'customer_group` cg on (cg.`id_group` = mg.`id_group` AND cg.`id_customer` = '.$id_customer.')
 		LEFT JOIN `'._DB_PREFIX_.'hook_module` hm ON hm.`id_module` = m.`id_module`
 		LEFT JOIN `'._DB_PREFIX_.'hook` h ON hm.`id_hook` = h.`id_hook`
 		WHERE h.`name` = \'payment\'
@@ -429,7 +458,7 @@ abstract class Module
 	 * @param string $string String to translate
 	 * @return string Translation
 	 */
-	public function l($string)
+	public function l($string, $specific = false)
 	{
 		global $_MODULES, $_MODULE, $cookie;
 		
@@ -442,9 +471,10 @@ abstract class Module
 		if (!is_array($_MODULES))
 			return (str_replace('"', '&quot;', $string));
 
+		$source = Tools::strtolower($specific ? $specific : get_class($this));
 		$string2 = str_replace('\'', '\\\'', $string);
-		$currentKey = '<{'.$this->name.'}'._THEME_NAME_.'>'.$this->page.'_'.md5($string2);
-		$defaultKey = '<{'.$this->name.'}prestashop>'.$this->page.'_'.md5($string2);
+		$currentKey = '<{'.$this->name.'}'._THEME_NAME_.'>'.$source.'_'.md5($string2);
+		$defaultKey = '<{'.$this->name.'}prestashop>'.$source.'_'.md5($string2);
 
 		if (key_exists($currentKey, $_MODULES))
 			$ret = stripslashes($_MODULES[$currentKey]);
@@ -459,11 +489,16 @@ abstract class Module
 	 * Reposition module
 	 *
 	 * @param boolean $id_hook Hook ID
-	 * @param boolean $way Up (1)  or Down (0)
+	 * @param boolean $way Up (1) or Down (0)
+	 * @param intger $position
 	 */
-	public function updatePosition($id_hook, $way)
+	public function updatePosition($id_hook, $way, $position = NULL)
 	{
-		if (!$res = Db::getInstance()->ExecuteS('SELECT hm.`id_module`, hm.`position`, hm.`id_hook` FROM `'._DB_PREFIX_.'hook_module` hm WHERE hm.`id_hook` = '.pSQL($id_hook).' ORDER BY hm.`position` '.(intval($way) ? 'ASC' : 'DESC')))
+		if (!$res = Db::getInstance()->ExecuteS('
+		SELECT hm.`id_module`, hm.`position`, hm.`id_hook` 
+		FROM `'._DB_PREFIX_.'hook_module` hm 
+		WHERE hm.`id_hook` = '.pSQL($id_hook).' 
+		ORDER BY hm.`position` '.(intval($way) ? 'ASC' : 'DESC')))
 			return false;
 		foreach ($res AS $key => $values)
 			if (intval($values[$this->identifier]) == intval($this->id))
@@ -475,15 +510,20 @@ abstract class Module
 			return false;
 		$from = $res[$k];
 		$to = $res[$k + 1];
+
+		if (isset($position) and !empty($position))
+			$to['position'] = intval($position);
+		
 		return (Db::getInstance()->Execute('
-			UPDATE `'._DB_PREFIX_.'hook_module`
-			SET `position`='.intval($to['position']).'
-			WHERE `'.pSQL($this->identifier).'` = '.intval($from[$this->identifier]).' AND `id_hook`='.intval($from['id_hook']))
-			AND
-			Db::getInstance()->Execute('
-			UPDATE `'._DB_PREFIX_.'hook_module`
-			SET `position`='.intval($from['position']).'
-			WHERE `'.pSQL($this->identifier).'` = '.intval($to[$this->identifier]).' AND `id_hook`='.intval($to['id_hook']))
+		UPDATE `'._DB_PREFIX_.'hook_module`
+		SET `position`= position '.($way ? '-1' : '+1').'
+		WHERE position between '.min(array($from['position'], $to['position'])) .' AND '.max(array($from['position'], $to['position'])).'
+		AND `id_hook`='.intval($from['id_hook']))
+		AND
+		Db::getInstance()->Execute('
+		UPDATE `'._DB_PREFIX_.'hook_module`
+		SET `position`='.intval($to['position']).'
+		WHERE `'.pSQL($this->identifier).'` = '.intval($from[$this->identifier]).' AND `id_hook`='.intval($to['id_hook']))
 		);
 	}
 
@@ -550,13 +590,23 @@ abstract class Module
 	 * @param int $id_hook Hook ID
 	 * @return array Exceptions
 	 */
+	private static $exceptionsCache = NULL;
 	public function getExceptions($id_hook)
 	{
-		return Db::getInstance()->ExecuteS('
-		SELECT `file_name`
-		FROM `'._DB_PREFIX_.'hook_module_exceptions`
-		WHERE `id_hook` = '.intval($id_hook).'
-		AND  `id_module` = '.intval($this->id));
+		if (self::$exceptionsCache == NULL AND !is_array(self::$exceptionsCache))
+		{
+			self::$exceptionsCache = array();
+			$result = Db::getInstance()->ExecuteS('
+			SELECT CONCAT(id_hook, \'-\', id_module) as `key`, `file_name` as value
+			FROM `'._DB_PREFIX_.'hook_module_exceptions`');
+			foreach ($result as $row)
+			{
+				if (!array_key_exists($row['key'], self::$exceptionsCache))
+					self::$exceptionsCache[$row['key']] = array();
+				self::$exceptionsCache[$row['key']][] = array('file_name' => $row['value']);
+			}
+		}
+		return (array_key_exists(intval($id_hook).'-'.intval($this->id), self::$exceptionsCache) ? self::$exceptionsCache[intval($id_hook).'-'.intval($this->id)] : array());
 	}
 
 	public static function display($file, $template)
@@ -576,8 +626,14 @@ abstract class Module
 			$result = $smarty->fetch(dirname($file).'/'.$template);
 		}
 		else
-			$result = '';
+			$result = Tools::displayError('No template found');
 		$smarty->currentTemplate = $previousTemplate;
 		return $result;
+	}
+
+	public static function isInstalled($moduleName)
+	{
+		Db::getInstance()->Execute('SELECT `id_module` FROM `'._DB_PREFIX_.'module` WHERE `name` = \''.pSQL($moduleName).'\'');
+		return (bool)Db::getInstance()->NumRows();
 	}
 }

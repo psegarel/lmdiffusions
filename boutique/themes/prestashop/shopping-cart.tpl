@@ -1,3 +1,9 @@
+<script type="text/javascript">
+<!--
+	var baseDir = '{$base_dir_ssl}';
+-->
+</script>
+
 {capture name=path}{l s='Your shopping cart'}{/capture}
 {include file=$tpl_dir./breadcrumb.tpl}
 
@@ -14,8 +20,8 @@
 {else}
 {if isset($lastProductAdded) AND $lastProductAdded}
 	{foreach from=$products item=product}
-		{if $product.id_product == $lastProductAdded}
-			<table id="cart_summary" class="std" style="width:300px; margin-left:130px;">
+		{if $product.id_product == $lastProductAdded.id_product AND (!$product.id_product_attribute OR ($product.id_product_attribute == $lastProductAdded.id_product_attribute))}
+			<table class="std cart_last_product">
 				<thead>
 					<tr>
 						<th class="cart_product first_item">&nbsp;</th>
@@ -24,9 +30,9 @@
 					</tr>
 				</thead>
 			</table>
-			<table style="margin:5px 0px 10px 130px;">
+			<table class="cart_last_product_content">
 				<tr>
-					<td class="cart_product"><a href="{$link->getProductLink($product.id_product, $product.link_rewrite, $product.category)|escape:'htmlall':'UTF-8'}"><img src="{$img_prod_dir}{$product.id_image}-small.jpg" alt="{$product.name|escape:'htmlall':'UTF-8'}" /></a></td>
+					<td class="cart_product"><a href="{$link->getProductLink($product.id_product, $product.link_rewrite, $product.category)|escape:'htmlall':'UTF-8'}"><img src="{$link->getImageLink($product.link_rewrite, $product.id_image, 'small')}" alt="{$product.name|escape:'htmlall':'UTF-8'}" /></a></td>
 					<td class="cart_description">
 						<h5><a href="{$link->getProductLink($product.id_product, $product.link_rewrite, $product.category)|escape:'htmlall':'UTF-8'}">{$product.name|escape:'htmlall':'UTF-8'}</a></h5>
 						{if $product.attributes}<a href="{$link->getProductLink($product.id_product, $product.link_rewrite, $product.category)|escape:'htmlall':'UTF-8'}">{$product.attributes|escape:'htmlall':'UTF-8'}</a>{/if}
@@ -37,7 +43,7 @@
 	{/foreach}
 {/if}
 <p>
-	{l s='Your shopping cart contains'} {$products|@count} {if $products|@count > 1}{l s='products'}{else}{l s='product'}{/if}
+	{l s='Your shopping cart contains'} {$productNumber} {if $productNumber > 1}{l s='products'}{else}{l s='product'}{/if}
 </p>
 <div id="order-detail-content" class="table_block">
 	<table id="cart_summary" class="std">
@@ -53,30 +59,72 @@
 			</tr>
 		</thead>
 		<tfoot>
-			<tr class="cart_total_product">
-				<td colspan="6">{l s='Total products:'}</td>
-				<td class="price">{convertPrice price=$total_products_wt}</td>
-			</tr>
+			{if $priceDisplay}
+				<tr class="cart_total_price">
+					<td colspan="6">{l s='Total products (tax excl.):'}</td>
+					<td class="price">{convertPrice price=$total_products}</td>
+				</tr>
+			{/if}
+			{if !$priceDisplay || $priceDisplay == 2}
+				<tr class="cart_total_price">
+					<td colspan="6">{l s='Total products (tax incl.):'}</td>
+					<td class="price">{convertPrice price=$total_products_wt}</td>
+				</tr>
+			{/if}
 			{if $total_discounts != 0}
-			<tr class="cart_total_voucher">
-				<td colspan="6">{l s='Total vouchers:'}</td>
-				<td class="price-discount">{convertPrice price=$total_discounts}</td>
-			</tr>
+				{if $priceDisplay}
+					<tr class="cart_total_voucher">
+						<td colspan="6">{l s='Total vouchers (tax excl.):'}</td>
+						<td class="price-discount">{convertPrice price=$total_discounts_tax_exc}</td>
+					</tr>
+				{/if}
+				{if !$priceDisplay || $priceDisplay == 2}
+					<tr class="cart_total_voucher">
+						<td colspan="6">{l s='Total vouchers (tax incl.):'}</td>
+						<td class="price-discount">{convertPrice price=$total_discounts}</td>
+					</tr>
+				{/if}
 			{/if}
 			{if $total_wrapping > 0}
-			<tr class="cart_total_voucher">
-				<td colspan="6">{l s='Total gift-wrapping:'}</td>
-				<td class="price-discount">{convertPrice price=$total_wrapping}</td>
-			</tr>
+				{if $priceDisplay}
+					<tr class="cart_total_voucher">
+						<td colspan="6">{l s='Total gift-wrapping (tax excl.):'}</td>
+						<td class="price-discount">{convertPrice price=$total_wrapping_tax_exc}</td>
+					</tr>
+				{/if}
+				{if !$priceDisplay || $priceDisplay == 2}
+					<tr class="cart_total_voucher">
+						<td colspan="6">{l s='Total gift-wrapping (tax incl.):'}</td>
+						<td class="price-discount">{convertPrice price=$total_wrapping}</td>
+					</tr>
+				{/if}
 			{/if}
 			{if $shippingCost > 0}
-			<tr class="cart_total_delivery">
-				<td colspan="6">{l s='Total shipping:'}</td>
-				<td class="price">{convertPrice price=$shippingCost}</td>
-			</tr>
+				{if $priceDisplay}
+					<tr class="cart_total_delivery">
+						<td colspan="6">{l s='Total shipping (tax excl.):'}</td>
+						<td class="price">{convertPrice price=$shippingCostTaxExc}</td>
+					</tr>
+				{/if}
+				{if !$priceDisplay || $priceDisplay == 2}
+					<tr class="cart_total_delivery">
+						<td colspan="6">{l s='Total shipping (tax incl.):'}</td>
+						<td class="price">{convertPrice price=$shippingCost}</td>
+					</tr>
+				{/if}
+			{/if}
+			{if $priceDisplay}
+				<tr class="cart_total_price">
+					<td colspan="6">{l s='Total (tax excl.):'}</td>
+					<td class="price">{convertPrice price=$total_price_without_tax}</td>
+				</tr>
+				<tr class="cart_total_voucher">
+					<td colspan="6">{l s='Total tax:'}</td>
+					<td class="price">{convertPrice price=$total_tax}</td>
+				</tr>
 			{/if}
 			<tr class="cart_total_price">
-				<td colspan="6">{l s='Total:'}</td>
+				<td colspan="6">{l s='Total (tax incl.):'}</td>
 				<td class="price">{convertPrice price=$total_price}</td>
 			</tr>
 			{if $free_ship > 0}
@@ -113,13 +161,12 @@
 							{/foreach}
 						</td>
 						<td class="cart_quantity">
-							{$customization.quantity}
-							<a class="cart_quantity_up" href="{$base_dir}cart.php?add&amp;id_product={$product.id_product|intval}&amp;ipa={$product.id_product_attribute|intval}&amp;id_customization={$id_customization}&amp;token={$token_cart}" title="{l s='Add'}"><img src="{$img_dir}icon/quantity_up.gif" alt="{l s='Add'}" /></a><br />
-							<a class="cart_quantity_down" href="{$base_dir}cart.php?add&amp;id_product={$product.id_product|intval}&amp;ipa={$product.id_product_attribute|intval}&amp;id_customization={$id_customization}&amp;op=down&amp;token={$token_cart}" title="{l s='Substract'}"><img src="{$img_dir}icon/quantity_down.gif" alt="{l s='Substract'}" /></a>
+							<a class="cart_quantity_delete" href="{$base_dir_ssl}cart.php?delete&amp;id_product={$product.id_product|intval}&amp;ipa={$product.id_product_attribute|intval}&amp;id_customization={$id_customization}&amp;token={$token_cart}"><img src="{$img_dir}icon/delete.gif" alt="{l s='Delete'}" title="{l s='Delete this customization'}" class="icon" /></a>
+							<p>{$customization.quantity}</p>
+							<a class="cart_quantity_up" href="{$base_dir_ssl}cart.php?add&amp;id_product={$product.id_product|intval}&amp;ipa={$product.id_product_attribute|intval}&amp;id_customization={$id_customization}&amp;token={$token_cart}" title="{l s='Add'}"><img src="{$img_dir}icon/quantity_up.gif" alt="{l s='Add'}" /></a><br />
+							<a class="cart_quantity_down" href="{$base_dir_ssl}cart.php?add&amp;id_product={$product.id_product|intval}&amp;ipa={$product.id_product_attribute|intval}&amp;id_customization={$id_customization}&amp;op=down&amp;token={$token_cart}" title="{l s='Substract'}"><img src="{$img_dir}icon/quantity_down.gif" alt="{l s='Substract'}" /></a>
 						</td>
-						<td class="cart_total">
-							<a class="cart_quantity_delete" href="{$base_dir}cart.php?delete&amp;id_product={$product.id_product|intval}&amp;ipa={$product.id_product_attribute|intval}&amp;id_customization={$id_customization}&amp;token={$token_cart}"><img src="{$img_dir}icon/delete.gif" alt="{l s='Delete'}" title="{l s='Delete this customization'}" class="icon" /></a>
-						</td>
+						<td class="cart_total"></td>
 					</tr>
 					{assign var='quantityDisplayed' value=$quantityDisplayed+$customization.quantity}
 				{/foreach}
@@ -135,7 +182,12 @@
 				<td class="cart_discount_name" colspan="2">{$discount.name}</td>
 				<td class="cart_discount_description" colspan="3">{$discount.description}</td>
 				<td class="cart_discount_delete"><a href="{$base_dir_ssl}order.php?deleteDiscount={$discount.id_discount}" title="{l s='Delete'}"><img src="{$img_dir}icon/delete.gif" alt="{l s='Delete'}" class="icon" /></a></td>
-				<td class="cart_discount_price"><span class="price-discount">{convertPrice price=$discount.value_real*-1}</span></td>
+				<td class="cart_discount_price"><span class="price-discount">
+					{if $discount.value_real > 0}
+						{if !$priceDisplay || $priceDisplay == 2}{convertPrice price=$discount.value_real*-1}{if $priceDisplay == 2} {l s='+Tx'}<br />{/if}{/if}
+						{if $priceDisplay}{convertPrice price=$discount.value_tax_exc*-1}{if $priceDisplay == 2} {l s='-Tx'}{/if}{/if}
+					{/if}
+				</span></td>
 			</tr>
 		{/foreach}
 		</tbody>
@@ -152,7 +204,7 @@
 		{/foreach}
 		</ul>
 	{/if}
-	<form action="{$smarty.server.PHP_SELF|htmlentities}" method="post" id="voucher">
+	<form action="{$base_dir_ssl}order.php" method="post" id="voucher">
 		<fieldset>
 			<h4>{l s='Vouchers'}</h4>
 			<p>
@@ -199,7 +251,11 @@
 </div>
 {/if}
 <p class="cart_navigation">
-	<a href="{$base_dir}order.php?step=1" class="exclusive" title="{l s='Next'}">{l s='Next'} &raquo;</a>
-	<a href="{if $smarty.server.HTTP_REFERER && strstr($smarty.server.HTTP_REFERER, 'order.php')}{$base_dir}index.php{else}{$smarty.server.HTTP_REFERER}{/if}" class="button_large" title="{l s='Continue shopping'}">&laquo; {l s='Continue shopping'}</a>
+	<a href="{$base_dir_ssl}order.php?step=1" class="exclusive" title="{l s='Next'}">{l s='Next'} &raquo;</a>
+	<a href="{if $smarty.server.HTTP_REFERER && strstr($smarty.server.HTTP_REFERER, 'order.php')}{$base_dir}index.php{else}{$smarty.server.HTTP_REFERER|escape:'htmlall':'UTF-8'}{/if}" class="button_large" title="{l s='Continue shopping'}">&laquo; {l s='Continue shopping'}</a>
+</p>
+<p class="clear"><br /><br /></p>
+<p class="cart_navigation_extra">
+	{$HOOK_SHOPPING_CART_EXTRA}
 </p>
 {/if}

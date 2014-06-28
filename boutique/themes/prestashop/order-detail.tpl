@@ -66,7 +66,7 @@
 	{if $address_delivery->phone}<li class="address_phone">{$address_delivery->phone|escape:'htmlall':'UTF-8'}</li>{/if}
 	{if $address_delivery->phone_mobile}<li class="address_phone_mobile">{$address_delivery->phone_mobile|escape:'htmlall':'UTF-8'}</li>{/if}
 </ul>
-<form action="{$base_dir}order-follow.php" method="post">
+<form action="{$base_dir_ssl}order-follow.php" method="post">
 <div id="order-detail-content" class="table_block">
 	<table class="std">
 		<thead>
@@ -80,9 +80,16 @@
 			</tr>
 		</thead>
 		<tfoot>
+			{if $priceDisplay}
+				<tr class="item">
+					<td colspan="{if $return_allowed}6{else}5{/if}">
+						{l s='Total products (tax excl.):'} <span class="price">{displayWtPriceWithCurrency price=$order->getTotalProductsWithoutTaxes() currency=$currency convert=0}</span>
+					</td>
+				</tr>
+			{/if}
 			<tr class="item">
 				<td colspan="{if $return_allowed}6{else}5{/if}">
-					{l s='Total products:'} <span class="price">{displayWtPriceWithCurrency price=$order->getTotalProductsWithTaxes() currency=$currency convert=0}</span>
+					{l s='Total products (tax incl.):'} <span class="price">{displayWtPriceWithCurrency price=$order->getTotalProductsWithTaxes() currency=$currency convert=0}</span>
 				</td>
 			</tr>
 			{if $order->total_discounts > 0}
@@ -92,16 +99,16 @@
 				</td>
 			</tr>
 			{/if}
-			{if $order->total_wrapping > 0}			
+			{if $order->total_wrapping > 0}
 			<tr class="item">
 				<td colspan="{if $return_allowed}6{else}5{/if}">
 					{l s='Total gift-wrapping:'} <span class="price-wrapping">{displayWtPriceWithCurrency price=$order->total_wrapping currency=$currency convert=0}</span>
 				</td>
 			</tr>
-			{/if}			
+			{/if}
 			<tr class="item">
 				<td colspan="{if $return_allowed}6{else}5{/if}">
-					{l s='Total shipping:'} <span class="price-shipping">{displayWtPriceWithCurrency price=$order->total_shipping currency=$currency convert=0}</span>
+					{l s='Total shipping (tax incl.):'} <span class="price-shipping">{displayWtPriceWithCurrency price=$order->total_shipping currency=$currency convert=0}</span>
 				</td>
 			</tr>
 			<tr class="item">
@@ -188,6 +195,9 @@
 				<td><span class="order_qte_span editable">1</span></td>
 				<td>&nbsp;</td>
 				<td>{l s='-'}{convertPriceWithCurrency price=$discount.value currency=$currency convert=0}</td>
+				{if $return_allowed}
+				<td>&nbsp;</td>
+				{/if}
 			</tr>
 		{/foreach}
 		</tbody>
@@ -237,6 +247,16 @@
 		</tbody>
 	</table>
 </div>
+{/if}
+{if isset($errors) && $errors}
+	<div class="error">
+		<p>{if $errors|@count > 1}{l s='There are'}{else}{l s='There is'}{/if} {$errors|@count} {if $errors|@count > 1}{l s='errors'}{else}{l s='error'}{/if} :</p>
+		<ol>
+		{foreach from=$errors key=k item=error}
+			<li>{$error}</li>
+		{/foreach}
+		</ol>
+	</div>
 {/if}
 <form action="{$base_dir}order-detail.php" method="post" class="std" id="sendOrderMessage">
 	<p class="bold">{l s='Add a message:'}</p>

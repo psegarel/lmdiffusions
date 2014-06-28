@@ -16,8 +16,6 @@ class Newsletter extends Module
 
         parent::__construct();
 
-        /* The parent construct is required for translations */
-		$this->page = basename(__FILE__, '.php');
         $this->displayName = $this->l('Newsletter');
         $this->description = $this->l('Generates a .CSV file for mass mailings');
 		$this->_file = 'export_'.Configuration::get('PS_NEWSLETTER_RAND').'.csv';
@@ -70,10 +68,15 @@ class Newsletter extends Module
 			if ($_POST['action'] == 'customers')
 				$result = $this->_getCustomers();
 			else
-				$result = $this->_getBlockNewsletter();
+			{
+				if (!Module::isInstalled('blocknewsletter'))
+					$this->_html .= $this->displayError('The module "blocknewsletter" is required for this feature');
+				else
+					$result = $this->_getBlockNewsletter();
+			}
 			if (!$nb = intval(Db::getInstance()->NumRows()))
 				$this->_html .= $this->displayError($this->l('No customers were found with these filters !'));
-			elseif ($fd = @fopen(dirname(__FILE__).'/'.strval($_POST['action']).'_'.$this->_file, 'w'))
+			elseif ($fd = @fopen(dirname(__FILE__).'/'.strval(preg_replace('#\.{2,}#', '.', $_POST['action'])).'_'.$this->_file, 'w'))
 			{
 				foreach ($result AS $tab)
 					$this->_my_fputcsv($fd, $tab);
@@ -95,7 +98,7 @@ class Newsletter extends Module
 		'.((isset($_POST['OPTIN']) AND intval($_POST['OPTIN']) != 0) ? 'AND c.`optin` = '.intval($_POST['OPTIN'] - 1) : '').'
 		'.((isset($_POST['COUNTRY']) AND intval($_POST['COUNTRY']) != 0) ? 'AND (SELECT COUNT(a.`id_address`) as nb_country FROM `'._DB_PREFIX_.'address` a WHERE a.`id_customer` = c.`id_customer` AND a.`id_country` = '.intval($_POST['COUNTRY']).') >= 1' : '').'
 		GROUP BY c.`id_customer`');
-		$header = array('id_customer', 'lastname', 'firstname', 'email', 'ip_address');
+		$header = array('id_customer', 'lastname', 'firstname', 'email', 'ip_address', 'newsletter_date_add');
 		$result = (is_array($rq) ? array_merge(array($header), $rq) : $header);
 		return $result;
 	}
@@ -105,7 +108,7 @@ class Newsletter extends Module
 		$rq = Db::getInstance()->ExecuteS('
 		SELECT *
 		FROM `'._DB_PREFIX_.'newsletter`');
-		$header = array('id_customer', 'email', 'ip_address');
+		$header = array('id_customer', 'email', 'newsletter_date_add', 'ip_address');
 		$result = (is_array($rq) ? array_merge(array($header), $rq) : $header);
 		return $result;
 	}

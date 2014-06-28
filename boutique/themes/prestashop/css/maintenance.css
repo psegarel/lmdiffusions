@@ -1,9 +1,9 @@
 *, body{margin:0;padding:0}
-body
+body 
 {
 	font-family:90%/1em 'Lucida Grande', Verdana, sans-serif;
 }
-
+ 
 #maintenance
 {
 	width:450px;
@@ -17,7 +17,7 @@ body
 	color: #C73178;
 }
 
-#message
+#message 
 {
 	width:450px;
 	margin-top:35px;

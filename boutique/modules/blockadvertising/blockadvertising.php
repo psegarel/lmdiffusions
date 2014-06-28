@@ -8,9 +8,8 @@ class BlockAdvertising extends Module
 		$this->tab = 'Blocks';
 		$this->version = 0.1;
 
-		parent::__construct(); // The parent construct is required for translations
+		parent::__construct();
 
-		$this->page = basename(__FILE__, '.php');
 		$this->displayName = $this->l('Block advertising');
 		$this->description = $this->l('Adds a block to display an advertising');
 	}
@@ -32,8 +31,9 @@ class BlockAdvertising extends Module
 	*/
 	function hookRightColumn($params)
 	{
-		global $smarty;
-		$smarty->assign('image', './modules/'.$this->name.'/advertising.jpg');
+		global $smarty, $protocol_content, $server_host;
+
+		$smarty->assign('image', $protocol_content.$server_host.__PS_BASE_URI__.'/modules/'.$this->name.'/advertising.jpg');
 		return $this->display(__FILE__, 'blockadvertising.tpl');
 	}
 

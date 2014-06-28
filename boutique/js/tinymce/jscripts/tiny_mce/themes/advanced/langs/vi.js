@@ -55,7 +55,7 @@ newdocument_desc:"V\u0103n b\u1EA3n m\u1EDBi",
 help_desc:"Gi\u00FAp \u0111\u1EE1",
 blockquote_desc:"\u0110\u1ECBnh d\u1EA1ng kh\u1ED1i",
 clipboard_msg:"Sao ch\u00E9p/C\u1EAFt/D\u00E1n kh\u00F4ng ho\u1EA1t \u0111\u1ED9ng tr\u00EAn Mozilla v\u00E0 Firefox.\nB\u1EA1n mu\u1ED1n xem th\u00EAm th\u00F4ng tin v\u1EC1 v\u1EA5n \u0111\u1EC1 n\u00E0y?",
-path:"D\u01B0\u1EDDng d\u1EABn",
+path:"\u0110\u01B0\u1EDDng d\u1EABn",
 newdocument:"B\u1EA1n c\u00F3 ch\u1EAFc ch\u1EAFn mu\u1ED1n x\u00F3a t\u1EA5t c\u1EA3 n\u1ED9i dung \u0111\u00E3 so\u1EA1n?",
 toolbar_focus:"Nh\u1EA3y \u0111\u1EBFn thanh c\u00F4ng c\u1EE5 - Alt+Q, Nh\u1EA3y \u0111\u1EBFn \u00F4 so\u1EA1n th\u1EA3o - Alt-Z, Nh\u1EA3y \u0111\u1EBFn \u0111\u01B0\u1EDDng d\u1EABn - Alt-X",
 more_colors:"Nhi\u1EC1u m\u00E0u h\u01A1n"

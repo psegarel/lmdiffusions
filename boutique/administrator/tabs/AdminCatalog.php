@@ -8,7 +8,7 @@
   * @author PrestaShop <support@prestashop.com>
   * @copyright PrestaShop
   * @license http://www.opensource.org/licenses/osl-3.0.php Open-source licence 3.0
-  * @version 1.1
+  * @version 1.2
   *
   */
 
@@ -92,12 +92,12 @@ class AdminCatalog extends AdminTab
 	{
 		global $currentIndex;
 
-		if ((isset($_POST['submitAddcategory']) AND sizeof($this->adminCategories->_errors)) OR isset($_GET['updatecategory']) OR isset($_GET['addcategory']))
+		if (((Tools::isSubmit('submitAddcategory') OR Tools::isSubmit('submitAddcategoryAndStay')) AND sizeof($this->adminCategories->_errors)) OR isset($_GET['updatecategory']) OR isset($_GET['addcategory']))
 		{
 			$this->adminCategories->displayForm($this->token);
 			echo '<br /><br /><a href="'.$currentIndex.'&token='.$this->token.'"><img src="../img/admin/arrow2.gif" /> '.$this->l('Back to list').'</a><br />';
 		}
-		elseif ((Tools::isSubmit('submitAddproduct') AND sizeof($this->adminProducts->_errors)) OR Tools::isSubmit('updateproduct') OR Tools::isSubmit('addproduct'))
+		elseif (((Tools::isSubmit('submitAddproduct') OR Tools::isSubmit('submitAddproductAndStay')) AND sizeof($this->adminProducts->_errors)) OR Tools::isSubmit('updateproduct') OR Tools::isSubmit('addproduct'))
 		{
 			$this->adminProducts->displayForm($this->token);
 			echo '<br /><br /><a href="'.$currentIndex.'&token='.$this->token.'"><img src="../img/admin/arrow2.gif" /> '.$this->l('Back to list').'</a><br />';
@@ -111,7 +111,6 @@ class AdminCatalog extends AdminTab
 			$id_category = intval(Tools::getValue('id_category'));
 			if (!$id_category)
 				$id_category = 1;
-			$currentIndex .= '&id_category='.$id_category.'&token='.$this->token;
 			echo '<div class="cat_bar"><span style="color: #3C8534;">'.$this->l('Current category').' :</span>&nbsp;&nbsp;&nbsp;'.getPath($currentIndex, $id_category).'</div>';
 			echo '<h2>'.$this->l('Categories').'</h2>';
 			$this->adminCategories->display($this->token);
@@ -119,6 +118,15 @@ class AdminCatalog extends AdminTab
 			echo '<h2>'.$this->l('Products in this category').'</h2>';
 			$this->adminProducts->display($this->token);
 		}
+	}
+	
+	public function displayListHeader($token = NULL)
+	{
+		global $currentIndex;
+
+		$id_category = intval(Tools::getValue('id_category'));
+		if ($id_category)
+			$currentIndex .= '&id_category='.$id_category.'&token='.$this->token;
 	}
 }
 

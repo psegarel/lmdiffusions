@@ -16,7 +16,7 @@ function displayError($msg)
 ?>
 <script type="text/javascript">
 <!--
-alert("<?php echo html_entity_decode($translations['You reach the maximum number of allowed downloads.'], ENT_QUOTES, 'utf-8'); ?>");
+alert("<?php echo html_entity_decode($translations[$msg], ENT_QUOTES, 'utf-8'); ?>");
 window.location.href = '<?php echo __PS_BASE_URI__ ?>';
 -->
 </script>
@@ -29,7 +29,9 @@ if ($cookie->isLoggedBack() AND Tools::getValue('file'))
 {
 	/* Admin can directly access to file */
 	$filename = Tools::getValue('file');
-	$file = _PS_DOWNLOAD_DIR_.$filename;
+	if (!Validate::isSha1($filename))
+		die(Tools::displayError());
+	$file = _PS_DOWNLOAD_DIR_.strval(preg_replace('/\.{2,}/', '.',$filename));
 	$filename = ProductDownload::getFilenameFromFilename(Tools::getValue('file'));
 	if (!file_exists($file))
 		Tools::redirect('index.php');
@@ -42,7 +44,7 @@ else
 	$cookie = new Cookie('ps');
 	Tools::setCookieLanguage();
 	if (!$cookie->isLogged())
-		Tools::redirect('authentication.php?back=get-file.php?key='.$key);
+		Tools::redirect('authentication.php?back=get-file.php&key='.$key);
 
 	/* Key format: <sha1-filename>-<hashOrder> */
 	$tmp = explode('-', $key);

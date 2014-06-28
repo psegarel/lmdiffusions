@@ -1,6 +1,6 @@
 <?php
 
-$nArray = array(10, 20, 50);
+$nArray = intval(Configuration::get('PS_PRODUCTS_PER_PAGE')) != 10 ? array(intval(Configuration::get('PS_PRODUCTS_PER_PAGE')), 10, 20, 50) : array(10, 20, 50);
 $n = abs(intval(Tools::getValue('n', intval(Configuration::get('PS_PRODUCTS_PER_PAGE')))));
 $p = abs(intval(Tools::getValue('p', 1)));
 $range = 2; /* how many pages around page selected */
@@ -21,6 +21,7 @@ $stop = intval($p + $range);
 if ($stop > $pages_nb)
 	$stop = intval($pages_nb);
 
-$smarty->assign(array('pages_nb' => intval($pages_nb), 'p' => intval($p), 'n' => intval($n), 'nArray' => $nArray, 'range' => intval($range), 'start' => intval($start),	'stop' => intval($stop)));
+$pagination_infos = array('pages_nb' => intval($pages_nb), 'p' => intval($p), 'n' => intval($n), 'nArray' => $nArray, 'range' => intval($range), 'start' => intval($start),	'stop' => intval($stop));
+$smarty->assign($pagination_infos);
 
 ?>

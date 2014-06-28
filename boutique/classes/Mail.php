@@ -8,7 +8,7 @@
   * @author PrestaShop <support@prestashop.com>
   * @copyright PrestaShop
   * @license http://www.opensource.org/licenses/osl-3.0.php Open-source licence 3.0
-  * @version 1.1
+  * @version 1.2
   *
   */
   
@@ -85,14 +85,14 @@ class Mail
 				die(Tools::displayError('Error - The following email template is missing:').' '.$templatePath.$template.'.txt');
 				
 			$templateHtml = file_get_contents($templatePath.$template.'.html');
-			$templateTxt = utf8_encode(strip_tags(html_entity_decode(file_get_contents($templatePath.$template.'.txt'), NULL, 'utf-8')));
+			$templateTxt = strip_tags(html_entity_decode(file_get_contents($templatePath.$template.'.txt'), NULL, 'utf-8'));
 			include_once(dirname(__FILE__).'/../mails/'.$iso.'/lang.php');
 
 			global $_LANGMAIL;
 			/* Create mail and attach differents parts */
 			$message = new Swift_Message('['.Configuration::get('PS_SHOP_NAME').'] '.((is_array($_LANGMAIL) AND key_exists($subject, $_LANGMAIL)) ? $_LANGMAIL[$subject] : $subject));
 			$templateVars['{shop_logo}'] = (file_exists(_PS_IMG_DIR_.'logo.jpg')) ? $message->attach(new Swift_Message_Image(new Swift_File(_PS_IMG_DIR_.'logo.jpg'))) : '';
-			$templateVars['{shop_name}'] = htmlentities(Configuration::get('PS_SHOP_NAME'), NULL, 'utf-8');
+			$templateVars['{shop_name}'] = Configuration::get('PS_SHOP_NAME');
 			$templateVars['{shop_url}'] = 'http://'.htmlspecialchars($_SERVER['HTTP_HOST'], ENT_COMPAT, 'UTF-8').__PS_BASE_URI__;
 			$swift->attachPlugin(new Swift_Plugin_Decorator(array($to_plugin => $templateVars)), 'decorator');
 			if ($configuration['PS_MAIL_TYPE'] == 3 OR $configuration['PS_MAIL_TYPE'] == 2)
@@ -107,8 +107,6 @@ class Mail
 			return $send;
 		}
 	
-		catch (Swift_Connection_Exception $e) { return false; }
+		catch (Swift_ConnectionException $e) { return false; }
 	}
 }
-
-?>

@@ -40,7 +40,7 @@ function addCombination(idCombination, arrayOfIdAttributes, quantity, price, eco
 }
 
 // search the combinations' case of attributes and update displaying of availability, prices, ecotax, and image
-function findCombination()
+function findCombination(firstTime)
 {
 	//create a temporary 'choice' array containing the choices of the customer
 	var choice = new Array();
@@ -88,18 +88,27 @@ function findCombination()
 			
 			//update the display
 			updateDisplay();
-			
+
+			if(typeof(firstTime) != 'undefined' && firstTime)
+				refreshProductImages(0);
+			else
+				refreshProductImages(combinations[combination]['idCombination']);
 			//leave the function because combination has been found
 			return;
 		}
 	}
-	//this combination don't exist (not created in back office)
+	//this combination doesn't exist (not created in back office)
 	selectedCombination['unavailable'] = true;
 	updateDisplay();
 }
 
 function updateColorSelect(id_attribute)
 {
+	if (id_attribute == 0)
+	{
+		refreshProductImages(0);
+		return ;
+	}
 	// Visual effect
 	$('#color_'+id_attribute).fadeTo('fast', 1, function(){	$(this).fadeTo('slow', 0, function(){ $(this).fadeTo('slow', 1, function(){}); }); });
 	// Attribute selection
@@ -137,7 +146,7 @@ function updateDisplay()
 		}
 		
 		//'last quantities' message management
-		if (quantityAvailable <= maxQuantityToAllowDisplayOfLastQuantityMessage)
+		if (quantityAvailable <= maxQuantityToAllowDisplayOfLastQuantityMessage && !allowBuyWhenOutOfStock)
 		{
 			//display the 'last quantities' message
 			$('#last_quantities').show('slow');
@@ -164,15 +173,6 @@ function updateDisplay()
 				$('#quantityAvailableTxtMultiple').show();
 			}
 		}
-	}
-	else if (allowBuyWhenOutOfStock && availableLaterValue != '')
-	{
-		//hide the hook out of stock
-		$('#oosHook').hide();
-		
-		//update the availability status of the product
-		$('#availability_value').text(availableLaterValue);
-		$('#availability_statut:hidden').show();
 	}
 	else
 	{
@@ -203,7 +203,14 @@ function updateDisplay()
 		if (allowBuyWhenOutOfStock && !selectedCombination['unavailable'])
 		{
 			$('#add_to_cart:hidden').fadeIn(600);
-			$('p#availability_statut:visible').hide('slow');
+
+			if (availableLaterValue != '')
+			{
+				$('#availability_value').text(availableLaterValue);
+				$('p#availability_statut:hidden').show('slow');
+			}
+			else
+				$('p#availability_statut:visible').hide('slow');			
 		}
 		else
 		{
@@ -217,7 +224,7 @@ function updateDisplay()
 	{
 		var attribut_price_tmp = selectedCombination['price'];
 
-		var tax = (taxRate / 100) + 1;
+		var tax = noTaxForThisProduct ? 1 : ((taxRate / 100) + 1);
 
 		if (noTaxForThisProduct)
 			attribut_price_tmp /= tax;
@@ -235,9 +242,18 @@ function updateDisplay()
 		if (reduction_from != reduction_to && (currentDate > reduction_to || currentDate < reduction_from))
 			var priceReduct = 0;
 		else
-			var priceReduct = productPriceWithoutReduction2 / 100 * parseFloat(reduction_percent) + reduction_price;
+			var priceReduct = productPriceWithoutReduction2 / 100 * parseFloat(reduction_percent) + (reduction_price * currencyRate);
 		var priceProduct = productPriceWithoutReduction2 - priceReduct;
 		var productPricePretaxed = (productPriceWithoutReduction2 - priceReduct) / tax;
+
+		if (displayPrice == 1)
+		{
+			priceProduct = productPricePretaxed;
+			productPriceWithoutReduction2 /= tax;
+		}
+
+		if (group_reduction)
+			priceProduct *= group_reduction;
 		$('#our_price_display').text(formatCurrency(priceProduct, currencyFormat, currencySign, currencyBlank));
 		$('#pretaxe_price_display').text(formatCurrency(productPricePretaxed, currencyFormat, currencySign, currencyBlank));
 		$('#old_price_display').text(formatCurrency(productPriceWithoutReduction2, currencyFormat, currencySign, currencyBlank));
@@ -248,48 +264,93 @@ function updateDisplay()
 //update display of the large image
 function displayImage(domAAroundImgThumb)
 {
-    if (!domAAroundImgThumb.hasClass('shown'))
+    if (domAAroundImgThumb.attr('href'))
     {
-        if (domAAroundImgThumb.attr('href'))
-        {
-            var newSrc = domAAroundImgThumb.attr('href').replace('thickbox','large');
+        var newSrc = domAAroundImgThumb.attr('href').replace('thickbox','large');
+        if ($('#bigpic').attr('src') != newSrc)
+		{ 
             $('#bigpic').fadeOut('fast', function(){
-                $(this).attr('src', newSrc);
-                $(this).load(function() {
-                  $(this).fadeIn('fast')
-                })
-                ;
+                $(this).attr('src', newSrc).show();
+                if (typeof(jqZoomEnabled) != 'undefined' && jqZoomEnabled)
+	                $(this).attr('alt', domAAroundImgThumb.attr('href'));
             });
-            $('#views_block li a').removeClass('shown');
-            $(domAAroundImgThumb).addClass('shown');
         }
+        $('#views_block li a').removeClass('shown');
+        $(domAAroundImgThumb).addClass('shown');
     }
-} 
+}
+
+// Serialscroll exclude option bug ?
+function serialScrollFixLock(event, targeted, scrolled, items, position)
+{
+	serialScrollNbImages = $('#thumbs_list li:visible').length;
+	serialScrollNbImagesDisplayed = 3;
+	
+	var leftArrow = position == 0 ? true : false;
+	var rightArrow = position + serialScrollNbImagesDisplayed >= serialScrollNbImages ? true : false;
+	
+	$('a#view_scroll_left').css('cursor', leftArrow ? 'default' : 'pointer').css('display', leftArrow ? 'none' : 'block').fadeTo(0, leftArrow ? 0 : 1);		
+	$('a#view_scroll_right').css('cursor', rightArrow ? 'default' : 'pointer').fadeTo(0, rightArrow ? 0 : 1).css('display', rightArrow ? 'none' : 'block');
+	return true;
+}
+
+// Change the current product images regarding the combination selected
+function refreshProductImages(id_product_attribute)
+{
+	$('#thumbs_list_frame').scrollTo('li:eq(0)', 700, {axis:'x'});
+	$('#thumbs_list li').hide();
+	id_product_attribute = parseInt(id_product_attribute);
+
+	if (typeof(combinationImages) != 'undefined' && typeof(combinationImages[id_product_attribute]) != 'undefined')
+	{
+		for (var i = 0; i < combinationImages[id_product_attribute].length; i++)
+			$('#thumbnail_' + parseInt(combinationImages[id_product_attribute][i])).show();
+	}
+	$('#thumbs_list_frame').width((parseInt(($('#thumbs_list_frame >li').width())* i) + 3) + 'px'); //  Bug IE6, needs 3 pixels more ?
+	$('#thumbs_list').trigger('goto', 0);
+	serialScrollFixLock('', '', '', '', 0);// SerialScroll Bug on goto 0 ?
+}
 
 //To do after loading HTML
-$(document).ready(function(){
-	
+$(document).ready(function()
+{
 	//init the serialScroll for thumbs
 	$('#thumbs_list').serialScroll({
-		items:'li',
+		items:'li:visible',
 		prev:'a#view_scroll_left',
 		next:'a#view_scroll_right',
 		axis:'x',
 		offset:0,
 		start:0,
 		stop:true,
+		onBefore:serialScrollFixLock,
 		duration:700,
 		step: 2,
+		lazy: true,
 		lock: false,
 		force:false,
 		cycle:false
 	});
+	
+	$('#thumbs_list').trigger('goto', 1);// SerialScroll Bug on goto 0 ?
+	$('#thumbs_list').trigger('goto', 0);
 
 	//hover 'other views' images management
 	$('#views_block li a').hover(
 		function(){displayImage($(this));},
 		function(){}
 	);
+	
+	//set jqZoom parameters if needed
+	if (typeof(jqZoomEnabled) != 'undefined' && jqZoomEnabled)
+	{
+		$('img.jqzoom').jqueryzoom({
+			xzoom: 200, //zooming div default width(default width value is 200)
+			yzoom: 200, //zooming div default width(default height value is 200)
+			offset: 21 //zooming div default offset(default offset value is 10)
+			//position: "right" //zooming div position(default position value is "right")
+		});
+	}
 
 	//add a link on the span 'view full size' and on the big image
 	$('span#view_full_size, div#image-block img').click(function(){
@@ -310,7 +371,12 @@ $(document).ready(function(){
 
 	//init the price in relation of the selected attributes
 	if (typeof productHasAttributes != 'undefined' && productHasAttributes)
-		findCombination();
+		findCombination(true);
+
+	//
+	$('a#resetImages').click(function() {
+		updateColorSelect(0);
+	});
 });
 
 function saveCustomization()

@@ -7,7 +7,7 @@
   * @author PrestaShop <support@prestashop.com>
   * @copyright PrestaShop
   * @license http://www.opensource.org/licenses/osl-3.0.php Open-source licence 3.0
-  * @version 1.0
+  * @version 1.2
   *
   */
  
@@ -19,8 +19,8 @@ include(PS_ADMIN_DIR.'/functions.php');
 $errors = array();
 
 // Checking path
-$pathServer = ereg_replace('^/', '', $_SERVER['PHP_SELF']);
-$pathUser = ereg_replace('^/', '', str_replace($_SERVER['DOCUMENT_ROOT'], '', $_SERVER['SCRIPT_FILENAME']));
+$pathServer = preg_replace('!^/!', '', $_SERVER['PHP_SELF']);
+$pathUser = preg_replace('!^/!', '', str_replace($_SERVER['DOCUMENT_ROOT'], '', $_SERVER['SCRIPT_FILENAME']));
 if (strcmp($pathServer, $pathUser))
 	$errors[] = Tools::displayError('Path is not the same between your browser and you server :').'<br /><br /><b>'.
 				Tools::displayError('- Server:').'</b><br />'.htmlentities($pathServer).'<br /><br /><b>'.
@@ -71,14 +71,17 @@ if (Tools::isSubmit('Submit'))
 				$url = strval($_GET['redirect'].(isset($_GET['token']) ? ('&token='.$_GET['token']) : ''));
 			else
 				$url = 'index.php';
+			if (!Validate::isCleanHtml($url))
+				die(Tools::displayError());
+								
 			echo '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 			<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="fr" lang="fr">
-				<meta http-equiv="Refresh" content="0;URL='.$url.'">
+				<meta http-equiv="Refresh" content="0;URL='.Tools::safeOutput($url).'">
 				<head>
 					<script language="javascript" type="text/javascript">
-						window.location.replace("'.$url.'");
+						window.location.replace("'.Tools::safeOutput($url).'");
 					</script>
-					<div style="text-align:center; margin-top:250px;"><a href="'.$url.'">'.translate('Click here to launch Administration panel').'</a></div>
+					<div style="text-align:center; margin-top:250px;"><a href="'.Tools::safeOutput($url).'">'.translate('Click here to launch Administration panel').'</a></div>
 				</head>
 			</html>';
 			exit ;
@@ -126,10 +129,10 @@ if(file_exists(PS_ADMIN_DIR.'/../install') OR file_exists(PS_ADMIN_DIR.'/../admi
 else
 {
 	echo '			<label>'.translate('E-mail address:').'</label><br />
-					<input type="text" id="email" name="email" value="'.Tools::safeOutput(Tools::getValue('email')).'" class="input" />
+					<input type="text" id="email" name="email" value="'.Tools::safeOutput(Tools::getValue('email')).'" class="input"/>
 					<div style="margin: 0.5em 0 0 0;">
 						<label>'.translate('Password:').'</label><br />
-						<input type="password" name="passwd" class="input" />
+						<input type="password" name="passwd" class="input" value=""/>
 					</div>
 					<div>
 						<div id="submit"><input type="submit" name="Submit" value="'.translate('Connection').'" class="button" /></div>

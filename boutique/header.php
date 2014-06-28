@@ -10,13 +10,13 @@ $css_files[_THEME_CSS_DIR_.'global.css'] = 'all';
 
 /* Hooks are volontary out the initialize array (need those variables already assigned) */
 $smarty->assign(array(
-    'HOOK_HEADER' => Module::hookExec('header'),
-    'HOOK_LEFT_COLUMN' => Module::hookExec('leftColumn'),
-    'HOOK_RIGHT_COLUMN' => Module::hookExec('rightColumn'),
-    'HOOK_TOP' => Module::hookExec('top'),
-    'HOOK_NAV_BAR' => Module::hookExec('navBar'),
-    'static_token' => Tools::getToken(false),
-    'token' => Tools::getToken()
+	'HOOK_HEADER' => Module::hookExec('header'),
+	'HOOK_LEFT_COLUMN' => Module::hookExec('leftColumn'),
+	'HOOK_TOP' => Module::hookExec('top'),
+	'static_token' => Tools::getToken(false),
+	'token' => Tools::getToken(),
+	'priceDisplayPrecision' => _PS_PRICE_DISPLAY_PRECISION_,
+	'content_only' => intval(Tools::getValue('content_only'))
 ));
 
 if(isset($css_files) AND !empty($css_files)) $smarty->assign('css_files', $css_files);

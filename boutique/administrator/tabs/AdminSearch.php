@@ -1,5 +1,16 @@
 <?php
 
+/**
+  * Search tab for admin panel, AdminSearch.php
+  * @category admin
+  *
+  * @author PrestaShop <support@prestashop.com>
+  * @copyright PrestaShop
+  * @license http://www.opensource.org/licenses/osl-3.0.php Open-source licence 3.0
+  * @version 1.2
+  *
+  */
+
 include_once(PS_ADMIN_DIR.'/../classes/AdminTab.php');
 
 class AdminSearch extends AdminTab
@@ -108,19 +119,35 @@ class AdminSearch extends AdminTab
 			}
 
 			/* Cart */
-			elseif (intval($_POST['bo_search_type']) == 4)
+			elseif (intval($_POST['bo_search_type']) == 5)
 			{
 				if (intval($_POST['bo_query']) AND Validate::isUnsignedInt(intval($_POST['bo_query'])))
 				{
-					if ($id_order = Order::getOrderByCartId(intval($_POST['bo_query'])))
-						Tools::redirectAdmin('index.php?tab=AdminOrders&id_order='.intval($id_order).'&vieworder'.'&token='.Tools::getAdminToken('AdminOrders'.intval(Tab::getIdFromClassName('AdminOrders')).intval($cookie->id_employee)));
-					else if ($cart = new Cart(intval($_POST['bo_query'])) AND $cart->id)
-						$this->_list['cart'] = $cart;
+					if ($cart = new Cart(intval($_POST['bo_query'])) AND $cart->id)
+					{
+						Tools::redirectAdmin('index.php?tab=AdminCarts&id_cart='.intval($cart->id).'&viewcart'.'&token='.Tools::getAdminToken('AdminCarts'.intval(Tab::getIdFromClassName('AdminCarts')).intval($cookie->id_employee)));
+					}
 					else
 						$this->_errors[] = Tools::displayError('cart #').intval($_POST['bo_query']).' '.Tools::displayError('not found');
 				}
 				else
 					$this->_errors[] = Tools::displayError('please type a cart ID');
+			}
+			
+			/* Invoices */
+			elseif (intval($_POST['bo_search_type']) == 4)
+			{
+				if (intval($_POST['bo_query']) AND Validate::isUnsignedInt(intval($_POST['bo_query'])))
+				{
+					if ($invoice = Order::getInvoice(intval($_POST['bo_query'])))
+					{
+						Tools::redirectAdmin('pdf.php?id_order='.intval($invoice['id_order']).'&pdf');
+					}
+					else
+						$this->_errors[] = Tools::displayError('invoice #').intval($_POST['bo_query']).' '.Tools::displayError('not found');
+				}
+				else
+					$this->_errors[] = Tools::displayError('please type an invoice ID');
 			}
 			else
 				Tools::displayError('please fill in search form first.');
@@ -137,7 +164,7 @@ class AdminSearch extends AdminTab
 		/* Display categories if any has been matching */
 		if (isset($this->_list['categories']) AND $nbCategories = sizeof($this->_list['categories']))
 		{
-			echo '<h3>'.$nbCategories.' '.($nbCategories > 1 ? $this->l('categories found with') : $this->l('category found with')).' <b>"'.$query.'"</b></h3>';
+			echo '<h3>'.$nbCategories.' '.($nbCategories > 1 ? $this->l('categories found with') : $this->l('category found with')).' <b>"'.Tools::safeOutput($query).'"</b></h3>';
 			echo '
 			<table cellspacing="0" cellpadding="0" class="table">';
 			$irow = 0;
@@ -151,7 +178,7 @@ class AdminSearch extends AdminTab
 		/* Display products if any has been matching */
 		if (isset($this->_list['products']) AND !empty($this->_list['products']) AND $nbProducts = sizeof($this->_list['products']))
 		{
-			echo '<h3>'.$nbProducts.' '.($nbProducts > 1 ? $this->l('products found with') : $this->l('product found with')).' <b>"'.$query.'"</b></h3>
+			echo '<h3>'.$nbProducts.' '.($nbProducts > 1 ? $this->l('products found with') : $this->l('product found with')).' <b>"'.Tools::safeOutput($query).'"</b></h3>
 			<table class="table" cellpadding="0" cellspacing="0">
 				<tr>';
 			foreach ($this->fieldsDisplay AS $field)
@@ -188,7 +215,7 @@ class AdminSearch extends AdminTab
 		/* Display customers if any has been matching */
 		if (isset($this->_list['customers']) AND !empty($this->_list['customers']) AND $nbCustomers = sizeof($this->_list['customers']))
 		{
-			echo '<h3>'.$nbCustomers.' '.($nbCustomers > 1 ? $this->l('customers') : $this->l('customer')).' '.$this->l('found with').' <b>"'.$query.'"</b></h3>
+			echo '<h3>'.$nbCustomers.' '.($nbCustomers > 1 ? $this->l('customers') : $this->l('customer')).' '.$this->l('found with').' <b>"'.Tools::safeOutput($query).'"</b></h3>
 			<table cellspacing="0" cellpadding="0" class="table widthfull">
 				<tr>';
 			foreach ($this->fieldsDisplay AS $field)

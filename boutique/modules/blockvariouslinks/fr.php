@@ -14,6 +14,4 @@ $_MODULE['<{blockvariouslinks}prestashop>blockvariouslinks_d1aa22a3126f04664e0fe
 $_MODULE['<{blockvariouslinks}prestashop>blockvariouslinks_9ff0635f5737513b1a6f559ac2bff745'] = 'Nouveaux produits';
 $_MODULE['<{blockvariouslinks}prestashop>blockvariouslinks_3cb29f0ccc5fd220a97df89dafe46290'] = 'Meilleures ventes';
 $_MODULE['<{blockvariouslinks}prestashop>blockvariouslinks_02d4482d332e1aef3437cd61c9bcc624'] = 'Contactez-nous';
-$_MODULE['<{blockvariouslinks}prestashop>blockvariouslinks_7a52e36bf4a1caa031c75a742fb9927a'] = 'Réalisé par';
-
-?>
+$_MODULE['<{blockvariouslinks}prestashop>blockvariouslinks_7a52e36bf4a1caa031c75a742fb9927a'] = 'Propulsé par';

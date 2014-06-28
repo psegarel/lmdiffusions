@@ -27,46 +27,46 @@ countries = new Array();
 	<div class="confirmation">
 		<p class="success">{l s='Your account has been successfully created.'}</p>
 		<p>
-			<a href="{$base_dir_ssl}my-account.php"><img src="{$img_dir}icon/my-account.gif" alt="{l s='Your account'}" title="{l s='Your account'}" class="icon" />{l s='Access your account'}</a>
+			<a href="{$base_dir_ssl}my-account.php"><img src="{$img_dir}icon/my-account.gif" alt="{l s='Your account'}" title="{l s='Your account'}" class="icon" /></a><a href="{$base_dir_ssl}my-account.php">{l s='Access your account'}</a>
 		</p>
 	</div>
 {else}
 	{if !isset($email_create)}
-		<form action="{$request_uri|escape:'htmlall':'UTF-8'}" method="post" id="create-account_form" class="std">
+		<form action="{$base_dir_ssl}authentication.php" method="post" id="create-account_form" class="std">
 			<fieldset>
 				<h3>{l s='Create your account'}</h3>
 				<h4>{l s='Enter your e-mail address to create your account'}.</h4>
 				<p class="text">
 					<label for="email_create">{l s='E-mail address'}</label>
-					<input type="text" id="email_create" name="email_create" value="{if isset($smarty.post.email_create)}{$smarty.post.email_create|escape:'htmlall'|stripslashes}{/if}" class="account_input" />
+					<span><input type="text" id="email_create" name="email_create" value="{if isset($smarty.post.email_create)}{$smarty.post.email_create|escape:'htmlall'|stripslashes}{/if}" class="account_input" /></span>
 				</p>
 				<p class="submit">
+				{if isset($back)}<input type="hidden" class="hidden" name="back" value="{$back|escape:'htmlall':'UTF-8'}" />{/if}
 					<input type="submit" id="SubmitCreate" name="SubmitCreate" class="button_large" value="{l s='Create your account'}" />
 					<input type="hidden" class="hidden" name="SubmitCreate" value="{l s='Create your account'}" />
 				</p>
 			</fieldset>
 		</form>
-		<form action="{$request_uri|escape:'htmlall':'UTF-8'}" method="post" id="login_form" class="std">
+		<form action="{$base_dir_ssl}authentication.php" method="post" id="login_form" class="std">
 			<fieldset>
 				<h3>{l s='Already registered ?'}</h3>
-				<h4>{l s='Enter your e-mail address and password to access to your account'}.</h4>
 				<p class="text">
 					<label for="email">{l s='E-mail address'}</label>
-					<input type="text" id="email" name="email" value="{if isset($smarty.post.email)}{$smarty.post.email|escape:'htmlall'|stripslashes}{/if}" class="account_input" />
+					<span><input type="text" id="email" name="email" value="{if isset($smarty.post.email)}{$smarty.post.email|escape:'htmlall'|stripslashes}{/if}" class="account_input" /></span>
 				</p>
 				<p class="text">
 					<label for="passwd">{l s='Password'}</label>
-					<input type="password" id="passwd" name="passwd" value="{if isset($smarty.post.passwd)}{$smarty.post.passwd|escape:'htmlall'|stripslashes}{/if}" class="account_input" />
+					<span><input type="password" id="passwd" name="passwd" value="{if isset($smarty.post.passwd)}{$smarty.post.passwd|escape:'htmlall'|stripslashes}{/if}" class="account_input" /></span>
 				</p>
 				<p class="submit">
 					{if isset($back)}<input type="hidden" class="hidden" name="back" value="{$back|escape:'htmlall':'UTF-8'}" />{/if}
 					<input type="submit" id="SubmitLogin" name="SubmitLogin" class="button" value="{l s='Log in'}" />
 				</p>
-				<p><a href="{$base_dir}password.php">{l s='Forgot your password?'}</a></p>
+				<p class="lost_password"><a href="{$base_dir}password.php">{l s='Forgot your password?'}</a></p>
 			</fieldset>
 		</form>
 	{else}
-	<form action="{$request_uri|escape:'htmlall':'UTF-8'|replace:'&amp;':'&'}" method="post" id="account-creation_form" class="std">
+	<form action="{$base_dir_ssl}authentication.php" method="post" id="account-creation_form" class="std">
 		<fieldset class="account_creation">
 			<h3>{l s='Your personal information'}</h3>
 			<p class="radio required">
@@ -92,7 +92,7 @@ countries = new Array();
 				<sup>*</sup>
 			</p>
 			<p class="required password">
-				<label for="password">{l s='Password'}</label>
+				<label for="passwd">{l s='Password'}</label>
 				<input type="password" class="text" name="passwd" id="passwd" />
 				<sup>*</sup>
 				<span class="form_info">{l s='(5 characters min.)'}</span>
@@ -214,6 +214,7 @@ countries = new Array();
 		{$HOOK_CREATE_ACCOUNT_FORM}
 		<p class="cart_navigation required submit">
 			<input type="hidden" name="email_create" value="1" />
+			{if isset($back)}<input type="hidden" class="hidden" name="back" value="{$back|escape:'htmlall':'UTF-8'}" />{/if}
 			<input type="submit" name="submitAccount" id="submitAccount" value="{l s='Register'}" class="exclusive" />
 			<span><sup>*</sup>{l s='Required field'}</span>
 		</p>

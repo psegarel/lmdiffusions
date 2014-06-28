@@ -1,2 +1,2 @@
 SetEnv PHP_VER 5
-#Redirect permanent /index.html http://peruk/boutique
+Redirect permanent /index.html http://peruk-update/boutique

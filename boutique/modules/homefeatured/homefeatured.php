@@ -11,9 +11,8 @@ class HomeFeatured extends Module
 		$this->tab = 'Tools';
 		$this->version = '0.9';
 
-		parent::__construct(); // The parent construct is required for translations
-
-		$this->page = basename(__FILE__, '.php');
+		parent::__construct();
+		
 		$this->displayName = $this->l('Featured Products on the homepage');
 		$this->description = $this->l('Displays Featured Products in the middle of your homepage');
 	}
@@ -66,7 +65,7 @@ class HomeFeatured extends Module
 		global $smarty;
 		$category = new Category(1);
 		$nb = intval(Configuration::get('HOME_FEATURED_NBR'));
-		$products = $category->getProducts(intval($params['cookie']->id_lang), 1, ($nb ? $nb : 10), 'date_add', 'DESC');
+		$products = $category->getProducts(intval($params['cookie']->id_lang), 1, ($nb ? $nb : 10));
 		$smarty->assign(array(
 			'allow_buy_when_out_of_stock' => Configuration::get('PS_ORDER_OUT_OF_STOCK', false),
 			'max_quantity_to_allow_display' => Configuration::get('PS_LAST_QTIES'),
@@ -74,7 +73,8 @@ class HomeFeatured extends Module
 			'products' => $products,
 			'currency' => new Currency(intval($params['cart']->id_currency)),
 			'lang' => Language::getIsoById(intval($params['cookie']->id_lang)),
-			'productNumber' => sizeof($products)
+			'productNumber' => sizeof($products),
+			'homeSize' => Image::getSize('home')
 		));
 		return $this->display(__FILE__, 'homefeatured.tpl');
 	}
