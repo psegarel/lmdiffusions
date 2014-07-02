@@ -1,37 +1,70 @@
-Bonjour {firstname} {lastname}, merci d'avoir passé commande chez {shop_name} !
-		
-Détails de la commande
 
-	Commande : {order_name} passée le {date}
-	Mode de paiement : {payment}
-		
-	Produits : {total_products}
-	Bons d'achat et réductions : {total_discounts}
-	Emballage Cadeau : {total_wrapping}
-	Frais d'expédition : {total_shipping}
-	Total TTC : {total_paid}
+[{shop_url}] 
 
-			
-Livraison
-	
-	Transporteur : {carrier}
-		
-	Adresse de livraison
-	{delivery_firstname} {delivery_lastname}
-	{delivery_address1}
-	{delivery_address2}
-	{delivery_postal_code} {delivery_city}
-	{delivery_country}
-			
-	Adresse de facturation
-	{invoice_firstname} {invoice_lastname}
-	{invoice_address1}
-	{invoice_address2}
-	{invoice_postal_code} {invoice_city}
-	{invoice_country}
-		
-	Vous pouvez accéder au suivi de votre commande et télécharger votre facture dans "Historique des commandes" de la rubrique "Mon compte" sur notre site.
+Bonjour {firstname} {lastname},
 
+Merci d'avoir effectuÃ© vos achats sur {shop_name}! 
 
+COMMANDE : {order_name} Date {date}
 
-	{shop_url} réalisé par PrestaShop™
+PAIEMENT : {payment} 		 
+
+RÃ‰FÃ‰RENCE
+
+PRODUIT
+
+PRIX UNITAIRE
+
+QUANTITÃ‰
+
+PRIX TOTAL
+
+{products_txt} 
+
+{discounts} 
+
+PRODUITS 
+
+{total_products} 
+
+RÃ‰DUCTIONS 
+
+{total_discounts} 
+
+PAQUET CADEAU 
+
+{total_wrapping} 
+
+LIVRAISON 
+
+{total_shipping} 
+
+TVA TOTALE 
+
+{total_tax_paid} 
+
+TOTAL PAYÃ‰ 
+
+{total_paid} 
+
+TRANSPORTEUR : {carrier}
+
+PAIEMENT : {payment} 		 
+
+{delivery_block_txt} 
+
+{invoice_block_txt} 
+
+Vous pouvez accÃ©der Ã  tout moment au suivi de votre commande et
+tÃ©lÃ©charger votre facture dans "Historique des commandes"
+[{history_url}] de la rubrique "Mon compte"
+[{my_account_url}] sur notre site. 
+
+Si vous avez un compte invitÃ©, vous pouvez suivre votre commande
+dans la section "Suivi invitÃ©"
+[{guest_tracking_url}?id_order={order_name}] de notre
+site. 
+
+{shop_name} [{shop_url}] rÃ©alisÃ© avec
+PrestaShop(tm) [http://www.prestashop.com/] 
+

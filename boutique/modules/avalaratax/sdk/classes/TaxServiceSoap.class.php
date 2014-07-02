@@ -29,7 +29,7 @@ class TaxServiceSoap extends AvalaraSoapClient
     static protected $classmap = array(
         'BaseAddress' => 'Address',
         'ValidAddress' => 'ValidAddress',
-        'Message' => 'AvalaraMessage',
+        'Message' => 'Message',
         'ValidateRequest' => 'ValidateRequest',
         'IsAuthorizedResult' => 'IsAuthorizedResult',
         'PingResult' => 'PingResult',
@@ -54,7 +54,7 @@ class TaxServiceSoap extends AvalaraSoapClient
 		'ApplyPaymentRequest'=>'ApplyPaymentRequest',
 		'ApplyPaymentResult'=>'ApplyPaymentResult',
 		'BaseResult'=>'BaseResult',
-		'TaxOverride'=>'TaxOverride'
+		'TaxOverride'=>'TaxOverride'			
 		);
         
 public function __construct($configurationName = 'Default')

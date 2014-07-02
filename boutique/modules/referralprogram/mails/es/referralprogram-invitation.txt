@@ -1,15 +1,21 @@
-¡{firstname_friend} {lastname_friend}, Únete a nosotros!
 
-Su amigo {firstname} {lastname} patrocinado por usted en el sitio {shop_url}.
+[{shop_url}] 
 
-¡Conviértete en su ahijado, para ganar un bono de {discount}!
+{firstname_friend} {lastname_friend}, ¡únete! 
 
-Para nosotros, nada más simple, vaya a abordar los siguientes:
+¡Tu amigo {firstname} {lastname} quiere referirte en {shop_name}
+[{shop_url}]!
 
-{shop_url}{link}
+Nos llena de orgullo y satisfacción ofrecerte un tiquet valorado en
+{discount} para que lo uses en tu próxima compra. ¡Se referido y
+obtén un tiquet de descuento de {discount}! Nada más simple. ¡Haga
+clic aquí! [{link}] 		 
 
-Recuerde que debe especificar el correo electrónico a tu amigo como patrocinador en el registro: {email}.
+Recuerde que debe especificar el correo electrónico a tu amigo como
+patrocinador en el registro: {email}.
 
+Saludos. 
 
+{shop_name} [{shop_url}] creado por
+PrestaShop(tm) [http://www.prestashop.com/] 
 
-{shop_url} dirigida por PrestaShop™

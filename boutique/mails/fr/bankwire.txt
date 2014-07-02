@@ -1,21 +1,37 @@
+
+[{shop_url}] 
+
 Bonjour {firstname} {lastname},
 
-Nous avons bien enregistré votre commande {id_order}. Celle-ci vous sera envoyée dès réception de votre paiement.
-Pour rappel, vous avez sélectionné le mode de paiement par virement bancaire et celui-ci est à envoyer à :
+Merci d'avoir effectué vos achats sur {shop_name}! 
 
-{bankwire_owner}
+Nous avons bien enregistré votre commande ayant pour référence
+{order_name}. Celle-ci vous sera ENVOYÉE DÈS RÉCEPTION DE VOTRE
+PAIEMENT. 
 
-{bankwire_details}
+Pour rappel, vous avez sélectionné le mode de paiement par virement
+bancaire. 
 
-{bankwire_address}
+Voici les informations dont vous avez besoin pour effectuer votre
+virement :
 
-Le montant total est de {total_paid}
+MONTANT : {total_paid}
 
-Vous pouvez accéder à tout moment au suivi de votre commande et télécharger votre facture dans "Historique des commandes" de la rubrique "Mon compte" sur notre site {shop_url}
+TITULAIRE DU COMPTE : {bankwire_owner}
 
-Merci et à bientôt sur {shop_name}.
+DÉTAILS DU COMPTE : {bankwire_details}
 
-{shop_name} - {shop_url}
+ADRESSE DE LA BANQUE : {bankwire_address} 		 
 
+Vous pouvez accéder à tout moment au suivi de votre commande et
+télécharger votre facture dans "Historique des commandes"
+[{history_url}] de la rubrique "Mon compte"
+[{my_account_url}] sur notre site. 
 
-{shop_url} réalisé par PrestaShop™
+Si vous avez un compte invité, vous pouvez suivre votre commande
+via la section "Guest Tracking"
+[{guest_tracking_url}] sur notre boutique. 
+
+{shop_name} [{shop_url}] réalisé avec
+PrestaShop(tm) [http://www.prestashop.com/] 
+

@@ -1,5 +1,5 @@
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -18,7 +18,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -54,11 +54,11 @@ function WishlistCart(id, action, id_product, id_product_attribute, quantity)
 				.animate({ 'width': $element.attr('width')*0.66, 'height': $element.attr('height')*0.66, 'opacity': 0.2, 'top': wishlistBlockOffset.top + 30, 'left': wishlistBlockOffset.left + 15 }, 1000)
 				.fadeOut(800);
 			}
-
+			
 			if($('#' + id).length != 0)
 			{
 				$('#' + id).slideUp('normal');
-				document.getElementById(id).innerHTML = data;
+				$('#' + id).html(data);
 				$('#' + id).slideDown('normal');
 			}
 		}
@@ -81,7 +81,7 @@ function WishlistChangeDefault(id, id_wishlist)
 		success: function(data)
 		{
 			$('#' + id).slideUp('normal');
-			document.getElementById(id).innerHTML = data;
+			$('#' + id).html(data);
 			$('#' + id).slideDown('normal');
 		}
 	});
@@ -101,7 +101,7 @@ function WishlistBuyProduct(token, id_product, id_product_attribute, id_quantity
 		$('#' + id_quantity).val(0);
 		WishlistAddProductCart(token, id_product, id_product_attribute, id_quantity)
 		document.forms['addtocart' + '_' + id_product  + '_' + id_product_attribute].method='POST';
-		document.forms['addtocart' + '_' + id_product  + '_' + id_product_attribute].action=baseDir + 'cart.php';
+		document.forms['addtocart' + '_' + id_product  + '_' + id_product_attribute].action=baseUri + '?controller=cart';
 		document.forms['addtocart' + '_' + id_product  + '_' + id_product_attribute].elements['token'].value = static_token;
 		document.forms['addtocart' + '_' + id_product  + '_' + id_product_attribute].submit();
 	}
@@ -117,7 +117,7 @@ function WishlistAddProductCart(token, id_product, id_product_attribute, id_quan
 		url: baseDir + 'modules/blockwishlist/buywishlistproduct.php',
 		data: 'token=' + token + '&static_token=' + static_token + '&id_product=' + id_product  + '&id_product_attribute=' + id_product_attribute,
 		async: true,
-		cache: false,
+		cache: false, 
 		success: function(data)
 		{
 			if (data)
@@ -147,7 +147,7 @@ function WishlistManage(id, id_wishlist)
 		success: function(data)
 		{
 			$('#' + id).hide();
-			document.getElementById(id).innerHTML = data;
+			$('#' + id).html(data);
 			$('#' + id).fadeIn('slow');
 		}
 	});
@@ -189,12 +189,17 @@ function WishlistDelete(id, id_wishlist, msg)
 	var res = confirm(msg);
 	if (res == false)
 		return (false);
+
+	if (typeof mywishlist_url == 'undefined')
+		return (false);
+
 	$.ajax({
 		type: 'GET',
 		async: true,
-		url: baseDir + 'modules/blockwishlist/mywishlist.php',
+		url: mywishlist_url,
+		headers: { "cache-control": "no-cache" },
 		cache: false,
-		data: 'deleted&id_wishlist=' + id_wishlist,
+		data: {rand:new Date().getTime(),deleted:1, id_wishlist:id_wishlist},
 		success: function(data)
 		{
 			$('#' + id).fadeOut('slow');
@@ -213,13 +218,13 @@ function WishlistVisibility(bought_class, id_button)
 	{
 		$('.' + bought_class).slideDown('fast');
 		$('#show' + id_button).hide();
-		$('#hide' + id_button).fadeIn('fast');
+		$('#hide' + id_button).css('display', 'block');
 	}
 	else
 	{
 		$('.' + bought_class).slideUp('fast');
 		$('#hide' + id_button).hide();
-		$('#show' + id_button).fadeIn('fast');
+		$('#show' + id_button).css('display', 'block');
 	}
 }
 

@@ -1,7 +1,7 @@
 <?php
 
 /*
- * 2007-2013 PrestaShop
+ * 2007-2014 PrestaShop
  *
  * NOTICE OF LICENSE
  *
@@ -20,36 +20,35 @@
  * needs please refer to http://www.prestashop.com for more information.
  *
  *  @author PrestaShop SA <contact@prestashop.com>
- *  @copyright  2007-2013 PrestaShop SA
+ *  @copyright  2007-2014 PrestaShop SA
  *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  *  International Registered Trademark & Property of PrestaShop SA
  */
 
-$configPath = '../../../config/config.inc.php';
-if (file_exists($configPath))
-{
-	include('../../../config/config.inc.php');
-	
-	$sql = "SELECT * FROM " . _DB_PREFIX_ . "ebay_shipping_zone_excluded WHERE region = '" . pSQL(Tools::getValue('region')) . "'";
-	$countries = Db::getInstance()->ExecuteS($sql);
-	$string = '';
-	if(count($countries) > 0){
-		foreach ($countries as $country) {
-			
-			$string .= '<div class="excludeCountry">';
-			$string .= '<input type="checkbox" name="excludeLocation['.$country['location'].']" ';
-				if($country['excluded'] == 1)
-					$string .= ' checked="checked" ';
+include(dirname(__FILE__).'/../../../config/config.inc.php');
 
-			$string .= '/>'.$country['description'];
-			$string .= '</div>';
-		}	
-		echo $string;	
+if (!Tools::getValue('token') || Tools::getValue('token') != Configuration::get('EBAY_SECURITY_TOKEN'))
+	die('ERROR : INVALID TOKEN');
+
+$sql = 'SELECT * FROM '._DB_PREFIX_.'ebay_shipping_zone_excluded WHERE region = \''.pSQL(Tools::getValue('region')).'\'';
+$countries = Db::getInstance()->ExecuteS($sql);
+
+if (count($countries))
+{
+	$string = '';
+
+	foreach ($countries as $country)
+	{
+		$string .= '<div class="excludeCountry">
+			<input type="checkbox" name="excludeLocation['.Tools::safeOutput($country['location']).']" ';
+
+		if ($country['excluded'] == 1)
+			$string .= ' checked="checked" ';
+
+		$string .= '/>'.Tools::safeOutput($country['description']).'</div>';
 	}
-	else
-		echo "No countries were found for this region";	
+	
+	echo $string;
 }
 else
-	echo "Problem with configuration file";
-
-	
+	echo 'No countries were found for this region';

@@ -1,11 +1,23 @@
+
+[{shop_url}] 
+
 Bonjour {firstname} {lastname},
 
-Le paiement pour votre commande {id_order} a ÈtÈ acceptÈ.
+Merci d'avoir effectu√© vos achats sur {shop_name}! 
 
-Vous pouvez accÈder ‡ tout moment au suivi de votre commande dans "Historique des commandes" de la rubrique "Mon compte" sur notre site.
+Le paiement pour votre commande ayant pour r√©f√©rence
+{order_name} a √©t√© accept√©. 
 
-{shop_name} - {shop_url}
+Vous pouvez acc√©der √† tout moment au suivi de votre commande et
+t√©l√©charger votre facture dans "Historique des commandes"
+[{history_url}] de la rubrique "Mon compte"
+[{my_account_url}] sur notre site. 
 
+Si vous avez un compte invit√©, vous pouvez suivre votre commande
+dans la section "Suivi invit√©"
+[{guest_tracking_url}?id_order={order_name}] de notre
+site. 
 
+{shop_name} [{shop_url}] r√©alis√© avec
+PrestaShop(tm) [http://www.prestashop.com/] 
 
-{shop_url} rÈalisÈ par PrestaShopô

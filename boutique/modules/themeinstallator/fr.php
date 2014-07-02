@@ -9,7 +9,6 @@ $_MODULE['<{themeinstallator}prestashop>themeinstallator_ea5eb3f904bf42377277255
 $_MODULE['<{themeinstallator}prestashop>themeinstallator_48878e69ef59b9e9d2d9a8c18e4de520'] = 'Pour fonctionner correctement ce module a besoin du module de rétrocompatibilité avec au minimum la version v';
 $_MODULE['<{themeinstallator}prestashop>themeinstallator_c9d8a8d3c76c69e9a5ba6387acb8655a'] = 'Pour utiliser ce module vous devez installer le module de rétrocompatibilité';
 $_MODULE['<{themeinstallator}prestashop>themeinstallator_625752b5671445388af8f5e1ea3176c0'] = '%s ne peut être exporter. Celui-ci est invalide.';
-$_MODULE['<{themeinstallator}prestashop>themeinstallator_8e032a9d7e6c989f867df6ef4f40a3cb'] = 'Une erreur est survenue durant l\'envoi du fichier. La taille de l\'image doit être inferieur à';
 $_MODULE['<{themeinstallator}prestashop>themeinstallator_25b9e1d82d8200d70be2b22a1a283957'] = 'Une erreur est survenue durant l\'envoi du fichier.';
 $_MODULE['<{themeinstallator}prestashop>themeinstallator_050991b5b76aad0be75563b7cb93a33e'] = 'Seuls les fichiers .zip sont autorisés';
 $_MODULE['<{themeinstallator}prestashop>themeinstallator_57c1ed81b02e5d3361323c7930897295'] = 'Une erreur est survenue durant la copie du fichier.';
@@ -26,7 +25,7 @@ $_MODULE['<{themeinstallator}prestashop>themeinstallator_9bdbe38cc4695eeb974613a
 $_MODULE['<{themeinstallator}prestashop>themeinstallator_04e4e6909614be09727ebe4fb79c9e27'] = 'Les modules suivants ont été activées :';
 $_MODULE['<{themeinstallator}prestashop>themeinstallator_0dfbf4744524c8573235d60589d8b66e'] = 'Les images ont bien été mises à jour dans la base de données';
 $_MODULE['<{themeinstallator}prestashop>themeinstallator_4e246bd71dd5fb033e402b373e6ee434'] = 'Attention: Copier/Coller vos erreurs si vous souhaitez définir manuellement le type d\'image (dans la page «Images» du menu \"Préférences\") :';
-$_MODULE['<{themeinstallator}prestashop>themeinstallator_203c5dff06c7565ffd6713a914c62d16'] = 'Certaines ne peuvent pas être ajouté car elles existent. Voici la liste :';
+$_MODULE['<{themeinstallator}prestashop>themeinstallator_203c5dff06c7565ffd6713a914c62d16'] = 'Certaines ne peuvent pas être ajoutées car elles existent. Voici la liste :';
 $_MODULE['<{themeinstallator}prestashop>themeinstallator_3b90370ac32dead2af37eabe3bdbb97f'] = 'Nom du type d\'image :';
 $_MODULE['<{themeinstallator}prestashop>themeinstallator_48ccf48dcf2218a413ce473262f21a0c'] = 'Largeur :';
 $_MODULE['<{themeinstallator}prestashop>themeinstallator_e933dc24fb245d863a43b4fefe9b45f5'] = 'Hauteur :';

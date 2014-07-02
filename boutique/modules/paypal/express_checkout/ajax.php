@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -38,13 +38,7 @@ if ($quantity && $quantity > 0)
 	$id_product_attribute = (int)Tools::getValue('id_product_attribute');
 	$product_quantity = Product::getQuantity($id_product, $id_product_attribute);
 	
-	if ($product_quantity <= 0)
-	{
-		$paypal = new PayPal();
-		echo $paypal->l('This product is no longer in stock with those attributes but is available with others');
-	}
-	else
-		echo $product_quantity;
+	if ($product_quantity > 0)
+		die('1');
 }
-
-die();
+die('0');

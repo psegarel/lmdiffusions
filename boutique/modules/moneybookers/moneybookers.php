@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2011 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2011 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -37,15 +37,16 @@ class MoneyBookers extends PaymentModule
 	{
 		$this->name = 'moneybookers';
 		$this->tab = 'payments_gateways';
-		$this->version = '1.6.3';
-		$this->author = 'PrestaShop';
+		$this->version = '1.6.7';
+		$this->module_key = '1d4c89650f76d274a85e5407cffe8403';
 
 		parent::__construct();
 
 		$this->page = basename(__FILE__, '.php');
 		$this->displayName = $this->l('Moneybookers');
-		$this->description = $this->l('With Moneybookers/Skrill accept secure payments via credit card (Visa, MasterCard, Debit Card, JCB, Amex), wire transfer and eWallet');
+		$this->description = $this->l('Accepts payments by Moneybookers.');
 		$this->confirmUninstall = $this->l('Are you sure you want to delete your details ?');
+
 		if (Configuration::get('MB_PAY_TO_EMAIL') == 'testmerchant@moneybookers.com')
 			$this->warning = $this->l('You are currently using the default Moneybookers e-mail address, please use your own e-mail address.');
 
@@ -244,6 +245,7 @@ class MoneyBookers extends PaymentModule
 					{
 						Configuration::updateValue('MB_PAY_TO_EMAIL', $_POST['mb_email_to_validate']);
 						Configuration::updateValue('MB_PARAMETERS', 1);
+						Configuration::updateValue('MONEYBOOKERS_CONFIGURATION_OK', true);
 
 						$output .= '
 							<ul style="color: green; font-weight: bold; margin-bottom: 30px; width: 506px; background: #E1FFE9; border: 1px dashed #BBB; padding: 10px;">
@@ -271,7 +273,7 @@ class MoneyBookers extends PaymentModule
 					$content = $this->_fetchWebContent($url);
 					$response = trim(strtolower($content));
 					if (strstr('velocity_check_exceeded', $response))
-						$errors[] = $this->l('Secret word validation failed, exceeded max attempts (3 per hour)');
+						$errors[] = $this->l('Secret word validation failed, exceeded max tries (3 per hour)');
 					elseif (!strstr('ok', $response))
 						$errors[] = $this->l('Secret word validation failed, please check your secret word.');
 					else
@@ -374,8 +376,8 @@ class MoneyBookers extends PaymentModule
 		$output .= '
 		<b>'.$this->l('About Moneybookers').'</b><br /><br /><p style="font-size: 11px;">'.
 		$this->l('Take advantage of the special fees offered by Moneybookers to PrestaShop merchants !').'<br /><br />'.
-		$this->l('Moneybookers, controlled by Skrill Holdings, is one of the largest online payment systems in Europe, and proposes more than 100 payment options, 41 currencies in more than 200 countries and territories. More than 80,000 merchants already use this solution among which eBay.com, Skype and Thomas Cook.').'<br /><br />'.
-		$this->l('With more than 17 million users and more than 15,000 new accounts created per day, Moneybookers also offers one of the biggest electronic wallets in the world. Your customers can also pay by using their email and password thanks to the e-Wallet solution.').'<br /><br />'.
+		$this->l('Moneybookers, controlled by Skrill Holdings, is one of the biggest online payment systems in Europe, and proposes more than 100 payment options and 41 currencies in more than 200 countries and territories. More than 80,000 merchants already use this solution among which eBay.com, Skype and Thomas Cook.').'<br /><br />'.
+		$this->l('With more than 17 million users and more than 15,000 new accounts created per day, Moneybookers also offers one of the biggest electronic wallet in the world. Your customers can also pay by using their e-mail and password thanks to the e-Wallet solution.').'<br /><br />'.
 		$this->l('Moneybookers changes its name and becomes Skrill!').'<br /><br />
                 <div style="clear: both;"></div>
 
@@ -477,9 +479,9 @@ class MoneyBookers extends PaymentModule
 				<br />
 				<p><b>'.$this->l('What is the secret word ?').'</b></p>
 				<p>'.$this->l('The secret word is different from the password. It is used by Moneybookers to securely encrypt the transmission from your server.').'</p>
-				<p><b>'.$this->l('Why do you need a secret word as well as the  password?').'</b></p>
+				<p><b>'.$this->l('Why a secret word different from the password ?').'</b></p>
 				<p>'.$this->l('The secret word is used to reinforce the payment security.').'</p>
-				<p>'.$this->l('The password is only used to securely connect to your Moneybookers account. If the password changes, it won\'t affect your secret word. So it is recommended to have a different password from your secret word.').'</p>
+				<p>'.$this->l('The password is only used to securely connect to your Moneybookers account. If the password changes, it won\'t affect your secret word. So it is recommended to have your password different from your secret word.').'</p>
 				<p><b>'.$this->l('Where can I find my secret word ?').'</b></p>
 				<p>'.$this->l('Once your account has been validated, go to your account in the "Merchant Tools" section. There, you will be able to define your secret word.').'</p>
 
@@ -552,7 +554,7 @@ class MoneyBookers extends PaymentModule
 
 				<hr size="1" noshade />
 				<legend><img src="'.__PS_BASE_URI__.'modules/moneybookers/logo.gif" alt="" />'.$this->l('Settings and payment methods').'</legend>
-				<label>'.$this->l('Page displayed if payment error:').'</label>
+				<label>'.$this->l('Page displayed after payment cancellation:').'</label>
 				<div class="margin-form">
 					<input type="text" name="mb_cancel_url" value="'.Configuration::get('MB_CANCEL_URL').'" style="width: 300px;" />
 				</div>
@@ -636,6 +638,8 @@ class MoneyBookers extends PaymentModule
 			$lang = new Language((int)($cookie->id_lang));
 
 			$mbParams = array();
+			
+			$mbParams['base_url'] = __PS_BASE_URI__;
 
 			/* About the merchant */
 			$mbParams['pay_to_email'] = Configuration::get('MB_PAY_TO_EMAIL');

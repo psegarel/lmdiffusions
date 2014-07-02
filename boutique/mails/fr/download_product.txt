@@ -1,12 +1,25 @@
-Bonjour {firstname} {lastname}, merci d'avoir passé commande chez {shop_name} !
 
-Vous avez {nbProducts} produit(s) à télécharger.
+[{shop_url}] 
 
-Voici les liens directs vers ceux-ci :
-{virtualProducts}
+Bonjour {firstname} {lastname},
 
+Merci pour votre commande portant la référence {order_name} sur
+{shop_name} 
 
-Vous pouvez accéder au suivi de votre commande et télécharger votre facture dans "Historique des commandes" de la rubrique "Mon compte" sur notre site.
+Vous avez {nbproducts} produit(s) à télécharger.
 
+{virtualproducts} 		 
 
-{shop_url} réalisé par PrestaShop™
+Vous pouvez accéder à tout moment au suivi de votre commande et
+télécharger votre facture dans "Historique des commandes"
+[{history_url}] de la rubrique "Mon compte"
+[{my_account_url}] sur notre site. 
+
+Si vous avez un compte invité, vous pouvez suivre votre commande
+dans la section "Suivi invité"
+[{guest_tracking_url}?id_order={order_name}] de notre
+site. 
+
+{shop_name} [{shop_url}] réalisé avec
+PrestaShop(tm) [http://www.prestashop.com/] 
+

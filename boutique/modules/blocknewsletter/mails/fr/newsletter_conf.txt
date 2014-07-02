@@ -1,7 +1,10 @@
-Bonjour,
 
-Merci de votre inscription à notre newsletter
+[{shop_url}] 
 
+Bonjour, 
 
+MERCI DE VOUS ÊTRE INSCRIT À NOTRE NEWSLETTER. 
 
-{shop_url} réalisé par PrestaShop™
+{shop_name} [{shop_url}] réalisé avec
+PrestaShop(tm) [http://www.prestashop.com/] 
+

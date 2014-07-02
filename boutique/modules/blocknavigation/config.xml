@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<module>
+	<name>blocknavigation</name>
+	<displayName><![CDATA[Navigation block]]></displayName>
+	<version><![CDATA[0.3]]></version>
+	<description><![CDATA[Adds a block with: search, categories, manufacturer, supplier, tags]]></description>
+	<author><![CDATA[]]></author>
+	<tab><![CDATA[Blocks]]></tab>
+	<confirmUninstall>Are you sure you want to delete all informations?</confirmUninstall>
+	<is_configurable>1</is_configurable>
+	<need_instance>1</need_instance>
+	<limited_countries></limited_countries>
+</module>

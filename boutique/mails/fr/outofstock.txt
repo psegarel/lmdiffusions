@@ -1,11 +1,27 @@
+
+[{shop_url}] 
+
 Bonjour {firstname} {lastname},
 
-Votre commande {id_order} est bien enregistrÈe mais nÈcessite un rÈapprovisionnement.
+Merci pour votre commande ayant pour r√©f√©rence {order_name} sur
+{shop_name} 
 
-Vous pouvez accÈder ‡ tout moment au suivi de votre commande dans la rubrique "Mon compte".
+Malheureusement, un ou plusieurs des produits que vous avez
+command√©s sont actuellement en rupture de stock. Ceci peut entra√Æner
+un l√©ger retard de livraison. Veuillez nous excuser pour pour ce
+d√©lai et soyez assur√©s que nous faisons nos meilleurs efforts pour
+rectifier la situation rapidement. 
 
-{shop_name} - {shop_url}
+Vous pouvez acc√©der √† tout moment au suivi de votre commande et
+t√©l√©charger votre facture dans "Historique des commandes"
+[{history_url}] de la rubrique "Mon compte"
+[{my_account_url}] sur notre site. 
 
+Si vous avez un compte invit√©, vous pouvez suivre votre commande
+dans la section "Suivi invit√©"
+[{guest_tracking_url}?id_order={order_name}] de notre
+site. 
 
+{shop_name} [{shop_url}] r√©alis√© avec
+PrestaShop(tm) [http://www.prestashop.com/] 
 
-{shop_url} rÈalisÈ par PrestaShopô

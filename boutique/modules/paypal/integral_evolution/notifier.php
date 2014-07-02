@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,14 +19,12 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
 
 include_once(dirname(__FILE__).'/../../../config/config.inc.php');
-include_once(dirname(__FILE__).'/../../../init.php');
-
 include_once(_PS_MODULE_DIR_.'paypal/paypal.php');
 
 /*
@@ -35,15 +33,10 @@ include_once(_PS_MODULE_DIR_.'paypal/paypal.php');
  */
 class PayPalNotifier extends PayPal
 {
-
-	public function __construct()
-	{
-		parent::__construct();
-	}
-
 	public function confirmOrder($custom)
 	{
 		$cart = new Cart((int)$custom['id_cart']);
+		
 		$cart_details = $cart->getSummaryDetails(null, true);
 		$cart_hash = sha1(serialize($cart->nbProducts()));
 		
@@ -57,9 +50,9 @@ class PayPalNotifier extends PayPal
 		if (isset($cart->id_shop))
 			$this->context->shop = new Shop($cart->id_shop);
 		
-		$res = $this->getResult();
+		$result = $this->getResult();
 
-		if (strcmp($res, "VERIFIED") == 0)
+		if (strcmp(trim($result), "VERIFIED") == 0)
 		{
 			$currency_decimals = is_array($this->context->currency) ? (int)$this->context->currency['decimals'] : (int)$this->context->currency->decimals;
 			$this->decimals = $currency_decimals * _PS_PRICE_DISPLAY_PRECISION_;
@@ -75,7 +68,7 @@ class PayPalNotifier extends PayPal
 			
 			$total_price = Tools::ps_round($shipping + $subtotal + $tax, $this->decimals);
 		
-			if (bccomp($mc_gross, $total_price, 2) !== 0)
+			if ($this->comp($mc_gross, $total_price, 2) !== 0)
 			{
 				$payment = (int)Configuration::get('PS_OS_ERROR');
 				$message = $this->l('Price paid on paypal is not the same that on PrestaShop.').'<br />';
@@ -105,64 +98,20 @@ class PayPalNotifier extends PayPal
 			$this->validateOrder($cart->id, $payment, $total_price, $this->displayName, $message, $transaction, $cart->id_currency, false, $customer->secure_key, $shop);
 		}
 	}
-	
-	public function getRequest()
-	{
-		$raw_post_data = file_get_contents('php://input');
-		$raw_post_array = explode('&', $raw_post_data);
-		$myPost = array();
-		
-		foreach ($raw_post_array as $keyval)
-		{
-			$keyval = explode ('=', $keyval);
-			if (count($keyval) == 2)
-				$myPost[$keyval[0]] = urldecode($keyval[1]);
-		}
-		
-		$req = 'cmd=_notify-validate';
-		
-		if(function_exists('get_magic_quotes_gpc'))
-			$get_magic_quotes_exists = true;
-
-		foreach ($myPost as $key => $value)
-		{
-			if($get_magic_quotes_exists == true && get_magic_quotes_gpc() == 1)
-				$value = urlencode(stripslashes($value));
-			else
-				$value = urlencode($value);
-			$req .= "&$key=$value";
-		}
-		
-		return $req;
-	}
 
 	public function getResult()
 	{
-		$url = $this->getPaypalStandardUrl();
-		$request = $this->getRequest();
+		if ((int)Configuration::get('PAYPAL_SANDBOX') == 1)
+			$action_url = 'https://www.sandbox.paypal.com/cgi-bin/webscr?cmd=_notify-validate';
+		else
+			$action_url = 'https://www.paypal.com/cgi-bin/webscr?cmd=_notify-validate';
 		
-		$ch = curl_init($url);
-		curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
-		curl_setopt($ch, CURLOPT_POST, 1);
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER,1);
-		curl_setopt($ch, CURLOPT_POSTFIELDS, $request);
-		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 1);
-		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
-		curl_setopt($ch, CURLOPT_FORBID_REUSE, 1);
-		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Connection: Close'));
-		
-		if( !($res = curl_exec($ch)))
-		{
-			curl_close($ch);
-			exit;
-		}
-		curl_close($ch);
-		
-		return $res;
+		$request = '&'.http_build_query($_POST, '&');
+		return Tools::file_get_contents($action_url.$request);
 	}
 
 }
-		
+
 if ($custom = Tools::getValue('custom'))
 {
 	$notifier = new PayPalNotifier();

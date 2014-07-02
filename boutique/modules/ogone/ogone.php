@@ -35,7 +35,7 @@ class Ogone extends PaymentModule
 	{
 		$this->name = 'ogone';
 		$this->tab = 'payments_gateways';
-		$this->version = '2.4';
+		$this->version = '2.9';
 		$this->author = 'PrestaShop';
 		$this->module_key = '787557338b78e1705f2a4cb72b1dbb84';
 
@@ -43,6 +43,7 @@ class Ogone extends PaymentModule
 
 		$this->displayName = 'Ogone';
 		$this->description = $this->l('With over 80 different payment methods and 200+ acquirer connections, Ogone helps you manage, collect and secure your online or mobile payments, help prevent fraud and drive your business!');
+
 
 		/* For 1.4.3 and less compatibility */
 		$updateConfig = array('PS_OS_CHEQUE', 'PS_OS_PAYMENT', 'PS_OS_PREPARATION', 'PS_OS_SHIPPING', 'PS_OS_CANCELED', 'PS_OS_REFUND', 'PS_OS_ERROR', 'PS_OS_OUTOFSTOCK', 'PS_OS_BANKWIRE', 'PS_OS_PAYPAL', 'PS_OS_WS_PAYMENT');
@@ -253,14 +254,6 @@ class Ogone extends PaymentModule
 	
 	public function validate($id_cart, $id_order_state, $amount, $message = '', $secure_key)
 	{
-		if (isset($this->pcc))
-		{
-			$this->pcc->transaction_id = Tools::getValue('PAYID');
-			$this->pcc->card_number = Tools::getValue('CARDNO');
-			$this->pcc->card_brand = Tools::getValue('BRAND');
-			$this->pcc->card_expiration = Tools::getValue('ED');
-			$this->pcc->card_holder = Tools::getValue('CN');
-		}
 		$this->validateOrder((int)$id_cart, $id_order_state, $amount, $this->displayName, $message, NULL, NULL, true, pSQL($secure_key));		
 	}
 }

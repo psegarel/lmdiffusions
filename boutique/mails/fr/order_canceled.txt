@@ -1,11 +1,21 @@
-Bonjour {firstname} {lastname},
 
-Votre commande {id_order} a ÈtÈ annulÈe.
+[{shop_url}] 
 
-Vous pouvez accÈder ‡ tout moment au suivi de votre commande dans "Historique des commandes" de la rubrique "Mon compte" sur notre site <a href="{shop_url}">{shop_name}</a>.
+Bonjour {firstname} {lastname}, 
 
-{shop_name} - {shop_url}
+Votre commande sur {shop_name} ayant pour r√©f√©rence {order_name}
+a √©t√© annul√©e. 
 
+Vous pouvez acc√©der √† tout moment au suivi de votre commande et
+t√©l√©charger votre facture dans "Historique des commandes"
+[{history_url}] de la rubrique "Mon compte"
+[{my_account_url}] sur notre site. 
 
+Si vous avez un compte invit√©, vous pouvez suivre votre commande
+dans la section "Suivi invit√©"
+[{guest_tracking_url}?id_order={order_name}] de notre
+site. 
 
-{shop_url} rÈalisÈ par PrestaShopô
+{shop_name} [{shop_url}] r√©alis√© avec
+PrestaShop(tm) [http://www.prestashop.com/] 
+

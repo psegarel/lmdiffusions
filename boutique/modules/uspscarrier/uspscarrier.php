@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -52,7 +52,7 @@ class UspsCarrier extends CarrierModule
 	{
 		$this->name = 'uspscarrier';
 		$this->tab = 'shipping_logistics';
-		$this->version = '1.2.5';
+		$this->version = '1.3.5';
 		$this->author = 'PrestaShop';
 		$this->limited_countries = array('us');
 		$this->module_key = '9ac173da9614868dbd15c56cf8ad008a';
@@ -61,6 +61,7 @@ class UspsCarrier extends CarrierModule
 
 		$this->displayName = $this->l('U.S.P.S. Rate Calulator');
 		$this->description = $this->l('Calculates shipping rates for United States Postal Service for Domestic shipping within the USA.');
+
 
 		/** Backward compatibility 1.4 / 1.5 */
 		require(dirname(__FILE__).'/backward_compatibility/backward.php');
@@ -140,13 +141,10 @@ class UspsCarrier extends CarrierModule
 		);
 	}
 
-
-
 	/*
 	** Install / Uninstall Methods
 	**
 	*/
-
 	public function install()
 	{
 		// Install SQL
@@ -168,12 +166,13 @@ class UspsCarrier extends CarrierModule
 	public function uninstall()
 	{
 		// Uninstall Carriers
-		Db::getInstance()->autoExecute(_DB_PREFIX_.'carrier', array('deleted' => 1), 'UPDATE', '`external_module_name` = \'uspscarrier\' OR `id_carrier` IN (SELECT DISTINCT(`id_carrier`) FROM `'._DB_PREFIX_.'usps_rate_service_code`)');
+		$exists = Db::getInstance()->executeS('SHOW TABLES LIKE "'._DB_PREFIX_.'usps_rate_service_code"');
+		if (count($exists))
+			Db::getInstance()->autoExecute(_DB_PREFIX_.'carrier', array('deleted' => 1), 'UPDATE', '`external_module_name` = \'uspscarrier\' OR `id_carrier` IN (SELECT DISTINCT(`id_carrier`) FROM `'._DB_PREFIX_.'usps_rate_service_code`)');
 
 		// Uninstall Config
 		foreach ($this->_fieldsList as $keyConfiguration => $name)
-			if (!Configuration::deleteByName($keyConfiguration))
-				return false;
+			Configuration::deleteByName($keyConfiguration);
 
 		// Uninstall SQL
 		include(dirname(__FILE__).'/sql-uninstall.php');
@@ -182,24 +181,25 @@ class UspsCarrier extends CarrierModule
 				return false;
 
 		// Uninstall Module
-		if (!parent::uninstall() OR !$this->unregisterHook('updateCarrier'))
-			return false;
-
-		return true;
+		return parent::uninstall();
 	}
 
 	public function disable($forceAll = false)
 	{
 		// Disable Carriers
-		Db::getInstance()->autoExecute(_DB_PREFIX_.'carrier', array('active' => 0), 'UPDATE', '`external_module_name` = \'uspscarrier\' OR `id_carrier` IN (SELECT DISTINCT(`id_carrier`) FROM `'._DB_PREFIX_.'usps_rate_service_code`)');	
-		parent::disable($forceAll);
+		$exists = Db::getInstance()->executeS('SHOW TABLES LIKE "'._DB_PREFIX_.'usps_rate_service_code"');
+		if (count($exists))
+			Db::getInstance()->autoExecute(_DB_PREFIX_.'carrier', array('active' => 0), 'UPDATE', '`external_module_name` = \'uspscarrier\' OR `id_carrier` IN (SELECT DISTINCT(`id_carrier`) FROM `'._DB_PREFIX_.'usps_rate_service_code`)');	
+		return parent::disable($forceAll);
 	}
 
 	public function enable($forceAll = false)
 	{
 		// Disable Carriers
-		Db::getInstance()->autoExecute(_DB_PREFIX_.'carrier', array('active' => 1), 'UPDATE', '`external_module_name` = \'uspscarrier\' OR `id_carrier` IN (SELECT DISTINCT(`id_carrier`) FROM `'._DB_PREFIX_.'usps_rate_service_code`)');	
-		parent::enable($forceAll);
+		$exists = Db::getInstance()->executeS('SHOW TABLES LIKE "'._DB_PREFIX_.'usps_rate_service_code"');
+		if (count($exists))
+			Db::getInstance()->autoExecute(_DB_PREFIX_.'carrier', array('active' => 1), 'UPDATE', '`external_module_name` = \'uspscarrier\' OR `id_carrier` IN (SELECT DISTINCT(`id_carrier`) FROM `'._DB_PREFIX_.'usps_rate_service_code`)');	
+		return parent::enable($forceAll);
 	}
 
 	public function installCarriers()
@@ -647,6 +647,8 @@ class UspsCarrier extends CarrierModule
 				$this->_dimensionUnit = $this->_dimensionUnitList[strtoupper(Tools::getValue('ps_dimension_unit'))];
 			if (!$this->webserviceTest())
 				$this->_postErrors[]  = $this->l('Prestashop could not connect to USPS webservices').' :<br />'.($this->_webserviceError ? $this->_webserviceError : $this->l('No error description found'));
+			else
+				Configuration::updateValue('USPSCARRIER_CONFIGURATION_OK', true);
 		}
 	}
 
@@ -1554,7 +1556,7 @@ class UspsCarrier extends CarrierModule
 				{
 					$conversionRate = 1;
 					$conversionRate = $this->getCartCurrencyRate((int)($config['id_currency']), (int)$wsParams['id_cart']);
-					$cost += ($config['additional_charges'] * $conversionRate);
+					$cost += ($config['additional_charges'] * $product['quantity']  * $conversionRate);
 				}
 			}
 		}

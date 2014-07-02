@@ -2,7 +2,6 @@
 
 global $_MODULE;
 $_MODULE = array();
-
 $_MODULE['<{ganalytics}prestashop>ganalytics_7510f8b22dd3e10476096425f78d4239'] = 'Sie haben Ihre Google Analytics-ID noch nicht eingestellt';
 $_MODULE['<{ganalytics}prestashop>ganalytics_aba1a7971f85c725ba4aed21343eeb4b'] = 'Integrieren Sie das Google Analytics-Skript in Ihren Shop';
 $_MODULE['<{ganalytics}prestashop>ganalytics_fa214007826415a21a8456e3e09f999d'] = 'Sie sind sicher, dass Sie Ihre Daten löschen wollen?';
@@ -10,9 +9,9 @@ $_MODULE['<{ganalytics}prestashop>ganalytics_c888438d14855d7d96a2724ee9c306bd'] 
 $_MODULE['<{ganalytics}prestashop>ganalytics_f4f70727dc34561dfde1a3c529b6205c'] = 'Einstellungen';
 $_MODULE['<{ganalytics}prestashop>ganalytics_d7c9ce3337a28d63ce6626d90fdaedaa'] = 'Ihr Benutzername';
 $_MODULE['<{ganalytics}prestashop>ganalytics_81eeab9506186e2dca8faefa78d54067'] = 'Beispiel:';
-$_MODULE['<{ganalytics}prestashop>ganalytics_a3e7f361e6fc12caf872119338642143'] = 'ID aktualisieren';
+$_MODULE['<{ganalytics}prestashop>ganalytics_a3e7f361e6fc12caf872119338642143'] = ' ID aktualisieren';
 $_MODULE['<{ganalytics}prestashop>ganalytics_6a26f548831e6a8c26bfbbd9f6ec61e0'] = 'Hilfe';
-$_MODULE['<{ganalytics}prestashop>ganalytics_38e12e36822cc0988bcac38733f5cae8'] = 'Der erste Schritt zum Erfassen von E-Commerce-Transaktionen ist, E-Commerce-Berichte für das Profil Ihrer Website zu aktivieren.';
+$_MODULE['<{ganalytics}prestashop>ganalytics_d78b0fcff6b55bafe615f3fc1572c282'] = 'Der erste Schritt zum Erfassen von E-Commerce-Transaktionen ist, E-Commerce-Berichte für das Profil Ihrer Website zu aktivieren.';
 $_MODULE['<{ganalytics}prestashop>ganalytics_d02388589ecfd3b58e0a90e42127ca61'] = 'Bitte folgen Sie diesen Schritten, um die E-Commerce-Bereichte zu aktivieren:';
 $_MODULE['<{ganalytics}prestashop>ganalytics_11f4b4ba23dc72ee5e86ff5a90bdde60'] = 'Melden Sie sich bei Ihrem Konto an';
 $_MODULE['<{ganalytics}prestashop>ganalytics_b452493b16ead8b4b25ab3fb7174b8f5'] = 'Klicken Sie auf Bearbeiten neben dem Profil, das Sie aktivieren möchten';
@@ -38,13 +37,13 @@ $_MODULE['<{ganalytics}prestashop>ganalytics_f0c5b61aabf16d5ce925722b65c9aad8'] 
 $_MODULE['<{ganalytics}prestashop>ganalytics_3dcb5dddc6b7c11d4ea76a60dc1a0466'] = 'Geben Sie einen Zielwert ein. Dies ist der Wert, der in den Google Analytics ROI-Berechnungen verwendet wird.';
 $_MODULE['<{ganalytics}prestashop>ganalytics_a39f026ca75c6279ac9487265c00e3f5'] = 'Klicken Sie auf Änderungen speichern, um dieses Ziel und diesen Trichter zu erstellen , oder Abbrechen, um ohne Speichern zu beenden.';
 $_MODULE['<{ganalytics}prestashop>ganalytics_cd4952b65560a1242c68ffc980a6e515'] = 'Demonstration: Der Bestellvorgang';
-$_MODULE['<{ganalytics}prestashop>ganalytics_efbf206b1b60cc0400c6147723509bd6'] = 'Nachdem Sie Ihre E-Commerce-Berichte aktiviert und das jeweilige Profil ausgewählt haben, geben Sie \"bestellung-bestätigung.php\" ein, als gewünschte URL-Seite';
-$_MODULE['<{ganalytics}prestashop>ganalytics_68db264effa9364901183d9d12fac500'] = 'Dieses Ziel benennen (zum Beispiel \"Bestellvorgang\")';
+$_MODULE['<{ganalytics}prestashop>ganalytics_efbf206b1b60cc0400c6147723509bd6'] = 'Nachdem Sie Ihre E-Commerce-Berichte aktiviert und das jeweilige Profil ausgewählt haben, geben Sie \'bestellung-bestätigung.php\' ein, als gewünschte URL-Seite';
+$_MODULE['<{ganalytics}prestashop>ganalytics_68db264effa9364901183d9d12fac500'] = 'Dieses Ziel benennen (zum Beispiel \'Bestellvorgang\')';
 $_MODULE['<{ganalytics}prestashop>ganalytics_9b8bc3519c65da8fac122f91ac5b7673'] = 'Aktivieren Sie das Ziel';
-$_MODULE['<{ganalytics}prestashop>ganalytics_86a358dd6df1ba0cb3565b88380ba7a6'] = 'Fügen Sie \"product.php\" als erste Seite Ihres Umwandlungstrichters hinzu';
-$_MODULE['<{ganalytics}prestashop>ganalytics_b7f896191caad09b5fc34e79f1cefa76'] = 'Benennen Sie sie (zum Beispiel \"Produktseite\")';
-$_MODULE['<{ganalytics}prestashop>ganalytics_ef7060dd05e779dcfbf82f236df43823'] = 'Markieren Sie das Kontrollkästchen nicht als \"erforderlich\", denn der Kunde kann direkt von einer \"In den Warenkorb\"-Schaltfläche gekommen sein wie etwa auf dem Startseitenblock';
+$_MODULE['<{ganalytics}prestashop>ganalytics_86a358dd6df1ba0cb3565b88380ba7a6'] = 'Fügen Sie \'product.php\' als erste Seite Ihres Umwandlungstrichters hinzu';
+$_MODULE['<{ganalytics}prestashop>ganalytics_b7f896191caad09b5fc34e79f1cefa76'] = 'Benennen Sie sie (zum Beispiel \'Produktseite\')';
+$_MODULE['<{ganalytics}prestashop>ganalytics_ef7060dd05e779dcfbf82f236df43823'] = 'Markieren Sie das Kontrollkästchen nicht als \"erforderlich\", denn der Kunde kann direkt von einer \"In den Warenkorb\"-Schaltfläche gekommen sein wie etwa auf dem Startseitenblock ';
 $_MODULE['<{ganalytics}prestashop>ganalytics_3bab28a0105361c49ca261ca08a19bf7'] = 'Fahren Sie fort, indem Sie die folgenden URLs als Zielschritte eingeben:';
 $_MODULE['<{ganalytics}prestashop>ganalytics_9bfb6e6af6e6793bfa9387e728187c87'] = '(Erforderlich)';
-$_MODULE['<{ganalytics}prestashop>ganalytics_6a47891ae07f45802bc948d2618e36f5'] = 'Überprüfen Sie die \"Groß-/Kleinschreibung\"-Option';
+$_MODULE['<{ganalytics}prestashop>ganalytics_6a47891ae07f45802bc948d2618e36f5'] = 'Überprüfen Sie die \'Groß-/Kleinschreibung\'-Option';
 $_MODULE['<{ganalytics}prestashop>ganalytics_d2d0c38d112e1d775057388122ae7545'] = 'Speichern Sie dieses neue Ziel';

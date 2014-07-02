@@ -1,12 +1,15 @@
-Hi,
 
-Product {product} is now available.
-Indeed, the item is once again in-stock.
+[{shop_url}] 
 
-You can access the product page on: {product_link}
+Hi, 
 
-You can order it right now from our on-line shop.
+This item is once again in-stock.
 
+You can access the product page by clicking on the link: {product}
+[{product_link}]
 
+You can order it right now from our online shop. 		 
 
-{shop_url} powered by PrestaShop™
+{shop_name} [{shop_url}] powered by
+PrestaShop(tm) [http://www.prestashop.com/] 
+

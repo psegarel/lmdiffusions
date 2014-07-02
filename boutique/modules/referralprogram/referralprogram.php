@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -33,10 +33,11 @@ class ReferralProgram extends Module
 	{
 		$this->name = 'referralprogram';
 		$this->tab = 'advertising_marketing';
-		$this->version = '1.5';
+		$this->version = '1.5.8';
 		$this->author = 'PrestaShop';
 
-		parent::__construct();
+		$this->bootstrap = true;
+		parent::__construct();	
 
 		$this->confirmUninstall = $this->l('All sponsors and friends will be deleted. Are you sure you want to uninstall this module?');
 		$this->displayName = $this->l('Customer referral program');
@@ -76,14 +77,14 @@ class ReferralProgram extends Module
 		Configuration::updateValue('REFERRAL_PERCENTAGE', 5);
 
 		/* This hook is optional */
-		$this->registerHook('myAccountBlock');
+		$this->registerHook('displayMyAccountBlock');
 
 		return true;
 	}
 
 	public function installDB()
 	{
-		return Db::getInstance()->Execute('
+		return Db::getInstance()->execute('
 		CREATE TABLE `'._DB_PREFIX_.'referralprogram` (
 			`id_referralprogram` INT UNSIGNED NOT NULL AUTO_INCREMENT,
 			`id_sponsor` INT UNSIGNED NOT NULL,
@@ -91,8 +92,8 @@ class ReferralProgram extends Module
 			`lastname` VARCHAR(128) NOT NULL,
 			`firstname` VARCHAR(128) NOT NULL,
 			`id_customer` INT UNSIGNED DEFAULT NULL,
-			`id_discount` INT UNSIGNED DEFAULT NULL,
-			`id_discount_sponsor` INT UNSIGNED DEFAULT NULL,
+			`id_cart_rule` INT UNSIGNED DEFAULT NULL,
+			`id_cart_rule_sponsor` INT UNSIGNED DEFAULT NULL,
 			`date_add` DATETIME NOT NULL,
 			`date_upd` DATETIME NOT NULL,
 			PRIMARY KEY (`id_referralprogram`),
@@ -115,15 +116,15 @@ class ReferralProgram extends Module
 
 	public function uninstallDB()
 	{
-		return Db::getInstance()->Execute('DROP TABLE `'._DB_PREFIX_.'referralprogram`;');
+		return Db::getInstance()->execute('DROP TABLE `'._DB_PREFIX_.'referralprogram`;');
 	}
 
 	public function removeMail()
 	{
 		$langs = Language::getLanguages(false);
 		foreach ($langs AS $lang)
-			foreach ($this->_mails['name'] AS $name)
-				foreach ($this->_mails['ext'] AS $ext)
+			foreach (array('referralprogram-congratulations', 'referralprogram-invitation', 'referralprogram-voucher') AS $name)
+				foreach (array('txt', 'html') AS $ext)
 				{
 					$file = _PS_MAIL_DIR_.$lang['iso_code'].'/'.$name.'.'.$ext;
 					if (file_exists($file) AND !@unlink($file))
@@ -132,6 +133,18 @@ class ReferralProgram extends Module
 		return true;
 	}
 
+	public static function displayDiscount($discountValue, $discountType, $currency = false)
+	{
+		if ((float)$discountValue AND (int)$discountType)
+		{
+			if ($discountType == 1)
+				return $discountValue.chr(37); // ASCII #37 --> % (percent)
+			elseif ($discountType == 2)
+				return Tools::displayPrice($discountValue, $currency);
+		}
+		return ''; // return a string because it's a display method
+	}
+	
 	private function _postProcess()
 	{
 		Configuration::updateValue('REFERRAL_ORDER_QUANTITY', (int)(Tools::getValue('order_quantity')));
@@ -140,7 +153,9 @@ class ReferralProgram extends Module
 		Configuration::updateValue('REFERRAL_DISCOUNT_TYPE', (int)(Tools::getValue('discount_type')));
 		Configuration::updateValue('REFERRAL_NB_FRIENDS', (int)(Tools::getValue('nb_friends')));
 		Configuration::updateValue('REFERRAL_PERCENTAGE', (int)(Tools::getValue('discount_value_percentage')));
-		Configuration::updateValue('REFERRAL_DISCOUNT_DESCRIPTION', Tools::getValue('discount_description'));
+		foreach (Language::getLanguages(false) as $lang)
+			Configuration::updateValue('REFERRAL_DISCOUNT_DESCRIPTION', array($lang['id_lang'] => Tools::getValue('discount_description_'.(int)$lang['id_lang'])));
+		
 		$this->_html .= $this->displayConfirmation($this->l('Configuration updated.'));
 	}
 
@@ -153,9 +168,9 @@ class ReferralProgram extends Module
 			$this->_errors[] = $this->displayError($this->l('Discount value is invalid.'));
 		foreach (Tools::getValue('discount_value') AS $id_currency => $discount_value)
  			if ($discount_value == '')
-				$this->_errors[] = $this->displayError($this->l('Discount value for the currency #').$id_currency.$this->l(' is empty.'));
+				$this->_errors[] = $this->displayError(sprintf($this->l('Discount value for the currency #%d is empty.'), $id_currency));
  			elseif (!Validate::isUnsignedFloat($discount_value))
-				$this->_errors[] = $this->displayError($this->l('Discount value for the currency #').$id_currency.$this->l(' is invalid.'));
+				$this->_errors[] = $this->displayError(sprintf($this->l('Discount value for the currency #%d is invalid.'), $id_currency));
 		if (!(int)(Tools::getValue('discount_type')) OR Tools::getValue('discount_type') < 1 OR Tools::getValue('discount_type') > 2)
 			$this->_errors[] = $this->displayError($this->l('Discount type is required/invalid.'));
 		if (!(int)(Tools::getValue('nb_friends')) OR Tools::getValue('nb_friends') < 0)
@@ -173,9 +188,12 @@ class ReferralProgram extends Module
 		$newXml .= '<referralprogram>'."\n";
 		$newXml .= "\t".'<body>';
 		// Making body data
-		foreach ($_POST AS $key => $field)
-			if ($line = $this->putContent($newXml, $key, $field, $forbiddenKey, 'body'))
+		foreach (Language::getLanguages(false) as $lang)
+		{
+			if ($line = $this->putContent($newXml, 'body_paragraph_'.(int)$lang['id_lang'], Tools::getValue('body_paragraph_'.(int)$lang['id_lang']), $forbiddenKey, 'body'))
 				$newXml .= $line;
+		}
+		
 		$newXml .= "\n\t".'</body>'."\n";
 		$newXml .= '</referralprogram>'."\n";
 
@@ -207,6 +225,8 @@ class ReferralProgram extends Module
 
 	public function getContent()
 	{
+		$this->_html = '';
+
 		if (Tools::isSubmit('submitReferralProgram'))
 		{
 			$this->_postValidation();
@@ -214,133 +234,15 @@ class ReferralProgram extends Module
 				$this->_postProcess();
 			else
 				foreach ($this->_errors AS $err)
-					$this->_html .= '<div class="errmsg">'.$err.'</div>';
+					$this->_html .= $err;
 		}
 		elseif (Tools::isSubmit('submitText'))
-		{
-			foreach ($_POST AS $key => $value)
-				if (!is_array(Tools::getValue($key)) && !Validate::isString(Tools::getValue($key)))
-				{
-					$this->_html .= $this->displayError($this->l('Invalid html field, javascript is forbidden'));
-					$this->_displayForm();
-					return $this->_html;
-				}
 			$this->_writeXml();
-		}
 
-		$this->_html .= '<h2>'.$this->displayName.'</h2>';
-		$this->_displayForm();
-		$this->_displayFormRules();
+		$this->_html .= $this->renderForm();
+
 		return $this->_html;
 	}
-
-	private function _displayForm()
-	{
-		$divLangName = 'cpara¤dd';
-		$currencies = Currency::getCurrencies();
-
-		$this->_html .= '
-		<form action="'.Tools::safeOutput($_SERVER['REQUEST_URI']).'" method="post">
-		<fieldset class="width3">
-			<legend><img src="'._PS_ADMIN_IMG_.'prefs.gif" alt="'.$this->l('Settings').'" />'.$this->l('Settings').'</legend>
-			<p>
-				<label class="t" for="order_quantity">'.$this->l('Minimum number of orders a sponsored friend must place to get their voucher:').'</label>
-				<input type="text" name="order_quantity" id="order_quantity" value="'.Tools::safeOutput(Tools::getValue('order_quantity', Configuration::get('REFERRAL_ORDER_QUANTITY'))).'" style="width: 50px; text-align: right;" />
-			</p>
-			<p>
-				<label class="t" for="nb_friends">'.$this->l('Number of friends in the referral program invitation form (customer account, referral program section):').'</label>
-				<input type="text" name="nb_friends" id="nb_friends" value="'.Tools::safeOutput(Tools::getValue('nb_friends', Configuration::get('REFERRAL_NB_FRIENDS'))).'" style="width: 50px; text-align: right;" />
-			</p>
-			<p>
-				<label class="t">'.$this->l('Voucher type:').'</label>
-				<input type="radio" name="discount_type" id="discount_type1" value="1" onclick="$(\'#voucherbycurrency\').hide(); $(\'#voucherbypercentage\').show();" '.(Tools::getValue('discount_type', Configuration::get('REFERRAL_DISCOUNT_TYPE')) == 1 ? 'checked="checked"' : '').' />
-				<label class="t" for="discount_type1">'.$this->l('Voucher offering a percentage').'</label>
-				&nbsp;
-				<input type="radio" name="discount_type" id="discount_type2" value="2" onclick="$(\'#voucherbycurrency\').show(); $(\'#voucherbypercentage\').hide();" '.(Tools::getValue('discount_type', Configuration::get('REFERRAL_DISCOUNT_TYPE')) == 2 ? 'checked="checked"' : '').' />
-				<label class="t" for="discount_type2">'.$this->l('Voucher offering a fixed amount (by currency)').'</label>
-			</p>
-			<p id="voucherbypercentage"'.(Configuration::get('REFERRAL_DISCOUNT_TYPE') == 2 ? ' style="display: none;"' : '').'><label class="t">'.$this->l('Percentage:').'</label> <input type="text" id="discount_value_percentage" name="discount_value_percentage" value="'.Tools::safeOutput(Tools::getValue('discount_value_percentage', Configuration::get('REFERRAL_PERCENTAGE'))).'" style="width: 50px; text-align: right;" /> %</p>
-			<table id="voucherbycurrency" cellpadding="5" style="border: 1px solid #BBB;'.(Configuration::get('REFERRAL_DISCOUNT_TYPE') == 1 ? ' display: none;' : '').'" border="0">
-				<tr>
-					<th style="width: 80px;">'.$this->l('Currency').'</th>
-					<th>'.$this->l('Voucher amount').'</th>
-				</tr>';
-
-		foreach ($currencies AS $currency)
-			$this->_html .= '
-			<tr>
-				<td>'.(Configuration::get('PS_CURRENCY_DEFAULT') == $currency['id_currency'] ? '<span style="font-weight: bold;">' : '').htmlentities($currency['name'], ENT_NOQUOTES, 'utf-8').(Configuration::get('PS_CURRENCY_DEFAULT') == $currency['id_currency'] ? '<span style="font-weight: bold;">' : '').'</td>
-				<td><input type="text" name="discount_value['.(int)($currency['id_currency']).']" id="discount_value['.(int)($currency['id_currency']).']" value="'.Tools::safeOutput(Tools::getValue('discount_value['.(int)($currency['id_currency']).']', Configuration::get('REFERRAL_DISCOUNT_VALUE_'.(int)($currency['id_currency'])))).'" style="width: 50px; text-align: right;" /> '.$currency['sign'].'</td>
-			</tr>';
-
-		$this->_html .= '
-		</table>
-			<p>
-				 <div style="float: left"><label class="t" for="discount_description">'.$this->l('Voucher description:').'</label></div>';
-			$defaultLanguage = (int)(Configuration::get('PS_LANG_DEFAULT'));
-			$languages = Language::getLanguages(true);
-
-			foreach ($languages AS $language)
-				$this->_html .= '
-				<div id="dd_'.$language['id_lang'].'" style="display: '.($language['id_lang'] == $defaultLanguage ? 'block' : 'none').'; float: left; margin-left: 4px;">
-					<input type="text" name="discount_description['.$language['id_lang'].']" id="discount_description['.$language['id_lang'].']" value="'.(isset($_POST['discount_description'][(int)($language['id_lang'])]) ? $_POST['discount_description'][(int)($language['id_lang'])] : $this->_configuration['REFERRAL_DISCOUNT_DESCRIPTION'][(int)($language['id_lang'])]).'" style="width: 200px;" />
-				</div>';
-			$this->_html .= $this->displayFlags($languages, $defaultLanguage, $divLangName, 'dd', true);
-			$this->_html .= '
-			</p>
-			<div class="clear center"><input class="button" style="margin-top: 10px" name="submitReferralProgram" id="submitReferralProgram" value="'.$this->l('Update settings').'" type="submit" /></div>
-		</fieldset>
-		</form><br/>';
-	}
-
-	private function _displayFormRules()
-	{
-		global $cookie;
-
-		// Languages preliminaries
-		$defaultLanguage = (int)(Configuration::get('PS_LANG_DEFAULT'));
-		$languages = Language::getLanguages();
-		$iso = Language::getIsoById($defaultLanguage);
-		$divLangName = 'cpara¤dd';
-
-		// xml loading
-		$xml = false;
-		if (file_exists($this->_xmlFile))
-			if (!$xml = @simplexml_load_file($this->_xmlFile))
-				$this->_html .= $this->displayError($this->l('Your text is empty.'));
-
-		// TinyMCE
-		global $cookie;
-		$iso = Language::getIsoById((int)($cookie->id_lang));
-		$isoTinyMCE = (file_exists(_PS_ROOT_DIR_.'/js/tiny_mce/langs/'.$iso.'.js') ? $iso : 'en');
-		$ad = dirname($_SERVER["PHP_SELF"]);
-		$this->_html .= '
-			<script type="text/javascript">
-			var iso = \''.$isoTinyMCE.'\' ;
-			var pathCSS = \''._THEME_CSS_DIR_.'\' ;
-			var ad = \''.$ad.'\' ;
-			</script>
-			<script type="text/javascript" src="'.__PS_BASE_URI__.'js/tiny_mce/tiny_mce.js"></script>
-			<script type="text/javascript" src="'.__PS_BASE_URI__.'js/tinymce.inc.js"></script>
-			<script language="javascript">id_language = Number('.$defaultLanguage.');</script>
-		<form method="post" action="'.Tools::safeOutput($_SERVER['REQUEST_URI']).'" enctype="multipart/form-data">
-			<fieldset>
-				<legend><img src="'.$this->_path.'logo.gif" alt="" title="" /> '.$this->l('Conditions of the referral program').'</legend>';
-		foreach ($languages AS $language)
-		{
-			$this->_html .= '
-			<div id="cpara_'.$language['id_lang'].'" style="display: '.($language['id_lang'] == $defaultLanguage ? 'block' : 'none').';float: left;">
-				<textarea class="rte" cols="120" rows="25" id="body_paragraph_'.$language['id_lang'].'" name="body_paragraph_'.$language['id_lang'].'">'.($xml ? stripslashes(htmlspecialchars($xml->body->{'paragraph_'.$language['id_lang']})) : '').'</textarea>
-			</div>';
-		}
-		$this->_html .= $this->displayFlags($languages, $defaultLanguage, $divLangName, 'cpara', true);
-
-		$this->_html .= '
-				<div class="clear center"><input type="submit" name="submitText" value="'.$this->l('Update text').'" class="button" style="margin-top: 10px" /></div>
-			</fieldset>
-		</form>';
-	}
-
 
 	/**
 	* Hook call when cart created and updated
@@ -357,15 +259,15 @@ class ReferralProgram extends Module
 		$referralprogram = new ReferralProgramModule($id_referralprogram);
 		if (!Validate::isLoadedObject($referralprogram))
 			return false;
-		$discount = new Discount($referralprogram->id_discount);
-		if (!Validate::isLoadedObject($discount))
+		$cartRule = new CartRule($referralprogram->id_cart_rule);
+		if (!Validate::isLoadedObject($cartRule))
 			return false;
-		if ($params['cart']->checkDiscountValidity($discount, $params['cart']->getDiscounts(), $params['cart']->getOrderTotal(true, Cart::ONLY_PRODUCTS), $params['cart']->getProducts())===false)
-		{
-			global $smarty;
-			$smarty->assign(array('discount_display' => Discount::display($discount->value, $discount->id_discount_type, new Currency($params['cookie']->id_currency)), 'discount' => $discount));
+
+		//if ($cartRule->checkValidity($this->context) === false)
+		//{
+			$this->smarty->assign(array('discount_display' => ReferralProgram::displayDiscount($cartRule->reduction_percent ? $cartRule->reduction_percent : $cartRule->reduction_amount, $cartRule->reduction_percent ? 1 : 2, new Currency($params['cookie']->id_currency)), 'discount' => $cartRule));
 			return $this->display(__FILE__, 'shopping-cart.tpl');
-		}
+	//	}
 		return false;
 	}
 
@@ -378,7 +280,7 @@ class ReferralProgram extends Module
 		return $this->display(__FILE__, 'my-account.tpl');
 	}
 
-	public function hookMyAccountBlock($params)
+	public function hookDisplayMyAccountBlock($params)
 	{
 		return $this->hookCustomerAccount($params);
 	}
@@ -391,13 +293,11 @@ class ReferralProgram extends Module
 	{
 		include_once(dirname(__FILE__).'/ReferralProgramModule.php');
 
-		global $smarty;
-
 		if (Configuration::get('PS_CIPHER_ALGORITHM'))
 			$cipherTool = new Rijndael(_RIJNDAEL_KEY_, _RIJNDAEL_IV_);
 		else
 			$cipherTool = new Blowfish(_COOKIE_KEY_, _COOKIE_IV_);
-		$explodeResult = explode('|', $cipherTool->decrypt(base64_decode(Tools::getValue('sponsor'))));
+		$explodeResult = explode('|', $cipherTool->decrypt(Tools::getValue('sponsor')));
 		if ($explodeResult AND count($explodeResult) > 1 AND list($id_referralprogram, $email) = $explodeResult AND (int)($id_referralprogram) AND !empty($email) AND Validate::isEmail($email) AND $id_referralprogram == ReferralProgramModule::isEmailExists($email))
 		{
 			$referralprogram = new ReferralProgramModule($id_referralprogram);
@@ -423,8 +323,6 @@ class ReferralProgram extends Module
 	*/
 	public function hookCreateAccount($params)
 	{
-		global $cookie;
-
 		$newCustomer = $params['newCustomer'];
 		if (!Validate::isLoadedObject($newCustomer))
 			return false;
@@ -436,7 +334,7 @@ class ReferralProgram extends Module
 			return false;
 
 		$sponsor = new Customer();
-		if ($sponsor = $sponsor->getByEmail($sponsorEmail))
+		if ($sponsor = $sponsor->getByEmail($sponsorEmail, NULL, $this->context))
 		{
 			include_once(dirname(__FILE__).'/ReferralProgramModule.php');
 
@@ -460,16 +358,32 @@ class ReferralProgram extends Module
 			{
 				$referralprogram->id_customer = (int)$newCustomer->id;
 				$referralprogram->save();
-				$stats = $sponsor->getStats();
-				$nb_orders_customer = (int)$stats['nb_orders'];
-				if ((int)$nb_orders_customer >= (int)$this->_configuration['REFERRAL_ORDER_QUANTITY'] && $referralprogram->registerDiscountForSponsored((int)$params['cookie']->id_currency))
+				if ($referralprogram->registerDiscountForSponsored((int)$params['cookie']->id_currency))
 				{
-					$discount = new Discount((int)$referralprogram->id_discount);
-					if (Validate::isLoadedObject($discount))
+					$cartRule = new CartRule((int)$referralprogram->id_cart_rule);
+					if (Validate::isLoadedObject($cartRule))
 					{
-						$data = array('{firstname}' => $newCustomer->firstname, '{lastname}' => $newCustomer->lastname, '{voucher_num}' => $discount->name,
-						'{voucher_amount}' => (Configuration::get('REFERRAL_DISCOUNT_TYPE') == 2 ? Tools::displayPrice((float)Configuration::get('REFERRAL_DISCOUNT_VALUE_'.(int)($cookie->id_currency)), (int)Configuration::get('PS_CURRENCY_DEFAULT')) : (float)Configuration::get('REFERRAL_PERCENTAGE').'%'));
-						Mail::Send((int)$cookie->id_lang, 'referralprogram-voucher', Mail::l('Congratulations!', (int)$cookie->id_lang), $data, $newCustomer->email, $newCustomer->firstname.' '.$newCustomer->lastname, strval(Configuration::get('PS_SHOP_EMAIL')), strval(Configuration::get('PS_SHOP_NAME')), NULL, NULL, dirname(__FILE__).'/mails/');
+						$data = array(
+							'{firstname}' => $newCustomer->firstname,
+							'{lastname}' => $newCustomer->lastname,
+							'{voucher_num}' => $cartRule->code,
+							'{voucher_amount}' => (Configuration::get('REFERRAL_DISCOUNT_TYPE') == 2 ? Tools::displayPrice((float)Configuration::get('REFERRAL_DISCOUNT_VALUE_'.(int)$this->context->currency->id), (int)Configuration::get('PS_CURRENCY_DEFAULT')) : (float)Configuration::get('REFERRAL_PERCENTAGE').'%'));
+
+						$cookie = $this->context->cookie;
+
+						Mail::Send(
+							(int)$cookie->id_lang,
+							'referralprogram-voucher',
+							Mail::l('Congratulations!', (int)$cookie->id_lang),
+							$data,
+							$newCustomer->email,
+							$newCustomer->firstname.' '.$newCustomer->lastname,
+							strval(Configuration::get('PS_SHOP_EMAIL')),
+							strval(Configuration::get('PS_SHOP_NAME')),
+							null,
+							null,
+							dirname(__FILE__).'/mails/'
+						);
 					}
 				}
 				return true;
@@ -487,10 +401,11 @@ class ReferralProgram extends Module
 		include_once(dirname(__FILE__).'/ReferralProgramModule.php');
 
 		$customer = new Customer((int)$params['id_customer']);
-		if (!Validate::isLoadedObject($customer))
-			die (Tools::displayError('Incorrect object Customer.'));
+		$sponsor = null;
 
-		global $cookie;
+		if (!Validate::isLoadedObject($customer))
+			die ($this->l('Incorrect Customer object.'));
+
 		$friends = ReferralProgramModule::getSponsorFriend((int)$customer->id);
 		if ($id_referralprogram = ReferralProgramModule::isSponsorised((int)$customer->id, true))
 		{
@@ -498,45 +413,25 @@ class ReferralProgram extends Module
 			$sponsor = new Customer((int)$referralprogram->id_sponsor);
 		}
 
-		$html = '
-		<div class="clear">&nbsp;</div>
-		<h2>'.$this->l('Referral program').' ('.count($friends).')</h2>
-		<h3>'.(isset($sponsor) ? $this->l('Customer\'s sponsor:').' <a href="index.php?tab=AdminCustomers&id_customer='.(int)$sponsor->id.'&viewcustomer&token='.Tools::getAdminToken('AdminCustomers'.(int)(Tab::getIdFromClassName('AdminCustomers')).(int)($cookie->id_employee)).'">'.$sponsor->firstname.' '.$sponsor->lastname.'</a>' : $this->l('No one has sponsored this customer.')).'</h3>';
-
-		if ($friends AND sizeof($friends))
+		foreach ($friends AS $key => &$friend)
 		{
-			$html.= '<h3>'.sizeof($friends).' '.(sizeof($friends) > 1 ? $this->l('Sponsored customers:') : $this->l('Sponsored customer:')).'</h3>';
-			$html.= '
-			<table cellspacing="0" cellpadding="0" class="table">
-				<tr>
-					<th class="center">'.$this->l('ID').'</th>
-					<th class="center">'.$this->l('Name').'</th>
-					<th class="center">'.$this->l('Email').'</th>
-					<th class="center">'.$this->l('Registration date').'</th>
-					<th class="center">'.$this->l('Customers sponsored by this friend').'</th>
-					<th class="center">'.$this->l('Placed orders').'</th>
-					<th class="center">'.$this->l('Customer account created').'</th>
-				</tr>';
-				foreach ($friends AS $key => $friend)
-				{
-					$orders = Order::getCustomerOrders($friend['id_customer']);
-					$html.= '
-					<tr '.($key++ % 2 ? 'class="alt_row"' : '').' '.((int)($friend['id_customer']) ? 'style="cursor: pointer" onclick="document.location = \'?tab=AdminCustomers&id_customer='.$friend['id_customer'].'&viewcustomer&token='.Tools::getAdminToken('AdminCustomers'.(int)(Tab::getIdFromClassName('AdminCustomers')).(int)($cookie->id_employee)).'\'"' : '').'>
-						<td class="center">'.((int)($friend['id_customer']) ? $friend['id_customer'] : '--').'</td>
-						<td>'.$friend['firstname'].' '.$friend['lastname'].'</td>
-						<td>'.$friend['email'].'</td>
-						<td>'.Tools::displayDate($friend['date_add'], (int)($cookie->id_lang), true).'</td>
-						<td align="right">'.sizeof(ReferralProgramModule::getSponsorFriend($friend['id_customer'])).'</td>
-						<td align="right">'.($orders ? sizeof($orders) : 0).'</td>
-						<td align="center">'.((int)$friend['id_customer'] ? '<img src="'._PS_ADMIN_IMG_.'enabled.gif" />' : '<img src="'._PS_ADMIN_IMG_.'disabled.gif" />').'</td>
-					</tr>';
-				}
-			$html.= '
-				</table>';
+			$friend['orders_count'] = sizeof(Order::getCustomerOrders($friend['id_customer']));
+			$friend['date_add'] = Tools::displayDate($friend['date_add'],null , true);
+			$friend['sponsored_friend_count'] = sizeof(ReferralProgramModule::getSponsorFriend($friend['id_customer']));
 		}
+
+		$this->smarty->assign(array(
+			'friends' => $friends,
+			'sponsor' => $sponsor,
+			'customer' => $customer,
+			'admin_image_dir' => _PS_ADMIN_IMG_,
+			'token' => Tools::getAdminToken('AdminCustomers'.(int)(Tab::getIdFromClassName('AdminCustomers')).(int)$this->context->employee->id)
+		));
+
+		if (version_compare(_PS_VERSION_, '1.6.0', '>=') === true)
+			return $this->display(__FILE__, 'hook_customers_16.tpl');
 		else
-			$html.= $customer->firstname.' '.$customer->lastname.' '.$this->l('has not sponsored any friends yet.');
-		return $html.'<br/><br/>';
+			return $this->display(__FILE__, 'hook_customers.tpl');
 	}
 
 	/**
@@ -546,7 +441,7 @@ class ReferralProgram extends Module
 	public function hookOrderConfirmation($params)
 	{
 		if ($params['objOrder'] AND !Validate::isLoadedObject($params['objOrder']))
-			return die(Tools::displayError('Incorrect object Order.'));
+			return die($this->l('Incorrect Order object.'));
 
 		include_once(dirname(__FILE__).'/ReferralProgramModule.php');
 
@@ -559,11 +454,10 @@ class ReferralProgram extends Module
 		$sponsor = new Customer((int)$referralprogram->id_sponsor);
 		if ((int)$nbOrdersCustomer == (int)$this->_configuration['REFERRAL_ORDER_QUANTITY'])
 		{
-			$discount = new Discount((int)$referralprogram->id_discount_sponsor);
-			if (!Validate::isLoadedObject($discount))
+			$cartRule = new CartRule((int)$referralprogram->id_cart_rule_sponsor);
+			if (!Validate::isLoadedObject($cartRule))
 				return false;
-			global $smarty;
-			$smarty->assign(array('discount' => $discount->display($discount->value, (int)$discount->id_discount_type, new Currency((int)$params['objOrder']->id_currency)), 'sponsor_firstname' => $sponsor->firstname, 'sponsor_lastname' => $sponsor->lastname));
+			$this->smarty->assign(array('discount' => ReferralProgram::displayDiscount($cartRule->reduction_percent ? $cartRule->reduction_percent : $cartRule->reduction_amount, $cartRule->reduction_percent ? 1 : 2, new Currency((int)$params['objOrder']->id_currency)), 'sponsor_firstname' => $sponsor->firstname, 'sponsor_lastname' => $sponsor->lastname));
 			return $this->display(__FILE__, 'order-confirmation.tpl');
 		}
 		return false;
@@ -576,11 +470,11 @@ class ReferralProgram extends Module
 	public function hookUpdateOrderStatus($params)
 	{
 		if (!Validate::isLoadedObject($params['newOrderStatus']))
-			die (Tools::displayError('Missing parameters'));
+			die ($this->l('Missing parameters'));
 		$orderState = $params['newOrderStatus'];
 		$order = new Order((int)($params['id_order']));
 		if ($order AND !Validate::isLoadedObject($order))
-			die(Tools::displayError('Incorrect object Order.'));
+			die($this->l('Incorrect Order object.'));
 
 		include_once(dirname(__FILE__).'/ReferralProgramModule.php');
 
@@ -593,13 +487,179 @@ class ReferralProgram extends Module
 		$sponsor = new Customer((int)$referralprogram->id_sponsor);
 		if ((int)$orderState->logable AND $nbOrdersCustomer >= (int)$this->_configuration['REFERRAL_ORDER_QUANTITY'] AND $referralprogram->registerDiscountForSponsor((int)$order->id_currency))
 		{
-			$discount = new Discount((int)$referralprogram->id_discount_sponsor);
+			$cartRule = new CartRule((int)$referralprogram->id_cart_rule_sponsor);
 			$currency = new Currency((int)$order->id_currency);
-			$discount_display = $discount->display($discount->value, (int)$discount->id_discount_type, $currency);
-			$data = array('{sponsored_firstname}' => $customer->firstname, '{sponsored_lastname}' => $customer->lastname, '{discount_display}' => $discount_display, '{discount_name}' => $discount->name, '{order_name}' => sprintf("#%06d", (int)$order->id));
+			$discount_display = ReferralProgram::displayDiscount( (float) $cartRule->reduction_percent ? (float) $cartRule->reduction_percent : (int) $cartRule->reduction_amount,  (float) $cartRule->reduction_percent ? 1 : 2, $currency);			$data = array('{sponsored_firstname}' => $customer->firstname, '{sponsored_lastname}' => $customer->lastname, '{discount_display}' => $discount_display, '{discount_name}' => $cartRule->code);
 			Mail::Send((int)$order->id_lang, 'referralprogram-congratulations', Mail::l('Congratulations!', (int)$order->id_lang), $data, $sponsor->email, $sponsor->firstname.' '.$sponsor->lastname, strval(Configuration::get('PS_SHOP_EMAIL')), strval(Configuration::get('PS_SHOP_NAME')), NULL, NULL, dirname(__FILE__).'/mails/');
 			return true;
 		}
 		return false;
+	}
+	
+	public function renderForm()
+	{
+
+		$fields_form_1 = array(
+			'form' => array(
+				'legend' => array(
+					'title' => $this->l('Settings'),
+					'icon' => 'icon-cogs'
+				),
+				'input' => array(
+					array(
+						'type' => 'text',
+						'label' => $this->l('Minimum number of orders a customer must place to become a sponsor'),
+						'name' => 'order_quantity',
+					),
+					array(
+						'type' => 'text',
+						'label' => $this->l('Number of friends in the referral program invitation form (customer account, referral program section):'),
+						'name' => 'nb_friends',
+					),
+					array(
+						'type' => 'radio',
+						'label' => $this->l('Voucher type :'),
+						'name' => 'discount_type',
+						'class' => 't',
+						'values' => array(
+							array(
+								'id' => 'discount_type1',
+								'value' => 1,
+								'label' => $this->l('Voucher offering a percentage')),
+							array(
+								'id' => 'discount_type2',
+								'value' => 2,
+								'label' => $this->l('Voucher offering a fixed amount (by currency)')),
+						),
+					),
+					array(
+						'type' => 'text',
+						'label' => $this->l('Percentage'),
+						'name' => 'discount_value_percentage',
+						'suffix' => '%'
+					),
+					array(
+						'type' => 'discount_value',
+						'label' => 	$this->l('Voucher amount'),
+						'name' => 'discount_value',
+					),
+					array(
+						'type' => 'text',
+						'label' => $this->l('Voucher description'),
+						'name' => 'discount_description',
+						'lang' => true,
+					)
+				),
+				'submit' => array(
+					'title' => $this->l('Save'),
+					'class' => 'btn btn-default pull-right',
+					'name' => 'submitReferralProgram',
+					)
+			),
+		);
+		
+		$fields_form_2 = array(
+			'form' => array(
+				'legend' => array(
+					'title' => $this->l('Conditions of the referral program'),
+					'icon' => 'icon-cogs'
+				),
+				'input' => array(
+					array(
+						'type' => 'textarea',
+						'autoload_rte' => true,
+						'label' => $this->l('Text'),
+						'name' => 'body_paragraph',
+						'lang' => true,
+					)
+				),
+				'submit' => array(
+					'title' => $this->l('Save'),
+					'class' => 'btn btn-default pull-right',
+					'name' => 'submitText',
+				)
+			),
+		);
+		
+		$helper = new HelperForm();
+		$helper->show_toolbar = false;
+		$helper->table =  $this->table;
+		$lang = new Language((int)Configuration::get('PS_LANG_DEFAULT'));
+		$helper->default_form_language = $lang->id;
+		$helper->allow_employee_form_lang = Configuration::get('PS_BO_ALLOW_EMPLOYEE_FORM_LANG') ? Configuration::get('PS_BO_ALLOW_EMPLOYEE_FORM_LANG') : 0;
+		$helper->identifier = $this->identifier;
+		$helper->submit_action = 'submitModule';
+		$helper->module = $this;
+		$helper->currentIndex = $this->context->link->getAdminLink('AdminModules', false).'&configure='.$this->name.'&tab_module='.$this->tab.'&module_name='.$this->name;
+		$helper->token = Tools::getAdminTokenLite('AdminModules');
+		$helper->tpl_vars = array(
+			'currencies' => Currency::getCurrencies(),
+			'fields_value' => $this->getConfigFieldsValues(),
+			'languages' => $this->context->controller->getLanguages(),
+			'id_language' => $this->context->language->id
+		);
+		
+		$helper->override_folder = '/';
+		
+		return $this->renderJs().$helper->generateForm(array($fields_form_1, $fields_form_2));
+	}
+	
+	public function getConfigFieldsValues()
+	{	
+		$fields_values = array(
+			'order_quantity' => Tools::getValue('order_quantity', Configuration::get('REFERRAL_ORDER_QUANTITY')),
+			'discount_type' => Tools::getValue('discount_type', Configuration::get('REFERRAL_DISCOUNT_TYPE')),
+			'nb_friends' => Tools::getValue('nb_friends', Configuration::get('REFERRAL_NB_FRIENDS')),
+			'discount_value_percentage' => Tools::getValue('discount_value_percentage', Configuration::get('REFERRAL_PERCENTAGE')),
+		);
+	
+		$languages = Language::getLanguages(false);
+		foreach ($languages as $lang)
+		{
+			$fields_values['discount_description'][$lang['id_lang']] = Tools::getValue('discount_description_'.(int)$lang['id_lang'], Configuration::get('REFERRAL_DISCOUNT_DESCRIPTION', (int)$lang['id_lang']));
+			$fields_values['body_paragraph'][$lang['id_lang']] = '';
+		}
+		
+		$currencies = Currency::getCurrencies();
+		foreach ($currencies as $currency)
+			$fields_values['discount_value'][$currency['id_currency']] = Tools::getValue('discount_value['.(int)$currency['id_currency'].']', Configuration::get('REFERRAL_DISCOUNT_VALUE_'.(int)$currency['id_currency']));
+		
+		// xml loading
+		$xml = false;
+		if (file_exists($this->_xmlFile))
+			if ($xml = @simplexml_load_file($this->_xmlFile))
+				foreach ($languages as $lang)
+				{
+					$key = 'paragraph_'.$lang['id_lang'];
+					$fields_values['body_paragraph'][$lang['id_lang']] = Tools::getValue('body_paragraph_'.(int)$lang['id_lang'] ,(string)$xml->body->$key);
+				}
+	
+		return $fields_values;
+	}
+	
+	public function renderJs()
+	{
+		return "
+		<script>
+			$(document).ready(function () {
+				toggleVoucherType()
+				$('input[name=discount_type]').click(function () {toggleVoucherType()});
+			});
+			
+			function toggleVoucherType()
+			{
+				if ($('input[name=discount_type]:checked').val() == 2)
+				{
+					$('#discount_value_percentage').closest('.row').hide();
+					$('#discount_value').closest('.row').show();
+				}
+				else
+				{
+					$('#discount_value_percentage').closest('.row').show();
+					$('#discount_value').closest('.row').hide();
+				}
+			}
+		</script>
+		";
 	}
 }

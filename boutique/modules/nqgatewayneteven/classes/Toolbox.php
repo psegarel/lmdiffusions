@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -27,7 +27,7 @@
 class Toolbox
 {
 	private static $_log ;
-	protected static $handle_instance;
+	protected static $handle_instance = false;
 
 	public static function manageError($e, $type_error)
 	{
@@ -37,7 +37,7 @@ class Toolbox
 	public static function writeLog($is_error = false, $message = "")
 	{
 		if (!self::$handle_instance)
-			self::$handle_instance = fopen(dirname(__FILE__).'/../logs/logs-'.date('Y-m-d').'.txt', 'a+');
+				self::$handle_instance = @fopen(dirname(__FILE__).'/../logs/logs-'.date('Y-m-d').'.txt', 'a+');
 		
 		if (!empty(self::$_log) && !$is_error)
 		{
@@ -51,7 +51,6 @@ class Toolbox
 		{
 			if (self::$handle_instance)
 				fwrite(self::$handle_instance, date('Y-m-d H:i:s').' - '.$message."\n");
-
 		}
 	}
 
@@ -87,8 +86,8 @@ class Toolbox
 			postcode = "'.pSQL($order_infos->PostalCode).'" AND
 			phone = "'.pSQL(Toolbox::numericFilter($order_infos->Phone)).'" AND
 			phone_mobile = "'.pSQL(Toolbox::numericFilter($order_infos->Mobile)).'" AND
-			id_country = '.intval($id_country).' AND
-			id_customer = '.intval($id_customer));
+			id_country = '.(int)($id_country).' AND
+			id_customer = '.(int)($id_customer));
 
 		if ($addr)
 			return $addr["id_address"];
@@ -107,7 +106,7 @@ class Toolbox
 		return $str;
 	}
 	
-	public static function setNetEvenCategories()
+	public static function setNetEvenCategories($display = false)
 	{
 		$neteven_features_dirname = dirname(__FILE__).'/../neteven_features/';
 		$files = scandir($neteven_features_dirname);
@@ -119,14 +118,21 @@ class Toolbox
 				if (($handle = fopen($neteven_features_dirname.$file, 'r')) !== false)
 				{
 					$row = 0;
+
 					while (($data = fgetcsv($handle, 1000, ';')) !== false)
 					{
 						if ($row != 0)
 						{
-							if (Db::getInstance()->getValue('SELECT COUNT(*) FROM `'._DB_PREFIX_.'orders_gateway_feature` WHERE `value` LIKE "'.pSQL($data[2]).'"'))
+							if(empty($data[0]) || empty($data[1]) || empty($data[2]))
+								continue;
+
+							if (Db::getInstance()->getValue('SELECT COUNT(*) FROM `'._DB_PREFIX_.'orders_gateway_feature` WHERE `value` = "'.pSQL($data[2]).'" AND `category` = "'.pSQL($data[0]).'" '))
 								continue;
 							
 							Db::getInstance()->Execute('INSERT INTO `'._DB_PREFIX_.'orders_gateway_feature` (`name`, `value`, `category`) VALUES ("'.pSQL($data[1]).'", "'.pSQL($data[2]).'", "'.pSQL($data[0]).'")');
+							
+							if($display)
+								echo 'Add '.$data[1].' into '.$data[2].'<br/>';
 						}
 						$row++;
 					}
@@ -140,5 +146,4 @@ class Toolbox
 	{
 		echo ($error ? '<span style="color:red;">' : '').$message.($error ? '</span>' : '').'<br />';
 	}
-	
 }

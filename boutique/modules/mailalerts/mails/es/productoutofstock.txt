@@ -1,10 +1,16 @@
-Hola,
 
-El producto {product} es pronto fuera de stock.
-De hecho, la ruptura de stock de {last_qty} ha sido superado.
-Existencias restantes: {qty}
+[{shop_url}] 
 
-Se aconseja abrir administrador del producto Producto a fin de reponer el inventario.
+Hola, 
 
+Las existencias restante es ahora menor que el mínimo especificado
+de: {last_qty}.
 
-{shop_url} desarrollado por PrestaShop™
+EXISTENCIAS DISPONIBLES: {qty}
+
+Se aconseja abrir administrador del producto Producto a fin de
+reponer el inventario. 		 
+
+{shop_name} [{shop_url}] creado por
+PrestaShop(tm) [http://www.prestashop.com/] 
+

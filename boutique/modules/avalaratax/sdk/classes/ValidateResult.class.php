@@ -43,7 +43,11 @@ class ValidateResult// extends BaseResult
  * @return array
  */
     public function getValidAddresses() { return EnsureIsArray($this->ValidAddresses->ValidAddress); }
-
+	
+	
+	
+	
+	
 	/**
  * @var string
  */

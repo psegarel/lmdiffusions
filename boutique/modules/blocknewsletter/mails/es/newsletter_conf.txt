@@ -1,7 +1,10 @@
-Hola,
 
-Gracias por tu suscripción a nuestro boletín.
+[{shop_url}] 
 
+Hola, 
 
+GRACIAS POR SUSCRIBIRSE A NUESTRO BOLETÍN. 
 
-{shop_url} dirigida por PrestaShop™
+{shop_name} [{shop_url}] creado por
+PrestaShop(tm) [http://www.prestashop.com/] 
+

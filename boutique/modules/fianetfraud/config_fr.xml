@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<module>
+	<name>fianetfraud</name>
+	<displayName><![CDATA[Fia-Net - Certissim]]></displayName>
+	<version><![CDATA[3.10]]></version>
+	<description><![CDATA[S&eacute;curisez vos ventes et ma&icirc;trisez vos impay&eacute;s !]]></description>
+	<author><![CDATA[Fia-Net]]></author>
+	<tab><![CDATA[payment_security]]></tab>
+	<is_configurable>1</is_configurable>
+	<need_instance>1</need_instance>
+	<limited_countries></limited_countries>
+</module>

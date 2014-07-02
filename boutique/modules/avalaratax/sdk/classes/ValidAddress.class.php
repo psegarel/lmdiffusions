@@ -44,30 +44,30 @@ class ValidAddress //extends Address - or it should - SoapClient has issues mapp
  * @access private
  * @var string
  */
-    public $AddressCode;
-	public $Line1;
-	public $Line2;
-	public $Line3;
-	public $City;
-	public $Region;
-	public $PostalCode;
-    public $Country = 'USA';
+    private $AddressCode;
+	private $Line1;
+	private $Line2;
+	private $Line3;
+	private $City;
+	private $Region;
+	private $PostalCode;
+    private $Country = 'USA';
 
-    public $Line4;
-    public $County;
-    public $FipsCode;
-    public $CarrierRoute;
-    public $PostNet;
-    public $AddressType;
-    public $Latitude;
-    public $Longitude;
+    private $Line4;
+    private $County;
+    private $FipsCode;
+    private $CarrierRoute;
+    private $PostNet;
+    private $AddressType;
+    private $Latitude;
+    private $Longitude;
 /**#@-*/
 
 /**
  * @access private
  * @var integer
  */
-    public $TaxRegionId = 0;
+    private $TaxRegionId = 0;
 
 
 /**#@+

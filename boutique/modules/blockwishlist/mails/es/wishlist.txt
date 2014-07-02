@@ -1,8 +1,13 @@
-Hola,
 
-{firstname} {lastname} le sugiere ver su lista de deseos {wishlist}:
-{message}
+[{shop_url}] 
 
+Hola, 
 
+{firstname} {lastname} indicó que puede interesarle ver su wishlist:
+{wishlist}
 
-{shop_url} desarrollado por PrestaShop®
+{wishlist} [{message}] 		 
+
+{shop_name} [{shop_url}] creado por
+PrestaShop(tm) [http://www.prestashop.com/] 
+

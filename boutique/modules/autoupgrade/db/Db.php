@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -208,11 +208,19 @@ abstract class DbCore
 	 */
 	public static function getClass()
 	{
+		if (!defined('PHP_VERSION_ID'))
+		{
+			$version = explode('.', PHP_VERSION);
+			define('PHP_VERSION_ID', ($version[0] * 10000 + $version[1] * 100 + $version[2]));
+		}
+
 		$class = 'MySQL';
-		if (PHP_VERSION_ID >= 50200 && extension_loaded('pdo_mysql'))
-			$class = 'DbPDO';
-		else if (extension_loaded('mysqli'))
+		if (extension_loaded('mysql') && PHP_VERSION_ID < 50500)
+			$class = 'MySQL';
+		elseif (extension_loaded('mysqli'))
 			$class = 'DbMySQLi';
+		elseif (PHP_VERSION_ID >= 50200 && extension_loaded('pdo_mysql'))
+			$class = 'DbPDO';
 		return $class;
 	}
 
@@ -452,6 +460,9 @@ abstract class DbCore
 	{
 		if ($sql instanceof DbQuery)
 			$sql = $sql->build();
+			
+		if (trim($sql) == false)
+			return ($this->result = true);
 
 		$this->result = $this->query($sql);
 		if ($use_cache && $this->is_cache_enabled)

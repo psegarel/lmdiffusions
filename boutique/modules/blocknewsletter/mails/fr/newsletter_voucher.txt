@@ -1,9 +1,11 @@
-Bonjour
 
-Suite à votre inscription à notre newsletter, nous avons le plaisir de vous offrir le bon de réduction suivant : {discount}
+[{shop_url}] 
 
-{shop_name} - {shop_url}
+Bonjour, 
 
+En remerciement pour votre inscription à notre newsletter nous
+avons le plaisir de vous offrir un bon de réduction : {discount} 
 
+{shop_name} [{shop_url}] réalisé avec
+PrestaShop(tm) [http://www.prestashop.com/] 
 
-{shop_url} réalisé par PrestaShop™

@@ -1,11 +1,14 @@
-Bonjour,
-		
-Nouveau message d'alerte enregistré
-	
-Malheuresement, un message d'alerte a été enregistré
 
-Vous pouvez voir ce message dans votre Panneau d'administration > Outils > Log
-		
-{shop_name} - {shop_url}
+[{shop_url}] 
 
-{shop_url} propulsé par PrestaShop™
+Bonjour {firstname} {lastname}, 
+
+ATTENTION : vous avez reçu un nouveau message d'alerte dans votre
+Back-Office.
+
+Vous pouvez voir ce message dans votre Panneau d'administration dans
+OUTILS > LOG. 		 
+
+{shop_name} [{shop_url}] réalisé avec
+PrestaShop(tm) [http://www.prestashop.com/] 
+

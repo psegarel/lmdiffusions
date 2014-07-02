@@ -9,7 +9,7 @@
  * @see AdjustTaxRequest
  *
  * @author    Avalara
- * @copyright © 2004 - 2011 Avalara, Inc.  All rights reserved.
+ * @copyright ï¿½ 2004 - 2011 Avalara, Inc.  All rights reserved.
  * @package   Tax
  */
  
@@ -21,14 +21,13 @@ class AdjustTaxRequest
 	private $AdjustmentDescription;		//string
 	private $GetTaxRequest;				//string
 
-		
+
     /**     
      * Adjustment Description is required when AdjustmentReason is "Other" for enhanced tracability. 
      *
      * @param string $value
      */
 	public function setAdjustmentDescription($value) { $this->AdjustmentDescription = $value; }
-  
 
 
 	/**
@@ -66,12 +65,7 @@ class AdjustTaxRequest
     public function getAdjustmentDescription() { return $this->AdjustmentDescription;}	
         
 
-    public function getGetTaxRequest() { return $this->GetTaxRequest;}	//string   invoice number
- 
-
-	
-
-	
+    public function getGetTaxRequest() { return $this->GetTaxRequest;}			//string   invoice number
 }
 
 ?>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<module>
+	<name>kialasmall</name>
+	<displayName><![CDATA[Int&eacute;gration simple du webservice Kiala]]></displayName>
+	<version><![CDATA[1.4]]></version>
+	<description><![CDATA[Proposez de nouvelles possibilit&eacute;s de livraison &agrave; vos clients en leur faisant faire des &eacute;conomies : activez l&#039;option de livraison en point relais Kiala.]]></description>
+	<author><![CDATA[PrestaShop]]></author>
+	<tab><![CDATA[shipping_logistics]]></tab>
+	<is_configurable>1</is_configurable>
+	<need_instance>0</need_instance>
+	<limited_countries>es</limited_countries>
+</module>

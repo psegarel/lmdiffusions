@@ -1,13 +1,13 @@
+
+[{shop_url}] 
+
 Hola {name},
 
+Gracias por crear una cuenta de cliente en {shop_name}. 
 
-{customer} te ha enviado un vínculo a un producto que él piensa que pueden interesarle.
+Haga clic aquí para ver este artículo: {product}
+[{product_link}] 
 
-{product}: {product_link}
+{shop_name} [{shop_url}] creado por
+PrestaShop(tm) [http://www.prestashop.com/] 
 
-
-{shop_name} - {shop_url}
-
-
-
-{shop_url} desarrollado por PrestaShop™

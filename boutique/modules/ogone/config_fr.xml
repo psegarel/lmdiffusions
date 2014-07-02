@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<module>
+	<name>ogone</name>
+	<displayName><![CDATA[Ogone]]></displayName>
+	<version><![CDATA[2.9]]></version>
+	<description><![CDATA[Avec 80 m&eacute;thodes de paiement et 200 banques &agrave; travers le monde, Ogone vous propose une solution cl&eacute; en main pour stimuler et s&eacute;curiser vos paiements en ligne !]]></description>
+	<author><![CDATA[PrestaShop]]></author>
+	<tab><![CDATA[payments_gateways]]></tab>
+	<is_configurable>1</is_configurable>
+	<need_instance>1</need_instance>
+	<limited_countries></limited_countries>
+</module>

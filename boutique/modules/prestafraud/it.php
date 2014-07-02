@@ -2,7 +2,6 @@
 
 global $_MODULE;
 $_MODULE = array();
-
 $_MODULE['<{prestafraud}prestashop>prestafraud_eed029a9cfe78c1230a654e58fe8b6f8'] = 'PrestaShop Security';
 $_MODULE['<{prestafraud}prestashop>prestafraud_95d311a37e934646eec0c79c4f266feb'] = 'Proteggi il tuo negozio da pagamenti fraudolenti';
 $_MODULE['<{prestafraud}prestashop>prestafraud_4d0a6a9777a818ecc3b59b9a8ecd0c43'] = '- Scegli la tua attività principale -';
@@ -51,13 +50,13 @@ $_MODULE['<{prestafraud}prestashop>prestafraud_ec51b543e5a38f6044c83f21dce2b23d'
 $_MODULE['<{prestafraud}prestashop>prestafraud_7c9a3504dd4ce74b8021267ae1802968'] = 'Tipo di pagamento';
 $_MODULE['<{prestafraud}prestashop>prestafraud_827638f0be5ae74be04ed494087de714'] = 'Scegli un tipo di pagamento ...';
 $_MODULE['<{prestafraud}prestashop>prestafraud_c9cc8cce247e49bae79f15173ce97354'] = 'Salva';
-$_MODULE['<{prestafraud}prestashop>prestafraud_16648260e58b4cf9d458e1a197ef43f1'] = 'Email non valida';
+$_MODULE['<{prestafraud}prestashop>prestafraud_16648260e58b4cf9d458e1a197ef43f1'] = 'E-mail non è valida';
 $_MODULE['<{prestafraud}prestashop>prestafraud_cb18f4dc13847e2ed5d69cb936f9b26c'] = 'URL Shop non è valido';
 $_MODULE['<{prestafraud}prestashop>prestafraud_950c093b260d7c7709f8ff96e10a6fe0'] = 'Questo ordine non è stato inviato a PrestaShop Security.';
 $_MODULE['<{prestafraud}prestashop>prestafraud_d0c6a2fa938df84c0ce628de99c97e16'] = 'Punteggio:';
 $_MODULE['<{prestafraud}prestashop>prestafraud_88183b946cc5f0e8c96b2e66e1c74a7e'] = 'Sconosciuto';
 $_MODULE['<{prestafraud}prestashop>prestafraud_240f3031f25601fa128bd4e15f0a37de'] = 'Commento:';
-$_MODULE['<{prestafraud}prestashop>prestafraud_83af58f7375191b5d158a787808555d4'] = 'Segnala questo ordine come una frode a PrestaShop';
+$_MODULE['<{prestafraud}prestashop>prestafraud_b88011726eba59d6bf37f0fdec202edc'] = 'Segnala questo ordine come una frode a PrestaShop';
 $_MODULE['<{prestafraud}prestashop>prestafraud_a8bbb000124c9697aa5d63e7e758b64d'] = 'Ritiro nel negozio';
 $_MODULE['<{prestafraud}prestashop>prestafraud_08eb31af908e2244867f6e812f82e935'] = 'Punto di ritiro';
 $_MODULE['<{prestafraud}prestashop>prestafraud_880f973e4ddae42c6bebd2c31bb977f8'] = 'Spedizione lenta oltre 3 giorni';

@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -526,19 +526,25 @@ class Tools14
 	*/
 	public static function deleteDirectory($dirname, $delete_self = true)
 	{
-		$dirname = rtrim($dirname, '/').'/';
-		$files = scandir($dirname);
-		foreach ($files as $file)
-			if ($file != '.' AND $file != '..')
+		$dirname = rtrim($dirname, DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR;
+		if (file_exists($dirname))
+			if ($files = scandir($dirname))
 			{
-				if (is_dir($dirname.$file))
-					self::deleteDirectory($dirname.$file, true);
-				elseif (file_exists($dirname.$file))
-					unlink($dirname.$file);
+				foreach ($files as $file)
+    				if ($file != '.' && $file != '..' && $file != '.svn')
+    				{
+    					if (is_file($dirname.$file))
+    						unlink($dirname.$file);
+    					elseif (is_dir($dirname.$file.DIRECTORY_SEPARATOR))
+    						self::deleteDirectory($dirname.$file.DIRECTORY_SEPARATOR, true);
+    				}
+				if ($delete_self && file_exists($dirname))
+					if (!rmdir($dirname))
+						return false;
+				return true;                    
 			}
-		if ($delete_self && is_dir($dirname))
-			rmdir($dirname);
-	}
+		return false;
+    }
 
 	/**
 	* Display an error according to an error code
@@ -1255,9 +1261,13 @@ class Tools14
 		if (!extension_loaded('openssl') AND strpos('https://', $url) === true)
 			$url = str_replace('https', 'http', $url);
 		if ($stream_context == null && preg_match('/^https?:\/\//', $url))
-			$stream_context = @stream_context_create(array('http' => array('timeout' => $curl_timeout)));
+			$stream_context = @stream_context_create(array('http' => array('timeout' => $curl_timeout, 'header' => "User-Agent:MyAgent/1.0\r\n")));
 		if (in_array(ini_get('allow_url_fopen'), array('On', 'on', '1')) || !preg_match('/^https?:\/\//', $url))
-			return @file_get_contents($url, $use_include_path, $stream_context);
+		{
+			$var = @file_get_contents($url, $use_include_path, $stream_context);
+			if ($var)
+				return $var;
+		}
 		elseif (function_exists('curl_init'))
 		{
 			$curl = curl_init();
@@ -1579,7 +1589,7 @@ class Tools14
 			if (!array_key_exists('date', $css_files_by_media[$media]))
 				$css_files_by_media[$media]['date'] = 0;
 			$css_files_by_media[$media]['date'] = max(
-				file_exists($infos['path']) ? filemtime($infos['path']) : 0,
+				file_exists($infos['path']) ? @filemtime($infos['path']) : 0,
 				$css_files_by_media[$media]['date']
 			);
 
@@ -1595,7 +1605,7 @@ class Tools14
 			$filename = _PS_THEME_DIR_.'cache/'.$key.'_'.$media.'.css';
 			$info = array(
 				'key' => $key,
-				'date' => file_exists($filename) ? filemtime($filename) : 0
+				'date' => file_exists($filename) ? @filemtime($filename) : 0
 			);
 		}
 		// aggregate and compress css files content, write new caches files
@@ -1664,7 +1674,7 @@ class Tools14
 				$js_files_infos[] = $infos;
 
 				$js_files_date = max(
-					file_exists($infos['path']) ? filemtime($infos['path']) : 0,
+					file_exists($infos['path']) ? @filemtime($infos['path']) : 0,
 					$js_files_date
 				);
 				$compressed_js_filename .= $filename;
@@ -1675,7 +1685,7 @@ class Tools14
 		$compressed_js_filename = md5($compressed_js_filename);
 
 		$compressed_js_path = _PS_THEME_DIR_.'cache/'.$compressed_js_filename.'.js';
-		$compressed_js_file_date = file_exists($compressed_js_path) ? filemtime($compressed_js_path) : 0;
+		$compressed_js_file_date = file_exists($compressed_js_path) ? @filemtime($compressed_js_path) : 0;
 
 		// aggregate and compress js files content, write new caches files
 		if ($js_files_date > $compressed_js_file_date)
@@ -2075,9 +2085,9 @@ FileETag INode MTime Size
 		{
 			require_once(dirname(__FILE__).'/pclzip.lib.php');
 			$zip = new PclZip($fromFile);
-			$list = $zip->extract(PCLZIP_OPT_PATH, $toDir);
-			foreach ($list as $extractedFile)
-				if ($extractedFile['status'] != 'ok')
+			$list = $zip->extract(PCLZIP_OPT_PATH, $toDir, PCLZIP_OPT_REPLACE_NEWER);
+			foreach ($list as $file)
+				if ($file['status'] != 'ok' && $file['status'] != 'already_a_directory')
 					return false;
 			return true;
 		}

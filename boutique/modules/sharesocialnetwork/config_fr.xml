@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<module>
+	<name>sharesocialnetwork</name>
+	<displayName><![CDATA[Partage sur reseaux sociaux]]></displayName>
+	<version><![CDATA[0.3]]></version>
+	<description><![CDATA[Activer le partage des produits sur les reseaux sociaux]]></description>
+	<author><![CDATA[]]></author>
+	<tab><![CDATA[Products]]></tab>
+	<is_configurable>0</is_configurable>
+	<need_instance>1</need_instance>
+	<limited_countries></limited_countries>
+</module>

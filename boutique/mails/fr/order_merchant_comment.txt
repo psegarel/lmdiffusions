@@ -1,10 +1,13 @@
-Bonjour {firstname} {lastname},
 
-Vous avez reÁu un nouveau message concernant la commande n∞{id_order} :
-{message}
+[{shop_url}] 
 
-Vous pouvez ‡ tout moment consulter vos anciens messages dans votre suivi de commande.
+Bonjour {firstname} {lastname}, 
 
+Vous avez re√ßu un nouveau message de {shop_name} concernant la
+commande ayant pour r√©f√©rence {order_name}.
 
+MESSAGE : {message} 		 
 
-{shop_url} rÈalisÈ par PrestaShopô
+{shop_name} [{shop_url}] r√©alis√© avec
+PrestaShop(tm) [http://www.prestashop.com/] 
+

@@ -1,5 +1,5 @@
 {*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -18,13 +18,16 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 *}
 
 <!-- MODULE WishList -->
-<li>
-<a href="{$base_dir_ssl}modules/blockwishlist/mywishlist.php" title="{l s='My wishlists' mod='blockwishlist'}"><img src="{$module_template_dir}logo.gif" alt="{l s='wishlist' mod='blockwishlist'}" class="icon" /></a><a href="{$base_dir_ssl}modules/blockwishlist/mywishlist.php" title="{l s='My wishlists' mod='blockwishlist'}">{l s='My wishlists' mod='blockwishlist'}</a>
+<li class="lnk_wishlist">
+	<a href="{$link->getModuleLink('blockwishlist', 'mywishlist', array(), true)|escape:'html':'UTF-8'}" title="{l s='My wishlists' mod='blockwishlist'}">
+		<img src="{$module_template_dir}img/gift.gif" alt="{l s='My wishlists' mod='blockwishlist'}" class="icon" />
+		{l s='My wishlists' mod='blockwishlist'}
+	</a>
 </li>
 <!-- END : MODULE WishList -->

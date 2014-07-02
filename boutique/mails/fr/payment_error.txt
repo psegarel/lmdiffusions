@@ -1,11 +1,25 @@
-Bonjour {firstname} {lastname},
 
-Un problËme a ÈtÈ constatÈ pour le paiement de votre commande {id_order}.
+[{shop_url}] 
 
-Vous pouvez ‡ tout moment accÈder au suivi de votre commande dans la rubrique "Mon compte" du site.
+Bonjour {firstname} {lastname}, 
 
-{shop_name} - {shop_url}
+Un probl√®me a √©t√© constat√© pour le paiement de votre commande sur
+{shop_name} ayant pour r√©f√©rence {order_name}. Veuillez nous
+contacter le plus rapidement possible.
 
+NOUS NE POUVONS MALHEUREUSEMENT PAS EXP√âDIER VOTRE COMMANDE TANT QUE
+NOUS N'AVONS PAS RE√áU VOTRE PAIEMENT. 		 
 
+Vous pouvez acc√©der √† tout moment au suivi de votre commande et
+t√©l√©charger votre facture dans "Historique des commandes"
+[{history_url}] de la rubrique "Mon compte"
+[{my_account_url}] sur notre site. 
 
-{shop_url} rÈalisÈ par PrestaShopô
+Si vous avez un compte invit√©, vous pouvez suivre votre commande
+dans la section "Suivi invit√©"
+[{guest_tracking_url}?id_order={order_name}] de notre
+site. 
+
+{shop_name} [{shop_url}] r√©alis√© avec
+PrestaShop(tm) [http://www.prestashop.com/] 
+

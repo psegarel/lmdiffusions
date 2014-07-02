@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<module>
+	<name>cmcic</name>
+	<displayName><![CDATA[CM-CIC]]></displayName>
+	<version><![CDATA[1.3]]></version>
+	<description><![CDATA[Accepter les paiements par CM-CIC]]></description>
+	<author><![CDATA[]]></author>
+	<tab><![CDATA[Payment]]></tab>
+	<confirmUninstall><![CDATA[Etes-vous sûr de vouloir supprimer vos paramètres ?]]></confirmUninstall>
+	<is_configurable>1</is_configurable>
+	<need_instance>1</need_instance>
+	<limited_countries></limited_countries>
+</module>

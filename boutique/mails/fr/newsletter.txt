@@ -1,9 +1,10 @@
-Newsletter de {shop_name} 
 
-Message
+[{shop_url}] 
 
-{message}
+Bonjour {firstname} {lastname}, 
 
+{message} 
 
+{shop_name} [{shop_url}] rÃ©alisÃ© avec
+PrestaShop(tm) [http://www.prestashop.com/] 
 
-{shop_url} réalisé par PrestaShop™

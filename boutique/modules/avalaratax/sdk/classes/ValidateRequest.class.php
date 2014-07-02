@@ -45,7 +45,7 @@ class ValidateRequest
     private $Address;
     private $TextCase = 'Default';
     private $Coordinates = false;
-    private $Taxability = false;
+    private $Taxability=false;
     
     public function __construct($address = null, $textCase = 'Default', $coordinates = false)
     {

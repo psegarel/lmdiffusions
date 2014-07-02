@@ -2,9 +2,8 @@
 
 global $_MODULE;
 $_MODULE = array();
-
 $_MODULE['<{prestafraud}prestashop>prestafraud_eed029a9cfe78c1230a654e58fe8b6f8'] = 'PrestaShop Security';
-$_MODULE['<{prestafraud}prestashop>prestafraud_95d311a37e934646eec0c79c4f266feb'] = 'Schützen Sie Ihr Shop gegen betrügerischen Zahlungen';
+$_MODULE['<{prestafraud}prestashop>prestafraud_95d311a37e934646eec0c79c4f266feb'] = 'Schützen Sie Ihr Shop von betrügerischen Zahlungen';
 $_MODULE['<{prestafraud}prestashop>prestafraud_4d0a6a9777a818ecc3b59b9a8ecd0c43'] = '- Bitte wählen Sie Ihre Haupttätigkeit -';
 $_MODULE['<{prestafraud}prestashop>prestafraud_5a600f5b88f416c470991c6831add13a'] = 'Erwachsene';
 $_MODULE['<{prestafraud}prestashop>prestafraud_0fe4ca3df29658482098bb33a2ff66e5'] = 'Tiere und Haustiere';
@@ -57,7 +56,7 @@ $_MODULE['<{prestafraud}prestashop>prestafraud_950c093b260d7c7709f8ff96e10a6fe0'
 $_MODULE['<{prestafraud}prestashop>prestafraud_d0c6a2fa938df84c0ce628de99c97e16'] = 'Wertung:';
 $_MODULE['<{prestafraud}prestashop>prestafraud_88183b946cc5f0e8c96b2e66e1c74a7e'] = 'Unbekannt';
 $_MODULE['<{prestafraud}prestashop>prestafraud_240f3031f25601fa128bd4e15f0a37de'] = 'Kommentar:';
-$_MODULE['<{prestafraud}prestashop>prestafraud_83af58f7375191b5d158a787808555d4'] = 'Diese Bestellung als Betrug an PrestaShop melden';
+$_MODULE['<{prestafraud}prestashop>prestafraud_b88011726eba59d6bf37f0fdec202edc'] = 'Diese Bestellung als Betrug an PrestaShop melden';
 $_MODULE['<{prestafraud}prestashop>prestafraud_a8bbb000124c9697aa5d63e7e758b64d'] = 'Geschäftsabholung';
 $_MODULE['<{prestafraud}prestashop>prestafraud_08eb31af908e2244867f6e812f82e935'] = 'Abholungspunkt';
 $_MODULE['<{prestafraud}prestashop>prestafraud_880f973e4ddae42c6bebd2c31bb977f8'] = 'Langsamer Versand mehr als 3 Tage';

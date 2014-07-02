@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,15 +19,15 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
 
 class UpgraderCore
 {
-	const DEFAULT_CHECK_VERSION_DELAY_HOURS = 24;
-	const DEFAULT_CHANNEL = 'minor';
+	const DEFAULT_CHECK_VERSION_DELAY_HOURS = 12;
+	const DEFAULT_CHANNEL = 'major';
 	// @todo channel handling :)
 	public $addons_api = 'api.addons.prestashop.com';
 	public $rss_channel_link = 'https://api.prestashop.com/xml/channel.xml';
@@ -253,7 +253,7 @@ class UpgraderCore
 				unlink(_PS_ROOT_DIR_.'/config/xml');
 			mkdir(_PS_ROOT_DIR_.'/config/xml', 0777);
 		}
-		if ($refresh || !file_exists($xml_localfile) || filemtime($xml_localfile) < (time() - (3600 * Upgrader::DEFAULT_CHECK_VERSION_DELAY_HOURS)))
+		if ($refresh || !file_exists($xml_localfile) || @filemtime($xml_localfile) < (time() - (3600 * Upgrader::DEFAULT_CHECK_VERSION_DELAY_HOURS)))
 		{
 			$protocolsList = array('https://' => 443, 'http://' => 80);
 			if (!extension_loaded('openssl'))		
@@ -264,7 +264,7 @@ class UpgraderCore
 				'method'=> 'POST',
 				'content' => $postData,
 				'header'  => 'Content-type: application/x-www-form-urlencoded',
-				'timeout' => 5,
+				'timeout' => 10,
 			));
 			$context = stream_context_create($opts);
 			$xml = false;
@@ -294,10 +294,9 @@ class UpgraderCore
 				unlink(_PS_ROOT_DIR_.'/config/xml');
 			mkdir(_PS_ROOT_DIR_.'/config/xml', 0777);
 		}
-		if ($refresh || !file_exists($xml_localfile) || filemtime($xml_localfile) < (time() - (3600 * Upgrader::DEFAULT_CHECK_VERSION_DELAY_HOURS)))
+		if ($refresh || !file_exists($xml_localfile) || @filemtime($xml_localfile) < (time() - (3600 * Upgrader::DEFAULT_CHECK_VERSION_DELAY_HOURS)))
 		{
-			// @ to hide errors if md5 file is not reachable
-			$xml_string = Tools14::file_get_contents($xml_remotefile, false, stream_context_create(array('http' => array('timeout' => 3))));
+			$xml_string = Tools14::file_get_contents($xml_remotefile, false, stream_context_create(array('http' => array('timeout' => 10))));
 			$xml = @simplexml_load_string($xml_string);
 			if ($xml !== false)
 				file_put_contents($xml_localfile, $xml_string);

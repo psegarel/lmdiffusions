@@ -1,25 +1,59 @@
-Bonjour,
 
-Vous avez reçu une nouvelle commande de {firstname} {lastname} ({email}) sur {shop_name}.
+[{shop_url}] 
 
-Commande : {order_name}
-Date : {date}
-Transporteur : {carrier}
-Mode de paiement : {payment}
-Bons d'achat et réductions : {total_discounts}
-Frais d'expédition : {total_shipping}
-Total produits : {total_products}
-Emballage cadeau : {total_wrapping}
-Total TTC : {total_paid}
+Bravo ! 
 
-Adresse de livraison :
-	{delivery_block_txt}
+Une nouvelle commande a été passée sur votre boutique
+{shop_name} par ce client : {firstname} {lastname} ({email}) 
 
-Adresse de facturation :
-	{invoice_block_txt}
+COMMANDE : {order_name} Date {date}
 
-Message client :
+PAIEMENT : {payment} 		 
 
-{message}
+RÉFÉRENCE
 
-{shop_url} réalisé avec PrestaShop™
+PRODUIT
+
+PRIX UNITAIRE
+
+QUANTITÉ
+
+PRIX TOTAL
+
+{items} 
+
+PRODUITS 
+
+{total_products} 
+
+RÉDUCTIONS 
+
+{total_discounts} 
+
+PAQUET CADEAU 
+
+{total_wrapping} 
+
+LIVRAISON 
+
+{total_shipping} 
+
+TVA TOTALE 
+
+{total_tax_paid} 
+
+TOTAL PAYÉ 
+
+{total_paid} 
+
+{carrier} 
+
+{delivery_block_html} 
+
+{invoice_block_html} 
+
+{message} 
+
+{shop_name} [{shop_url}] réalisé avec
+PrestaShop(tm) [http://www.prestashop.com/] 
+

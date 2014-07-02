@@ -1,15 +1,20 @@
+
+[{shop_url}] 
+
 Hola {firstname} {lastname},
 
-Tu pedido acaba de ser enviado.
-Pronto recibirás una URL para realizar el seguimiento de tu pedido.
+Le agradecemos por realizar sus compras en {shop_name}! 
 
-Puedes revisar este pedido y descargar tu factura en la sección "Historial" dentro de tu cuenta en nuestra web.
-If you have guest account, you can follow your order at this page: {shop_url}guest-tracking.php
+El pedido con la referencia {order_name} ha sido enviado.
 
-Gracias por comprar en {shop_name}!
+En caso haber elegido correo expreso, pronto recibirá un enlace para
+realizar el seguimiento del envío de su paquete. 		 
 
-{shop_name} - {shop_url}
+Usted puede revisar su pedido y descargar la factura desde
+"Historial de pedidos" [{history_url}] de su cuenta
+de cliente, haga clic en [{my_account_url}] en
+nuestra tienda. 
 
+{shop_name} [{shop_url}] creado por
+PrestaShop(tm) [http://www.prestashop.com/] 
 
-
-{shop_url} powered by PrestaShop®

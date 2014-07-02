@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<module>
+	<name>moneybookers</name>
+	<displayName><![CDATA[Moneybookers]]></displayName>
+	<version><![CDATA[1.6.7]]></version>
+	<description><![CDATA[Acceptez des paiements de fa&ccedil;on s&eacute;curis&eacute;e par cartes bancaires (Visa, MasterCard, CB, JCB, Amex) , par virement bancaire et par eWallet avec Moneybookers/Skrill]]></description>
+	<author><![CDATA[]]></author>
+	<tab><![CDATA[payments_gateways]]></tab>
+	<confirmUninstall><![CDATA[Etes-vous sûr de vouloir supprimer vos paramètres ?]]></confirmUninstall>
+	<is_configurable>1</is_configurable>
+	<need_instance>1</need_instance>
+	<limited_countries></limited_countries>
+</module>

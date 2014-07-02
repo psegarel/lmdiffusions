@@ -1,5 +1,5 @@
 {*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -18,7 +18,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 *}
@@ -26,18 +26,15 @@
 <form action="{$formUrl}" method="post">
 
 <fieldset>
-	<legend>{l s='Global Configuration' mod='ebay'}</legend>
-		<label>{l s='Delivery Time' mod='ebay'}</label>
-		<div class="margin-form">
-			<select name="deliveryTime" id="deliveryTime">
-				{foreach from=$deliveryTimeOptions item=deliveryTimeOption}
-					<option value="{$deliveryTimeOption.DispatchTimeMax}" {if $deliveryTimeOption.DispatchTimeMax == $deliveryTime} selected="selected"{/if}>{$deliveryTimeOption.description}</option>
-				{/foreach}
-			</select>
-		</div>
-
-
-		
+	<legend>{l s='Dispatch time' mod='ebay'}</legend>
+	<label>{l s='Dispatch Time' mod='ebay'}</label>
+	<div class="margin-form">
+		<select name="deliveryTime" id="deliveryTime" data-dialoghelp="#dispatchTime" data-inlinehelp="{l s='Specify a dispatch time of between 1-3 days.' mod='ebay'}" class="ebay_select">
+			{foreach from=$deliveryTimeOptions item=deliveryTimeOption}
+				<option value="{$deliveryTimeOption.DispatchTimeMax}" {if $deliveryTimeOption.DispatchTimeMax == $deliveryTime} selected="selected"{/if}>{$deliveryTimeOption.description}</option>
+			{/foreach}
+		</select>
+	</div>
 </fieldset>
 <script type="text/javascript">
 	
@@ -72,7 +69,7 @@
 		{foreach from=$eBayCarrier item=carrier}
 		currentShippingService = '{$carrier.shippingService}';
 		//check for international
-		if((internationalOnly == 1 && '{$carrier.InternationalService}'=== 'true') || internationalOnly == 0)
+		if((internationalOnly == 1 && '{$carrier.InternationalService}' === 'true') || (internationalOnly == 0 && '{$carrier.InternationalService}' !== 'true') )
 		{literal}{{/literal}
 			if(currentShippingService == idEbayCarrier)
 			{literal}{{/literal}
@@ -125,7 +122,7 @@
 	function getShippingLocation(lastId, zone)
 	{literal}{{/literal}
 		var string = '';
-		{foreach from=$internationalShippingLocation item=shippingLocation}
+		{foreach from=$internationalShippingLocations item=shippingLocation}
 			if(zone != undefined && zone.indexOf('{$shippingLocation.location}') != -1)
 			{literal}{{/literal}
 			string += '<div class="shippinglocationOption"><input type="checkbox" checked="checked" name="internationalShippingLocation['+lastId+'][{$shippingLocation.location}] value="{$shippingLocation.location}">{$shippingLocation.description}</option></div>';
@@ -170,7 +167,7 @@
 			string += "<td>";
 			string += "<div class='excludedLocation'>";
 			string += "<input type='checkbox' name='excludeLocation[{$regionvalue}]' {if in_array($regionvalue, $excludeShippingLocation.excluded)} checked='checked'{/if}/> {$region.description}<br/>";
-			string += "<span class='showCountries' data-region='{$regionvalue}'>({l s='Show all countries'})</span>";
+			string += "<span class='showCountries' data-region='{$regionvalue}'>({l s='Show all countries' mod='ebay'})</span>";
 			string += "<div class='listcountry'></div>"
 			string += "</div>";
 			string += "</td>";
@@ -225,7 +222,7 @@
 		{
 			var showcountries = $(this);
 			$.ajax({
-				url: '{/literal}{$module_dir}{literal}ajax/getCountriesLocation.php',
+				url: '{/literal}{$module_dir}{literal}ajax/getCountriesLocation.php?token={/literal}{$ebay_token}{literal}',
 				type: 'POST',
 				data: {region: $(this).attr('data-region')},
 				complete: function(xhr, textStatus) {
@@ -364,11 +361,11 @@
 	</p>
 	<div class="fancyboxeBayClose"  style="text-align:center; margin-top:10px;font-weight:bold;cursor:pointer;">{l s='Close' mod='eBay'}</div>
 </div>
-<script type="text/javascript" src="../js/jquery/jquery.fancybox-1.3.4.js"></script>
+<!--script type="text/javascript" src="../js/jquery/jquery.fancybox-1.3.4.js"></script-->
 <script>
 	{literal}
 	$(document).ready(function() {
-		if(!$.fancybox){
+		if(!typeof $.fancybox == 'function') {
 			$(".fancyboxeBay").fancybox({
 				maxWidth	: '500px',
 				maxHeight	: '300px',
@@ -393,18 +390,18 @@
 </script>
 
 <fieldset style="margin-top:10px;">
-	<legend>{l s='Shipping method for domestic shipping' mod='ebay'}</legend>
+	<legend><span data-dialoghelp="#DomShipp" data-inlinehelp="{l s='You must specify at least one domestic shipping method. ' mod='ebay'}">{l s='Domestic shipping' mod='ebay'}</span></legend>
 	
 	<p>{l s='Prestashop zone used to calculate shipping fees :' mod='ebay'}
 		
-		<select name="nationalZone" id="">
+		<select name="nationalZone" id="" data-inlinehelp="{l s='The zone is used to calculate domestic shipping costs.' mod='ebay'}">
 			{foreach from=$prestashopZone item=zone}
 				<option value="{$zone.id_zone}" {if $zone.id_zone == $ebayZoneNational} selected="selected"{/if}>{$zone.name}</option>
 			{/foreach}
 		</select>
 		{if $psCarrierModule|count > 0}
 			<a href="#warningOnCarriers" class="fancyboxeBay">
-				<img src="../img/admin/help2.png" alt="" title="{l s='You can\'t see all your carriers ?' mod='ebay'}">
+				<img src="../img/admin/help2.png" alt="" title="{l s='You cannot see all your carriers ?' mod='ebay'}">
 			</a>
 			
 		{/if}
@@ -414,22 +411,24 @@
 		</tr>
 	</table>
 	
-	<div class="margin-form" id="addNationalCarrier" style="cursor:pointer;">
-	<span style="font-size:18px;font-weight:bold;padding-right:5px;">+</span>{l s='Add a new carrier option' mod='ebay'}
+	<div class="margin-form" id="addNationalCarrier" style="margin-top: 10px; cursor: pointer;">
+		<a class="button bold">
+			<img src="../img/admin/add.gif" alt="" /> {l s='Add a new carrier option' mod='ebay'}
+		</a>
 	</div>
 </fieldset>
 
 <fieldset style="margin-top:10px">
-	<legend>{l s='Shipping Method for Interational Shipping' mod='ebay'}</legend>	
+	<legend><span data-inlinehelp="{l s='Check the boxes next to the countries that you will ship to. ' mod='ebay'}">{l s='International Shipping' mod='ebay'}</span></legend>
 	<p>{l s='Prestashop zone used to calculate shipping fees  :' mod='ebay'}
-		<select name="internationalZone" id="">
+		<select name="internationalZone" id="" data-inlinehelp="{l s='The zone is used to calculate international shipping costs.' mod='ebay'}">
 			{foreach from=$prestashopZone item=zone}
 				<option value="{$zone.id_zone}" {if $zone.id_zone == $ebayZoneInternational} selected="selected"{/if}>{$zone.name}</option>
 			{/foreach}
 		</select>
 		{if $psCarrierModule|count > 0}
 			<a href="#warningOnCarriers" class="fancyboxeBay">
-				<img src="../img/admin/help2.png" alt="" title="{l s='You can\'t see all your carriers ?' mod='ebay'}">
+				<img src="../img/admin/help2.png" alt="" title="{l s='You cannot see all your carriers ?' mod='ebay'}">
 			</a>
 			
 		{/if}
@@ -438,20 +437,28 @@
 		<div class="internationalShipping"></div>
 	</div>
 	<div class="margin-form" id="addInternationalCarrier" style="cursor:pointer;">
-	<span style="font-size:18px;font-weight:bold;padding-right:5px;">+</span>{l s='Add a new international carrier option' mod='ebay'}
+		<a class="button bold">
+			<img src="../img/admin/add.gif" alt="" /> {l s='Add a new international carrier option' mod='ebay'}
+		</a>
+	</div>
 </fieldset>
 
 <fieldset style="margin-top:10px">
-	<legend>{l s='Exclude shipping locations' mod='ebay'}</legend>
-	<div id="nolist">
-	</div>
-	<div id="list">
-		
+	<legend><span data-inlinehelp="{l s='Check the boxes next to the countries you do not want to ship to.' mod='ebay'}">{l s='Exclude shipping locations' mod='ebay'}</span></legend>
+	<label>
+		{l s='Select any countries that you do not want to ship to' mod='ebay'} :
+	</label>
+	<div class="margin-form">
+		<div id="nolist">
+		</div>
+		<div id="list">
+			
+		</div>
 	</div>
 </fieldset>
 
-<div class="margin-form" id="buttonEbayShipping" style="margin-top:20px;">
-	<input class="button" name="submitSave" type="submit" id="save_ebay_shipping" value="{l s='Save' mod='ebay'}"/>
+<div class="margin-form" id="buttonEbayShipping" style="margin-top:5px;">
+	<input class="primary button" name="submitSave" type="submit" id="save_ebay_shipping" value="{l s='Save and continue' mod='ebay'}"/>
 </div>
 
 

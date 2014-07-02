@@ -1,1 +1,25 @@
-{firstname} {lastname}, gracias por comprar en {shop_name}!\r\n\r\nTiene {nbProducts} producto(s) para descargar.\r\n\r\nEste es el acceso directo:\r\n{virtualProducts}\r\n\r\n\r\nPuede revisar este recibo y descargar su factura desde la sección \"Seguimiento de Pedido\" de su cuenta haciendo clic sobre \"Mi cuenta\" en nuestra web.\r\n\r\n\r\n{shop_url} gestionado por PrestaShop™
+
+[{shop_url}] 
+
+Hola {firstname} {lastname},
+
+Gracias por su pedido con la referencia {order_name} de {shop_name} 
+
+Usted tiene {nbproducts} producto(s) disponibles para su descarga en
+el siguiente enlace(s):
+
+{virtualproducts} 		 
+
+Usted puede revisar su pedido y descargar la factura desde
+"Historial de pedidos" [{history_url}] de su cuenta
+de cliente, haga clic en [{my_account_url}] en
+nuestra tienda. 
+
+Si tiene una cuenta de invitado, puede seguir su pedido desde la
+sección: "Seguimiento de invitado"
+[{guest_tracking_url}?id_order={order_name}] en
+nuestra tienda. 
+
+{shop_name} [{shop_url}] creado por
+PrestaShop(tm) [http://www.prestashop.com/] 
+

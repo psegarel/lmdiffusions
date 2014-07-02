@@ -1,7 +1,7 @@
 <?php
 
 /*
-* 2007-2013 PrestaShop
+* 2007-2011 PrestaShop 
 *
 * NOTICE OF LICENSE
 *
@@ -20,7 +20,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2011 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registred Trademark & Property of PrestaShop SA
 */
@@ -30,7 +30,6 @@ if (!defined('_PS_VERSION_'))
 
 class PrestaFraud extends Module
 {
-	
 	private $_html;
 	public $_errors;
 	private $_trustUrl;
@@ -42,42 +41,47 @@ class PrestaFraud extends Module
 	{
 		$this->name = 'prestafraud';
 	 	$this->tab = 'payment_security';
-		$this->version = '0.99';
+		$this->version = '1.1.1';
 		$this->author = 'PrestaShop';
 		$this->need_instance = 0;
+		$this->module_key = '755a646c90363062eacab8fa7c047605';
 	
 		parent::__construct();
 
 		$this->displayName = $this->l('PrestaShop Security');
 		$this->description = $this->l('Protect your store from fraudulent payments');
 		
-		$this->_activities = array(0 => $this->l('-- Please choose your main activity --'),
-											1 => $this->l('Adult'),
-											2 => $this->l('Animals and Pets'),
-											3 => $this->l('Art and Culture'),
-											4 => $this->l('Babies'),
-											5 => $this->l('Beauty and Personal Care'),
-											6 => $this->l('Cars'),
-											7 => $this->l('Computer Hardware and Software'),
-											8 => $this->l('Download'),
-											9 => $this->l('Fashion and accessories'),
-											10 => $this->l('Flowers, Gifts and Crafts'),
-											11 => $this->l('Food and beverage'),
-											12 => $this->l('HiFi, Photo and Video'),
-											13 => $this->l('Home and Garden'),
-											14 => $this->l('Home Appliances'),
-											15 => $this->l('Jewelry'),
-											16 => $this->l('Mobile and Telecom'),
-											17 => $this->l('Services'),
-											18 => $this->l('Shoes and accessories'),
-											19 => $this->l('Sport and Entertainment'),
-											20 => $this->l('Travel'));
+		$this->_activities = array(
+			0 => $this->l('-- Please choose your main activity --'),
+			1 => $this->l('Adult'),
+			2 => $this->l('Animals and Pets'),
+			3 => $this->l('Art and Culture'),
+			4 => $this->l('Babies'),
+			5 => $this->l('Beauty and Personal Care'),
+			6 => $this->l('Cars'),
+			7 => $this->l('Computer Hardware and Software'),
+			8 => $this->l('Download'),
+			9 => $this->l('Fashion and accessories'),
+			10 => $this->l('Flowers, Gifts and Crafts'),
+			11 => $this->l('Food and beverage'),
+			12 => $this->l('HiFi, Photo and Video'),
+			13 => $this->l('Home and Garden'),
+			14 => $this->l('Home Appliances'),
+			15 => $this->l('Jewelry'),
+			16 => $this->l('Mobile and Telecom'),
+			17 => $this->l('Services'),
+			18 => $this->l('Shoes and accessories'),
+			19 => $this->l('Sport and Entertainment'),
+			20 => $this->l('Travel')
+		);
 		
-		$this->_payment_types = array(0 => $this->l('Cheque'),
-												1 => $this->l('Bankwire'),
-												2 => $this->l('Credit card'),
-												3 => $this->l('Credit card multiple'),
-												4 => $this->l('Prepaid account (MoneyBookers, PayPal...)'));
+		$this->_payment_types = array(
+			0 => $this->l('Cheque'),
+			1 => $this->l('Bankwire'),
+			2 => $this->l('Credit card'),
+			3 => $this->l('Credit card multiple'),
+			4 => $this->l('Prepaid account (MoneyBookers, PayPal...)')
+		);
 
 		$this->_trustUrl = 'http'.(extension_loaded('openssl') ? 's' : '').'://trust.prestashop.com/';
 	}
@@ -97,7 +101,7 @@ class PrestaFraud extends Module
 		$sql = preg_split("/;\s*[\r\n]+/", $sql);
 
 		foreach ($sql as $query)
-			if ($query AND sizeof($query) AND !Db::getInstance()->Execute(trim($query)))
+			if ($query AND sizeof($query) AND !Db::getInstance()->execute(trim($query)))
 				return false;
 		return true;
 	}
@@ -117,18 +121,18 @@ class PrestaFraud extends Module
 	
 	private function _displayConfiguration()
 	{
-		global $cookie;
-		$this->_html .= '<script type="text/javascript">
-									$(document).ready(function() {
-										$(\'#submitCreateAccount\').unbind(\'click\').click(function() {
-										if (!$(\'#terms_and_conditions\').attr(\'checked\'))
-										{
-											alert(\''.$this->l('Please accept the terms of service.').'\');
-											return false;
-										}
-									});										
-									});
-								</script>
+		$this->_html .= '
+		<script type="text/javascript">
+			$(document).ready(function() {
+				$(\'#submitCreateAccount\').unbind(\'click\').click(function() {
+					if (!$(\'#terms_and_conditions\').attr(\'checked\'))
+					{
+						alert(\''.$this->l('Please accept the terms of service.').'\');
+						return false;
+					}
+				});										
+			});
+		</script>
 		<fieldset><legend>'.$this->l('PrestaShop Security configuration').'</legend>
 			<div id="choose_account">
 				<center>
@@ -143,7 +147,7 @@ class PrestaFraud extends Module
 				<form action="'.Tools::htmlentitiesUTF8($_SERVER['REQUEST_URI']).'" method="post" name="prestashop_trust" id="prestashop_trust">
 					<label>'.$this->l('Your email:').'</label>
 					<div class="margin-form">
-						<input type="text" style="width:200px;" name="email" />
+						<input type="text" style="width:200px;" name="email" value="'.Tools::safeOutput(Tools::getValue('email')).'" />
 					</div>
 					<label>'.$this->l('Shop Url:').'</label>
 					<div class="margin-form">
@@ -153,8 +157,8 @@ class PrestaFraud extends Module
 						<input id="terms_and_conditions" type="checkbox" value="1" /> '.$this->l('I agree with the terms of PrestaShop Security service and I adhere to them unconditionally.').'</label>
 					</div>
 					<div id="terms" class="margin-form">';
-					$terms = file_get_contents($this->_trustUrl.'terms.php?lang='.Language::getIsoById((int)$cookie->id_lang));
-					$this->_html .= '<div style="height:300px;border:1px solid #E0D0B1;overflow-y:scroll;padding:8px;color:black">'.nl2br2(strip_tags($terms)).'</div>';
+					$terms = Tools::file_get_contents($this->_trustUrl.'terms.php?lang='.$this->context->language->iso_code);
+					$this->_html .= '<div style="height:300px;border:1px solid #E0D0B1;overflow-y:scroll;padding:8px;color:black">'.Tools::nl2br(strip_tags($terms)).'</div>';
 					$this->_html .= '</div>
 					<div class="margin-form">
 						<input class="button" type="submit" id="submitCreateAccount" name="submitCreateAccount" value="'.$this->l('Create account').'"/>
@@ -181,7 +185,7 @@ class PrestaFraud extends Module
 			$this->_html .= '</select>
 				</div>';
 
-		$carriers = Carrier::getCarriers((int)$cookie->id_lang, true);
+		$carriers = Carrier::getCarriers($this->context->language->id, true);
 		$trust_carriers_type = $this->_getPrestaTrustCarriersType();
 		$configured_carriers = $this->_getConfiguredCarriers();
 		
@@ -278,7 +282,12 @@ class PrestaFraud extends Module
 		$xml->addChild('email', $email);
 		$xml->addChild('shop_url', $shop_url);
 		$result = $this->_pushDatas($root->asXml());
-		$xml_result = simplexml_load_string($result);
+
+		if ($result == 'nok' || !($xml_result = simplexml_load_string($result)))
+		{
+			$this->_errors[] = $this->l('Impossible to create a new account, please report this bug on http://forge.prestashop.com/');
+			return false;
+		}
 		if (!(int)$xml_result->create_account->result)
 		{
 			$this->_errors[] = (string)$xml_result->create_account->errors;
@@ -409,29 +418,29 @@ class PrestaFraud extends Module
 
 		$carrier_infos->addChild('type', $carriers_type[$carrier->id]);
 		if ($this->_pushDatas($root->asXml()) !== false)
-			Db::getInstance()->Execute('INSERT INTO '._DB_PREFIX_.'prestafraud_orders (id_order) VALUES('.(int)$params['order']->id.')');
+			Db::getInstance()->execute('INSERT INTO '._DB_PREFIX_.'prestafraud_orders (id_order) VALUES('.(int)$params['order']->id.')');
 		return true;
 	}
 	
 	public function hookCart($params)
 	{
-		if ($_SERVER['REMOTE_ADDR'] == '0.0.0.0' OR $_SERVER['REMOTE_ADDR'] == '' OR $_SERVER['REMOTE_ADDR'] === false OR $_SERVER['REMOTE_ADDR'] === '::1')
+		if ($_SERVER['REMOTE_ADDR'] == '0.0.0.0' || $_SERVER['REMOTE_ADDR'] == '' || $_SERVER['REMOTE_ADDR'] === false || $_SERVER['REMOTE_ADDR'] === '::1')
 			return;
-		if (!$params['cart']->id)
+		if (!$params['cart'] || !$params['cart']->id)
 			return;
 		$res = Db::getInstance()->getValue('
 		SELECT `id_cart`
 		FROM '._DB_PREFIX_.'prestafraud_carts
-		WHERE id_cart='.(int)($params['cart']->id));
+		WHERE id_cart = '.(int)$params['cart']->id);
 		if ($res)
-			Db::getInstance()->Execute('
+			Db::getInstance()->execute('
 			UPDATE `'._DB_PREFIX_.'prestafraud_carts`
 			SET `ip_address` = '.ip2long($_SERVER['REMOTE_ADDR']).', `date` = \''.pSQL(date('Y-m-d H:i:s')).'\'
-			WHERE `id_cart` = '.(int)($params['cart']->id).' LIMIT 1');
+			WHERE `id_cart` = '.(int)$params['cart']->id.' LIMIT 1');
 		else
-			Db::getInstance()->Execute('
+			Db::getInstance()->execute('
 			INSERT INTO `'._DB_PREFIX_.'prestafraud_carts` (`id_cart`, `ip_address`, `date`)
-			VALUES ('.(int)($params['cart']->id).', '.ip2long($_SERVER['REMOTE_ADDR']).',\''.date('Y-m-d H:i:s').'\')');
+			VALUES ('.(int)$params['cart']->id.', '.ip2long($_SERVER['REMOTE_ADDR']).',\''.date('Y-m-d H:i:s').'\')');
 		return true;
 	}
 	
@@ -452,7 +461,7 @@ class PrestaFraud extends Module
 		FROM '._DB_PREFIX_.'orders
 		WHERE valid=0 AND id_order!='.(int)$order->id.' AND id_customer = '.(int)$order->id_customer);
 
-		$ip_addresses = Db::getInstance()->ExecuteS('
+		$ip_addresses = Db::getInstance()->executeS('
 		SELECT c.ip_address
 		FROM '._DB_PREFIX_.'guest g
 		LEFT JOIN '._DB_PREFIX_.'connections c ON (c.id_guest = g.id_guest)
@@ -482,24 +491,21 @@ class PrestaFraud extends Module
 	
 	public function hookAdminOrder($params)
 	{
-		global $cookie;
 		$id_order = Db::getInstance()->getValue('SELECT id_order FROM '._DB_PREFIX_.'prestafraud_orders WHERE id_order = '.(int)$params['id_order']);
 		$this->_html .= '<br /><fieldset><legend>'.$this->l('PrestaShop Security').'</legend>';
 		if (!$id_order)
 			$this->_html .= $this->l('This order has not been sent to PrestaShop Security.');
 		else
 		{
-			$scoring = $this->_getScoring((int)$id_order, $cookie->id_lang);
+			$scoring = $this->_getScoring((int)$id_order, $this->context->language->id);
 			$this->_html .= '<p><b>'.$this->l('Scoring:').'</b> '.($scoring['scoring'] < 0 ? $this->l('Unknown') : (float)$scoring['scoring']).'</p>
 			<p><b>'.$this->l('Comment:').'</b> '.htmlentities($scoring['comment']).'</p>
-			<p><center><a target="_BLANK" href="'.$this->_trustUrl.'fraud_report.php?shop_id='.Configuration::get('PS_TRUST_SHOP_ID').'&shop_key='.Configuration::get('PS_TRUST_SHOP_KEY').'&order_id='.$id_order.'">'.$this->l('Report this order as fraud towards PrestaShop').'</a></center></p>';
+			<p><center><a target="_BLANK" href="'.$this->_trustUrl.'fraud_report.php?shop_id='.Configuration::get('PS_TRUST_SHOP_ID').'&shop_key='.Configuration::get('PS_TRUST_SHOP_KEY').'&order_id='.$id_order.'">'.$this->l('Report this order as a fraud to PrestaShop').'</a></center></p>';
 		}
 		$this->_html .= '</fieldset>';
 		return $this->_html;
 	}
-	
-	
-		
+			
 	private function _getScoring($id_order, $id_lang)
 	{
 		if (!$scoring = Db::getInstance()->getRow('SELECT * FROM '._DB_PREFIX_.'prestafraud_orders WHERE scoring IS NOT NULL AND id_order = '.(int)$id_order))
@@ -515,7 +521,7 @@ class PrestaFraud extends Module
 				return false;
 			$xml = simplexml_load_string($result);
 			if ((int)$xml->check_scoring->status != -1)
-				Db::getInstance()->Execute('UPDATE '._DB_PREFIX_.'prestafraud_orders SET scoring = '.(float)$xml->check_scoring->scoring.', comment = \''.pSQL($xml->check_scoring->comment).'\' WHERE id_order='.(int)$id_order);
+				Db::getInstance()->execute('UPDATE '._DB_PREFIX_.'prestafraud_orders SET scoring = '.(float)$xml->check_scoring->scoring.', comment = \''.pSQL($xml->check_scoring->comment).'\' WHERE id_order='.(int)$id_order);
 			$scoring = 	array('scoring' => (float)$xml->check_scoring->scoring, 'comment' => (string)$xml->check_scoring->comment);
 		}
 		return $scoring;
@@ -532,7 +538,7 @@ class PrestaFraud extends Module
 	
 	private function _getConfiguredCarriers()
 	{
-		$res =  Db::getInstance()->ExecuteS('SELECT * FROM '._DB_PREFIX_.'prestafraud_carrier');
+		$res =  Db::getInstance()->executeS('SELECT * FROM '._DB_PREFIX_.'prestafraud_carrier');
 		$carriers = array();
 		foreach ($res AS $row)
 			$carriers[$row['id_carrier']] = $row['id_prestafraud_carrier_type'];
@@ -542,7 +548,7 @@ class PrestaFraud extends Module
 	
 	private function _getConfiguredPayments()
 	{
-		$res =  Db::getInstance()->ExecuteS('SELECT * FROM '._DB_PREFIX_.'prestafraud_payment');
+		$res =  Db::getInstance()->executeS('SELECT * FROM '._DB_PREFIX_.'prestafraud_payment');
 		$payments = array();
 		foreach ($res AS $row)
 			$payments[$row['id_module']] = $row['id_prestafraud_payment_type'];
@@ -552,43 +558,26 @@ class PrestaFraud extends Module
 	
 	private function _setCarriersConfiguration($carriers)
 	{
-		Db::getInstance()->Execute('DELETE FROM '._DB_PREFIX_.'prestafraud_carrier');
+		Db::getInstance()->execute('DELETE FROM '._DB_PREFIX_.'prestafraud_carrier');
 		foreach ($carriers AS $id_carrier => $id_carrier_type)
-			Db::getInstance()->Execute('INSERT INTO '._DB_PREFIX_.'prestafraud_carrier (id_carrier, id_prestafraud_carrier_type) VALUES ('.(int)$id_carrier.', '.(int)$id_carrier_type.')');
+			Db::getInstance()->execute('INSERT INTO '._DB_PREFIX_.'prestafraud_carrier (id_carrier, id_prestafraud_carrier_type) VALUES ('.(int)$id_carrier.', '.(int)$id_carrier_type.')');
 	}
 	
 	private function _setPaymentsConfiguration($payments)
 	{
-		Db::getInstance()->Execute('DELETE FROM '._DB_PREFIX_.'prestafraud_payment');
+		Db::getInstance()->execute('DELETE FROM '._DB_PREFIX_.'prestafraud_payment');
 		foreach ($payments AS $id_module => $id_payment_type)
-			Db::getInstance()->Execute('INSERT INTO '._DB_PREFIX_.'prestafraud_payment (id_module, id_prestafraud_payment_type) VALUES ('.(int)$id_module.', '.(int)$id_payment_type.')');
+			Db::getInstance()->execute('INSERT INTO '._DB_PREFIX_.'prestafraud_payment (id_module, id_prestafraud_payment_type) VALUES ('.(int)$id_module.', '.(int)$id_payment_type.')');
 	}
 	
 	private function _updateConfiguredCarrier($old, $new)
 	{
-		return Db::getInstance()->Execute('UPDATE '._DB_PREFIX_.'prestafraud_carrier SET id_carrier='.(int)$new.' WHERE id_carrier='.(int)$old);
+		return Db::getInstance()->execute('UPDATE '._DB_PREFIX_.'prestafraud_carrier SET id_carrier='.(int)$new.' WHERE id_carrier='.(int)$old);
 	}
 	
-	private function _pushDatas($datas)
+	private function _pushDatas($xml)
 	{
-		if (function_exists('curl_init'))
-		{
-			$ch = curl_init($this->_trustUrl);
-			curl_setopt($ch, CURLOPT_POST, true);
-			curl_setopt($ch, CURLOPT_POSTFIELDS, array('xml' => $datas));
-			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-			curl_setopt($ch, CURLOPT_HEADER, false);
-			curl_setopt($ch, CURLOPT_TIMEOUT, 5);
-			$content = curl_exec($ch);
-			curl_close($ch);
-			return $content;
-		}
-		elseif (function_exists('file_get_contents'))
-		{
-			$stream_context = @stream_context_create(array('http' => array('timeout' => 5)));
-			return file_get_contents($this->_trustUrl.'?xml='.urlencode(str_replace("\r", "\n", '', $datas)), $stream_context);
-		}
-		else
-			return false;
+		$stream_context = stream_context_create(array('http' => array('timeout' => 5)));
+		return Tools::file_get_contents($this->_trustUrl.'?xml='.urlencode(str_replace("/\r|\n/", '', $xml)), false, $stream_context);
 	}
 }

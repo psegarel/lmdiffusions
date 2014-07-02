@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<module>
+	<name>homecategories</name>
+	<displayName><![CDATA[Frontpage Categories]]></displayName>
+	<version><![CDATA[0.1]]></version>
+	<description><![CDATA[Displays categories in the middle of your homepage]]></description>
+	<author><![CDATA[]]></author>
+	<tab><![CDATA[Home]]></tab>
+	<is_configurable>1</is_configurable>
+	<need_instance>1</need_instance>
+	<limited_countries></limited_countries>
+</module>

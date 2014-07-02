@@ -1,1 +1,13 @@
-La página solicitada ya no existe
+
+[{shop_url}] 
+
+Hola, 
+
+{shop_name} le invita a enviar el siguiente enlace a sus amigos, para
+que puedan ver su wishlist: {wishlist}
+
+{message} [{message}] 		 
+
+{shop_name} [{shop_url}] creado por
+PrestaShop(tm) [http://www.prestashop.com/] 
+

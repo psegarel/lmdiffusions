@@ -1,14 +1,24 @@
-Hola {firstname} {lastname},
 
-Tu pedido está en camino.
-Puedes seguir su ubicación actual haciendo clic en este enlace: {followup}
+[{shop_url}] 
 
-También puedes revisar tus pedidos y descargar tus facturas desde tu "Historial de Pedidos" dentro de tu cuenta. 
-If you have guest account, you can follow your order at this page: {shop_url}guest-tracking.php
+Hola {firstname} {lastname}, 
 
-Gracias por comprar en {shop_name}!
+Su pedido con la referencia {order_name} se encuentra actualmente en
+tránsito. 
 
-{shop_name} - {shop_url}
+Para seguir la ubicación actual de su paquete utilice este enlace:
+{followup} [{followup}] 		 
 
+Usted puede revisar su pedido y descargar la factura desde
+"Historial de pedidos" [{history_url}] de su cuenta
+de cliente, haga clic en [{my_account_url}] en
+nuestra tienda. 
 
-{shop_url} desarrollado por PrestaShop®
+Si tiene una cuenta de invitado, puede seguir su pedido desde la
+sección: "Seguimiento de invitado"
+[{guest_tracking_url}?id_order={order_name}] en
+nuestra tienda. 
+
+{shop_name} [{shop_url}] creado por
+PrestaShop(tm) [http://www.prestashop.com/] 
+

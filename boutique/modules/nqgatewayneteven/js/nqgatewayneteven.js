@@ -1,5 +1,5 @@
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -18,7 +18,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -238,13 +238,59 @@ $(document).ready(function() {
 		else
 			$('#shipping_fieldname_container').slideUp();
 	});
+
 	if ($('input[name="SHIPPING_BY_PRODUCT"]:checked').val() == 1)
 		$('#shipping_fieldname_container').slideDown();
 	else
 		$('#shipping_fieldname_container').slideUp();
+
+	$('#carrier_france').change(function() {
+		var id_carrier 	= $(this).val();
+
+		if($.trim(id_carrier) == "" || id_carrier == 0) {
+			$('#zone_france').html('');
+			return;
+		}
+
+		var default_val = SHIPPING_ZONE_FRANCE;
+		$.ajax({
+			type: "POST",
+			url: moduleDir + "ajax/get-zone-by-carrier.php",
+			data: {token:neteven_token, id_carrier:id_carrier, type : 'france', default_val : default_val},
+			error:function(msg){
+				alert("Error !: " + msg);
+			},
+			success:function(reponse){
+				$('#zone_france').html(reponse);
+			}
+		});
+	});
+
+	$('#carrier_international').change(function() {
+		var id_carrier 	= $(this).val();
+		if($.trim(id_carrier) == "" || id_carrier == 0){
+			$('#zone_international').html('');
+			return;
+		}
+
+		var default_val = SHIPPING_CARRIER_INTERNATIONAL;
+		$.ajax({
+			type: "POST",
+			url: moduleDir + "ajax/get-zone-by-carrier.php",
+			data: {token:neteven_token, id_carrier:id_carrier, type : 'international', default_val : default_val},
+			error:function(msg){
+				alert("Error !: " + msg);
+			},
+			success:function(reponse){
+				$('#zone_international').html(reponse);
+			}
+		});
+	});
+
+	$('#carrier_international').trigger('change');
+	$('#carrier_france').trigger('change');
 });
 
-function addCustomizableField()
-{
+function addCustomizableField() {
 	$('#customizable').append('<label>'+text_field_name+'</label><div class="margin-form"><input type="text" name="customizable_field_name[]" value="" /></div><label>'+text_value+'</label><div class="margin-form"><input type="text" name="customizable_field_value[]" value="" /></div><hr />');
 }

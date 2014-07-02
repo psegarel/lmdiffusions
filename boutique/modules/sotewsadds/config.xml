@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<module>
+	<name>sotewsadds</name>
+	<displayName><![CDATA[SotEW&#039;s Adds]]></displayName>
+	<version><![CDATA[0.4]]></version>
+	<description><![CDATA[Displays advertising files]]></description>
+	<author><![CDATA[]]></author>
+	<tab><![CDATA[Advertisement]]></tab>
+	<is_configurable>1</is_configurable>
+	<need_instance>1</need_instance>
+	<limited_countries></limited_countries>
+</module>

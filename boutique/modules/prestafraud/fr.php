@@ -2,7 +2,6 @@
 
 global $_MODULE;
 $_MODULE = array();
-
 $_MODULE['<{prestafraud}prestashop>prestafraud_eed029a9cfe78c1230a654e58fe8b6f8'] = 'PrestaShop Security';
 $_MODULE['<{prestafraud}prestashop>prestafraud_95d311a37e934646eec0c79c4f266feb'] = 'Protégez votre magasin des paiements frauduleux';
 $_MODULE['<{prestafraud}prestashop>prestafraud_4d0a6a9777a818ecc3b59b9a8ecd0c43'] = '- Merci de choisir votre activité principale -';
@@ -53,11 +52,11 @@ $_MODULE['<{prestafraud}prestashop>prestafraud_827638f0be5ae74be04ed494087de714'
 $_MODULE['<{prestafraud}prestashop>prestafraud_c9cc8cce247e49bae79f15173ce97354'] = 'Enregistrer';
 $_MODULE['<{prestafraud}prestashop>prestafraud_16648260e58b4cf9d458e1a197ef43f1'] = 'Email est invalide';
 $_MODULE['<{prestafraud}prestashop>prestafraud_cb18f4dc13847e2ed5d69cb936f9b26c'] = 'URL de la boutique n\'est pas valide';
-$_MODULE['<{prestafraud}prestashop>prestafraud_950c093b260d7c7709f8ff96e10a6fe0'] = 'Cette commande n\'a pas été envoyé à PrestaShop Security.';
+$_MODULE['<{prestafraud}prestashop>prestafraud_950c093b260d7c7709f8ff96e10a6fe0'] = 'Cette commande n\'a pas été envoyée à PrestaShop Security.';
 $_MODULE['<{prestafraud}prestashop>prestafraud_d0c6a2fa938df84c0ce628de99c97e16'] = 'Notation:';
 $_MODULE['<{prestafraud}prestashop>prestafraud_88183b946cc5f0e8c96b2e66e1c74a7e'] = 'Inconnu';
 $_MODULE['<{prestafraud}prestashop>prestafraud_240f3031f25601fa128bd4e15f0a37de'] = 'Commentaire:';
-$_MODULE['<{prestafraud}prestashop>prestafraud_83af58f7375191b5d158a787808555d4'] = 'Rapporter cette commande comme une fraude à PrestaShop';
+$_MODULE['<{prestafraud}prestashop>prestafraud_b88011726eba59d6bf37f0fdec202edc'] = 'Rapporter cette commande comme une fraude à PrestaShop';
 $_MODULE['<{prestafraud}prestashop>prestafraud_a8bbb000124c9697aa5d63e7e758b64d'] = 'Retrait en magasin';
 $_MODULE['<{prestafraud}prestashop>prestafraud_08eb31af908e2244867f6e812f82e935'] = 'Point de retrait, point relais';
 $_MODULE['<{prestafraud}prestashop>prestafraud_880f973e4ddae42c6bebd2c31bb977f8'] = 'Livraison lente de plus de 3 jours';

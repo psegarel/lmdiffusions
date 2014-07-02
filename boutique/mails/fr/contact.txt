@@ -1,13 +1,16 @@
-Vous avez reçu un message de la part d'un client depuis votre boutique {shop_name}
 
-Informations
+[{shop_url}] 
 
-Adresse électronique : {email}
+Message de la part d'un client de {shop_name} 
 
-Message
+ADRESSE E-MAIL DU CLIENT : {email}
 
-{message}
+MESSAGE DU CLIENT : {message}
 
+COMMANDE # : {order_name}
 
+PIÃˆCE JOINTE : {attached_file} 		 
 
-{shop_url} réalisé par PrestaShop™
+{shop_name} [{shop_url}] rÃ©alisÃ© avec
+PrestaShop(tm) [http://www.prestashop.com/] 
+

@@ -1,13 +1,24 @@
-Bonjour {firstname} {lastname},
 
-La livraison de votre commande est en cours.
+[{shop_url}] 
 
-Vous pouvez suivre l'avancement de la livraison à l'adresse suivante : {followup}
+Bonjour {firstname} {lastname}, 
 
-Vous pouvez accéder à tout moment au suivi de votre commande dans "Historique de mes commandes" de la rubrique "Mon compte" sur notre site.
+La livraison de votre commande ayant pour référence {order_name}
+est en cours. 
 
-{shop_name} - {shop_url}
+Vous pouvez suivre la progression de votre livraison à l'adresse
+suivante: {followup} [{followup}] 		 
 
+Vous pouvez accéder à tout moment au suivi de votre commande et
+télécharger votre facture dans "Historique des commandes"
+[{history_url}] de la rubrique "Mon compte"
+[{my_account_url}] sur notre site. 
 
+Si vous avez un compte invité, vous pouvez suivre votre commande
+dans la section "Suivi invité"
+[{guest_tracking_url}?id_order={order_name}] de notre
+site. 
 
-{shop_url} réalisé par PrestaShop™
+{shop_name} [{shop_url}] réalisé avec
+PrestaShop(tm) [http://www.prestashop.com/] 
+

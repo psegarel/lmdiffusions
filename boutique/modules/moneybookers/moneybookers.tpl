@@ -1,5 +1,5 @@
 {*
-* 2007-2013 PrestaShop
+* 2007-2011 PrestaShop 
 *
 * NOTICE OF LICENSE
 *
@@ -18,7 +18,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2011 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 *}
@@ -61,10 +61,10 @@
 		<input type="hidden" name="merchant_fields" value="platform">
 		<input type="hidden" name="platform" value="21445510">
 		{foreach from=$inter item=i}
-			<input type="image" src="modules/moneybookers/logos/international/{$inter_logos[$i].file}.gif" value="{$inter_logos[$i].code}" name="Submit" style="margin-right: 10px; border: none;" onclick="$('input.payment_methods').val($(this).val());" />
+			<input type="image" src="{$module_dir}logos/international/{$inter_logos[$i].file}.gif" value="{$inter_logos[$i].code}" name="Submit" style="margin-right: 10px; border: none;" onclick="$('input.payment_methods').val($(this).val());" />
 		{/foreach}
 		{foreach from=$local item=i}
-			<input type="image" src="modules/moneybookers/logos/local/{$local_logos[$i].file}.gif" value="{$local_logos[$i].code}" name="Submit" style="margin-right: 10px; border: none;" onclick="$('input.payment_methods').val($(this).val());" />
+			<input type="image" src="{$module_dir}logos/local/{$local_logos[$i].file}.gif" value="{$local_logos[$i].code}" name="Submit" style="margin-right: 10px; border: none;" onclick="$('input.payment_methods').val($(this).val());" />
 		{/foreach}
 	</p>
 	</form>
@@ -107,7 +107,7 @@
 		<input type="hidden" name="cancel_url_target" value="2">
 		<input type="hidden" name="merchant_fields" value="platform">
 		<input type="hidden" name="platform" value="21445510">
-		<input type="image" src="modules/moneybookers/logos/international/{$inter_logos[$i].file}.gif" name="Submit" value="{$inter_logos[$i].code}" style="float: left; margin-right: 10px; border: none;" onclick="$('input.payment_methods').val($(this).val());" />
+		<input type="image" src="{$module_dir}logos/international/{$inter_logos[$i].file}.gif" name="Submit" value="{$inter_logos[$i].code}" style="float: left; margin-right: 10px; border: none;" onclick="$('input.payment_methods').val($(this).val());" />
 		<span style="margin-top: 25px; display: block;">{l s='Pay by' mod='moneybookers'} {$inter_logos[$i].name}</span>
 	</p>
 	</form>
@@ -149,7 +149,7 @@
 		<input type="hidden" name="cancel_url_target" value="2">
 		<input type="hidden" name="merchant_fields" value="platform">
 		<input type="hidden" name="platform" value="21445510">
-		<input type="image" src="modules/moneybookers/logos/local/{$local_logos[$i].file}.gif" name="Submit" value="{$local_logos[$i].code}" style="float: left; margin-right: 10px; border: none;" onclick="$('input.payment_methods').val($(this).val());" />
+		<input type="image" src="{$module_dir}logos/local/{$local_logos[$i].file}.gif" name="Submit" value="{$local_logos[$i].code}" style="float: left; margin-right: 10px; border: none;" onclick="$('input.payment_methods').val($(this).val());" />
 		<span style="margin-top: 25px; display: block;">{l s='Pay by' mod='moneybookers'} {$local_logos[$i].name}</span>
 		<br style="clear: both;" />
 	</p>
