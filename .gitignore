@@ -1,3 +1,6 @@
+ÂÂ#gnore .htaccess
+.htaccess
+
 # Ignores the images folder
 boutique/img
 
